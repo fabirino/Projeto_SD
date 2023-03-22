@@ -11,6 +11,7 @@ public class URL implements Serializable{
     private List<String> keywords;
     private List<String> urls;
 
+    // Construtors ==============================================================================
     public URL(String url, String title,String quote, List<String> keywords, List<String> urls){
         this.url = url;
         this.title = title;
@@ -27,6 +28,15 @@ public class URL implements Serializable{
         this.urls = new ArrayList<String>();
     }
 
+    // Setters ==================================================================================
+    public void setTitle(String title){
+        this.title = title;
+    }
+
+    public void setQuote(String quote){
+        this.quote = quote;
+    }
+
     public boolean addKeyword(String word){
         return keywords.add(word);
     }
@@ -35,8 +45,18 @@ public class URL implements Serializable{
         return urls.add(url);
     }
 
+
+    // Getters ==================================================================================
     public String getUrl(){
         return url;
+    }
+
+    public List<String> getUrls(){
+        return urls;
+    }
+
+    public List<String> getKeywords(){
+        return keywords;
     }
 
     public String toString(){

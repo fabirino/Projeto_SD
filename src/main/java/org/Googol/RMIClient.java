@@ -8,10 +8,8 @@ import java.util.Scanner;
 
 /**
  *
- * Comunicam por RMI como RMISearchModule
- * Tera uma interface simples com um conjunto de comandos limitados que invocam
- * metodos
- * remotos no servidor RMI
+ * <p> Comunicam por RMI como RMISearchModule
+ * <p> Tem uma interface simples com um conjunto de comandos limitados que invocam metodos remotos no servidor RMI
  */
 public class RMIClient {
 
@@ -42,7 +40,6 @@ public class RMIClient {
             try {
                 System.out.println();
                 System.out.println(SMi.menu());
-                escolha = scan.nextInt();
 
                 // Get the right input from the user
                 while (true)

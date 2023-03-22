@@ -5,15 +5,10 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 
 /**
- * Porta de entrada para o sistema
- * O Search Module escolhe um Storage Barrel para responder a cada pesquisa
- * Comunica com o Storage Barrels por RMI
- *
+ * <p> Porta de entrada para o sistema
+ * <p> O Search Module escolhe um Storage Barrel para responder a cada pesquisa
+ * <p> Comunica com o Storage Barrels por RMI
  */
-
-// TODO: QUEUE aqui para distribuir as tarefas
-// concorrent linked queue
-
 public class RMISearchModule extends UnicastRemoteObject implements GoogolInterface {
 
     String menu;
@@ -44,14 +39,11 @@ public class RMISearchModule extends UnicastRemoteObject implements GoogolInterf
         }
     }
 
-    public void newURL(String URL) throws RemoteException {
-        System.out.println("Search Module: Adding \"" + URL + "\" to the QUEUE");
-        urlQueue.addURL(new URL(URL));
+    public void newURL(String URLString) throws RemoteException {
+        System.out.println("Search Module: Adding \"" + URLString + "\" to the QUEUE");
+        urlQueue.addURL(new URL(URLString));
     }
 
-    public void recursiveIndex(String URL, int n) throws RemoteException {
-
-    }
 
     public void pagesWithWord(String[] word) throws RemoteException {
 

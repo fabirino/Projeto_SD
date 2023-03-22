@@ -5,94 +5,183 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
+import java.net.MulticastSocket;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.StringTokenizer;
 
 /**
+ * <p>
  * Trabalham em paralelo
+ * <p>
  * Usam uma QUEUE de URLs para processar a informacao
+ * <p>
  * Obtem a informacao das paginas Web com a ajuda da biblioteca Jsoup
+ * <p>
  * Enviam essa informacao por multicast aos Storage Barels
+ * <p>
  * 1 URL indexado por 1 Downloader
- *
  */
-public class Downloader{
+public class Downloader {
+
+    private static final String MULTICAST_ADDRESS = "224.3.2.1";
+    private static final int PORT = 4321;
+    private static String[] PT = { "de ", "a ", "o ", "que ", "e ", "do ", "da ", "em ", "um ", "para ", "é ", "com ",
+            "não ", "uma ", "os ", "no ", "se ", "na ", "por ", "mais ", "as ", "dos ", "como ", "mas ", "foi ", "ao ",
+            "ele ", "das ", "tem ", "à ", "seu ", "sua ", "ou ", "ser ", "quando ", "muito ", "há ", "nos ", "já ",
+            "está ", "eu ", "também ", "só ", "pelo ", "pela ", "até ", "isso ", "ela ", "entre ", "era ", "depois ",
+            "sem ", "mesmo ", "aos ", "ter ", "seus ", "quem ", "nas ", "me ", "esse ", "eles ", "estão ", "você ",
+            "tinha ", "foram ", "essa ", "num ", "nem ", "suas ", "meu ", "às ", "minha ", "têm ", "numa ", "pelos ",
+            "elas ", "havia ", "seja ", "qual ", "será ", "nós ", "tenho ", "lhe ", "deles ", "essas ", "esses ",
+            "pelas ", "este ", "fosse ", "dele ", "tu ", "te ", "vocês ", "vos ", "lhes ", "meus ", "minhas", "teu ",
+            "tua", "teus", "tuas", "nosso ", "nossa", "nossos", "nossas", "dela ", "delas ", "esta ", "estes ",
+            "estas ", "aquele ", "aquela ", "aqueles ", "aquelas ", "isto ", "aquilo ", "estou", "está", "estamos",
+            "estão", "estive", "esteve", "estivemos", "estiveram", "estava", "estávamos", "estavam", "estivera",
+            "estivéramos", "esteja", "estejamos", "estejam", "estivesse", "estivéssemos", "estivessem", "estiver",
+            "estivermos", "estiverem", "hei", "há", "havemos", "hão", "houve", "houvemos", "houveram", "houvera",
+            "houvéramos", "haja", "hajamos", "hajam", "houvesse", "houvéssemos", "houvessem", "houver", "houvermos",
+            "houverem", "houverei", "houverá", "houveremos", "houverão", "houveria", "houveríamos", "houveriam", "sou",
+            "somos", "são", "era", "éramos", "eram", "fui", "foi", "fomos", "foram", "fora", "fôramos", "seja",
+            "sejamos", "sejam", "fosse", "fôssemos", "fossem", "for", "formos", "forem", "serei", "será", "seremos",
+            "serão", "seria", "seríamos", "seriam", "tenho", "tem", "temos", "tém", "tinha", "tínhamos", "tinham",
+            "tive", "teve", "tivemos", "tiveram", "tivera", "tivéramos", "tenha", "tenhamos", "tenham", "tivesse",
+            "tivéssemos", "tivessem", "tiver", "tivermos", "tiverem", "terei", "terá", "teremos", "terão", "teria",
+            "teríamos", "teria" };
+
+    private static String[] EN = { "i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you", "your", "yours",
+            "yourself", "yourselves", "he", "him", "his", "himself", "she", "her", "hers", "herself", "it", "its",
+            "itself", "they", "them", "their", "theirs", "themselves", "what", "which", "who", "whom", "this", "that",
+            "these", "those", "am", "is", "are", "was", "were", "be", "been", "being", "have", "has", "had", "having",
+            "do", "does", "did", "doing", "a", "an", "the", "and", "but", "if", "or", "because", "as", "until", "while",
+            "of", "at", "by", "for", "with", "about", "against", "between", "into", "through", "during", "before",
+            "after", "above", "below", "to", "from", "up", "down", "in", "out", "on", "off", "over", "under", "again",
+            "further", "then", "once", "here", "there", "when", "where", "why", "how", "all", "any", "both", "each",
+            "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than",
+            "too", "very", "s", "t", "can", "will", "just", "don", "should", "no" };
+
+    private static ArrayList<String> PTStopWords;
+    private static ArrayList<String> ENStopWords;
 
     public static void main(String[] args) {
+
+        PTStopWords = new ArrayList<>();
+        ENStopWords = new ArrayList<>();
+        fillArray(PTStopWords, PT);
+        fillArray(ENStopWords, EN);
+
         GoogolInterface SMi;
         Downloader downloader = new Downloader();
+        MulticastSocket socket = null;
+        InetAddress group;
 
         try {
             SMi = (GoogolInterface) Naming.lookup("rmi://localhost/SM");
-            // TODO: substituir os returns por algo sustentavel
+            socket = new MulticastSocket(PORT); // create socket and bind it
+            group = InetAddress.getByName(MULTICAST_ADDRESS);
+            socket.joinGroup(group);
+            
+        // TODO: substituir os returns por algo sustentavel
         } catch (NotBoundException NBE) {
-            System.out.println("System: The interface is not bound");
-            return;
-        } catch (MalformedURLException MFE) {
-            System.out.println("System: The URL specified is malformed");
+            System.out.println("Downloader: The interface is not bound");
             return;
         } catch (RemoteException RM) {
-            System.out.println("System: Remote Exception catched");
+            System.out.println("Downloader: Remote Exception catched");
+            return;
+        } catch (IOException IO) {
+            System.out.println("Downloader: Could not join Multicast group");
             return;
         }
-
+        System.out.println("Downloader: System started");
         while (true) {
             try {
-                String url = SMi.getURLQueue().getUrl();
-                System.out.println("Indexing " + url);
-                downloader.crawlURL(url, SMi);
+                // Pega o ultimo URL da Fila e faz o crawl
+                URL url = SMi.getURLQueue();
+                System.out.println("Downloader: Indexing " + url);
+                url = downloader.crawlURL(url, SMi);
+
+                // Envia o URL por multicast para os Barrels
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ObjectOutputStream oos = new ObjectOutputStream(baos);
+                oos.writeObject(url);
+                byte[] data = baos.toByteArray();
+
+                socket.send(new DatagramPacket(data, data.length, group, PORT));
+
             } catch (RemoteException RE) {
-                System.out.println("System: Remote Exception catched");
+                System.out.println("Downloader: Remote Exception catched");
             } catch (InterruptedException e) {
                 System.out.println(e);
+            } catch (IOException IO) {
+                System.out.println("Downloader: Failed to send data through Multicast");
             }
         }
     }
 
-    public URL crawlURL(String url, GoogolInterface SMi) {
+    /**
+     * O URL quando chega ao Downloader apenas tem o link, e necessario depois
+     * adicionar a quote, title, keywords e lista de URL's
+     * 
+     * @param url object recived to crawl and fill the data
+     * @param SMi Search Module interface
+     * @return
+     */
+    public URL crawlURL(URL url, GoogolInterface SMi) {
 
         // try catch para apanhar strings que nao sejam URLs
+        String urlString = url.getUrl();
         String title = "";
         String quote = "";
         String str = "";
-        List<String> keywords = new ArrayList<>();
-        List<String> urls = new ArrayList<>();
 
         try {
-            Document doc = Jsoup.connect(url).get();
+            Document doc = Jsoup.connect(urlString).get();
             title = doc.title();
 
             // Keywords
             StringTokenizer tokens = new StringTokenizer(doc.text());
             int countTokens = 0;
             while (tokens.hasMoreElements()) {
-                System.out.println(tokens.nextToken().toLowerCase());
                 str = tokens.nextToken();
-                keywords.add(str.toLowerCase());
+                String strLower = str.toLowerCase();
+                if (!(ENStopWords.contains(strLower) || PTStopWords.contains(strLower)))
+                    url.addKeyword(str);
                 // Quote
                 if (countTokens++ < 20) {
                     quote += (str + " ");
                 }
             }
             quote += "...";
+
             // Other URLs inside the first URL
             Elements links = doc.select("a[href]");
             for (Element link : links) {
-                System.out.println(link.text() + "\n" + link.attr("abs:href") + "\n");
-                urls.add(link.text());
-                // TODO: catch some exception
+                System.out.println(link.attr("abs:href"));
+                url.addURL(link.attr("abs:href"));
                 SMi.addURLQueue(new URL(link.attr("abs:href")));
             }
+        } catch (MalformedURLException MFE) {
+            System.out.println("Downloader: The URL specified is malformed");
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return new URL(url, title, quote, keywords, urls);
+
+        url.setTitle(title);
+        url.setQuote(quote);
+
+        return url;
+    }
+
+    public static void fillArray(ArrayList<String> AL, String[] list) {
+        for (int i = 0; i < list.length; i++) {
+            AL.add(list[i]);
+        }
     }
 }
-

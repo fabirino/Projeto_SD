@@ -23,7 +23,7 @@ public class Queue implements Serializable {
     }
 
     public static void main(String[] args) {
-        System.out.println("QUEUE: Started");
+        System.out.println("Queue: Started");
     }
 
     /**
@@ -32,7 +32,7 @@ public class Queue implements Serializable {
      * @return success
      */
     public boolean addURL(URL url) {
-        System.out.println("QUEUE: Adding " + url.getUrl() + "to the queue");
+        System.out.println("Queue: Adding " + url.getUrl() + "to the queue");
         return queue.add(url);
     }
 
@@ -51,7 +51,7 @@ public class Queue implements Serializable {
      * session
      */
     public void onCrash() {
-        System.out.println("QUEUE: System crashed, saving URL queue state.");
+        System.out.println("Queue: System crashed, saving URL queue state.");
         if (queue.size() != 0) {
             try (FileOutputStream fos = new FileOutputStream(file);
                  ObjectOutputStream oos = new ObjectOutputStream(fos)) {
@@ -69,7 +69,7 @@ public class Queue implements Serializable {
      * object file
      */
     public void onRecovery() {
-        System.out.println("QUEUE: System started, pulling last saved URL queue.");
+        System.out.println("Queue: System started, pulling last saved URL queue.");
         if (file.exists() && file.isFile()) {
             try (FileInputStream fis = new FileInputStream(file);
                  ObjectInputStream ois = new ObjectInputStream(fis)) {
