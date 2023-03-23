@@ -29,7 +29,7 @@ import java.util.Scanner;
  * <p>
  * Comunica com o SearchModule por RMI
  */
-public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBarrelInterfaceB{
+public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBarrelInterfaceB {
     private HashMap<String, HashSet<URL>> index; // Palavra: lista de URLs
     private HashMap<String, HashSet<String>> path; // URL: lista de URLs que levam ate ele
     private File file;
@@ -37,7 +37,7 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
     private static int PORT = 4321;
     private static int bufferSize = 65507; // MAX: 65507
 
-    public IndexStorageBarrel() throws RemoteException{
+    public IndexStorageBarrel() throws RemoteException {
         super();
         file = new File("./info\\BARREL.obj");
         this.index = new HashMap<>();
@@ -55,6 +55,7 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
                 public void run() {
                     storageBarrel.onCrash();
                     System.out.println("Barrel: Shutdown");
+                    // storageBarrel.onCrash();
                 }
             });
 
@@ -105,8 +106,6 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
                         SBi = (StorageBarrelInterface) Naming.lookup("rmi://localhost:1098/SB");
                         SBi.subscribe("localhost", (StorageBarrelInterfaceB) storageBarrel);
                         System.out.println("Client sent subscription to server");
-                        System Keyword;
-                        // SBi.getUrlsToClient(Keyword, storageBarrel.index);
 
                         // TODO: substituir os returns por algo sustentavel
                     } catch (NotBoundException NBE) {
@@ -200,8 +199,12 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
         }
     }
 
-    public void print_on_client(String s) throws RemoteException {
-        System.out.println("> " + s);
-    }
+    public HashSet<URL> getUrlsToClient(String Keyword) throws RemoteException{
+        if (index.containsKey(Keyword)) {
+            return index.get(Keyword);
+        } else {
+            return null;
+        }
 
+    }
 }

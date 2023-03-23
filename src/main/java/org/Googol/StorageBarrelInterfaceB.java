@@ -1,7 +1,10 @@
 package org.Googol;
 
 import java.rmi.*;
+import java.util.HashMap;
+import java.util.HashSet;
 
 public interface StorageBarrelInterfaceB extends Remote{
-	public void print_on_client(String s) throws java.rmi.RemoteException;
+    public HashSet<URL> getUrlsToClient(String Keyword) throws RemoteException;
+
 }

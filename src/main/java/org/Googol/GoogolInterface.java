@@ -20,7 +20,8 @@ public interface GoogolInterface extends Remote{
      * @throws RemoteException
      * @return the list of URLs that contain the word specified by the user
      */
-    public void pagesWithWord(String[] word) throws RemoteException;
+    // public void pagesWithWord(String[] word) throws RemoteException;
+    public String pagesWithWord(String word) throws RemoteException;
 
     /**
      * <h4> Funcionalidades 5

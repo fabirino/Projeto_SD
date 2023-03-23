@@ -63,7 +63,9 @@ public class RMIClient {
                         break;
                     case 2: 
                         System.out.println("Type the Keyword you want to search:");
-                        
+                        URL = scan.nextLine();
+                        System.out.println(SMi.pagesWithWord(URL));
+
                         break;
                     default:
                         System.out.print("Option not available, choose a number from the menu: ");
