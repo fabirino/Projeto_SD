@@ -16,7 +16,7 @@ public class RMIClient {
     public static void main(String[] args) {
         GoogolInterface SMi;
         try {
-            SMi = (GoogolInterface) Naming.lookup("rmi://localhost/SM");
+            SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
             // TODO: substituir os returns por algo sustentavel
         } catch (NotBoundException NBE) {
             System.out.println("System: The interface is not bound");
@@ -60,6 +60,10 @@ public class RMIClient {
                         // scan.nextLine();
                         URL = scan.nextLine();
                         SMi.newURL(URL);
+                        break;
+                    case 2: 
+                        System.out.println("Type the Keyword you want to search:");
+                        
                         break;
                     default:
                         System.out.print("Option not available, choose a number from the menu: ");

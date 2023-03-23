@@ -32,8 +32,11 @@ public class Queue implements Serializable {
      * @return success
      */
     public boolean addURL(URL url) {
-        System.out.println("Queue: Adding " + url.getUrl() + "to the queue");
-        return queue.add(url);
+        if (!queue.contains(url)) {
+            System.out.println("Queue: Adding " + url.getUrl() + "to the queue");
+            return queue.add(url);
+        } else
+            return false;
     }
 
     /**
@@ -54,7 +57,7 @@ public class Queue implements Serializable {
         System.out.println("Queue: System crashed, saving URL queue state.");
         if (queue.size() != 0) {
             try (FileOutputStream fos = new FileOutputStream(file);
-                 ObjectOutputStream oos = new ObjectOutputStream(fos)) {
+                    ObjectOutputStream oos = new ObjectOutputStream(fos)) {
                 oos.writeObject(queue);
             } catch (IOException ioe) {
                 System.out.println("Error trying to write to \"QUEUE.obj\".");
@@ -72,7 +75,7 @@ public class Queue implements Serializable {
         System.out.println("Queue: System started, pulling last saved URL queue.");
         if (file.exists() && file.isFile()) {
             try (FileInputStream fis = new FileInputStream(file);
-                 ObjectInputStream ois = new ObjectInputStream(fis)) {
+                    ObjectInputStream ois = new ObjectInputStream(fis)) {
                 queue = (LinkedBlockingQueue<URL>) ois.readObject();
             } catch (IOException e) {
                 System.out.println("Error trying to read \"QUEUE.obj\".");

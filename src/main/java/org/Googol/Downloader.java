@@ -82,6 +82,14 @@ public class Downloader {
         MulticastSocket socket = null;
         InetAddress group;
 
+        // Catch Crtl C to save data
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            public void run() {
+                // Esperar que o Downloader processe o url
+                System.out.println("Downloader: Shutdown");
+            }
+        });
+
         try {
             SMi = (GoogolInterface) Naming.lookup("rmi://localhost/SM");
             socket = new MulticastSocket(PORT); // create socket and bind it

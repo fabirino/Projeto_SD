@@ -11,6 +11,16 @@
 
 - Falar sobre as garantias que metemos no UDP: timeouts e assim
 - Usar varios downloaders em vez de um ultithreaded para simular que os downloaders podem estar em maquinas diferentes simulando a vida real. Isto torna a implementacao mais facil e é mais facil saber quantos estao a atrabalhar para os stats
+- De forma a nao processar urls repetidos, se o url ja estiver na QUEUE, nao se adiciona. Isto pode levar a repetir um URL se ele ja estiver sido processado mas nao estiver mais na QUEUE. Uma vez que os Downloaders nao tem acesso ao Index, esta e uma maneira de nao repetir tantas vezes um link
+
+## Protocolo Multicast 
+Para ter garantias de entrega
+Arranjar maneira de descobrir o numBarrels para saber quantos ack vai receber
+
+1. o Downloader manda um pacote aos Barrels a dizer que vai mandar um pacote de tamanho x
+2. Os ISB mandam um ack
+3. Downloaders mandam um datagram packet com o objeto em si
+4. Recebe um ack de todos
 
 ## Base de dados
 
