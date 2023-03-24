@@ -5,6 +5,7 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.Scanner;
+import java.util.Vector;
 
 /**
  *
@@ -61,11 +62,20 @@ public class RMIClient {
                         URL = scan.nextLine();
                         SMi.newURL(URL);
                         break;
-                    case 2: 
+                    case 2: //TODO: para nao esquecer, AINDA ESTA A PROCURAR POR UMA PARAVRA!
                         System.out.println("Type the Keyword you want to search:");
                         URL = scan.nextLine();
                         System.out.println(SMi.pagesWithWord(URL));
 
+                        break;
+                    case 3:
+                        System.out.println("Type the URL you want to search:");
+                        URL = scan.nextLine();
+                        Vector<String> vec= SMi.pagesWithURL(URL);
+                        System.out.println("\n");
+                        for(int i=0; i< vec.size(); i++){ //TODO: INDEXAR POR PAGINAS TB,n tinha muito tempo xd 
+                            System.out.println(vec.get(i));
+                        }
                         break;
                     default:
                         System.out.print("Option not available, choose a number from the menu: ");

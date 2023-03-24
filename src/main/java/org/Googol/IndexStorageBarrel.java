@@ -156,7 +156,7 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
         }
 
         // save in this.path
-        HashSet<String> hashset2;
+        HashSet<String> hashset2;//BUG: nao sei se e bug ou nao mas se conseguires ve se ele esta a guardar bem que eu fiz rmi atraves do cliente para mostras isto e nao esta a mandar nada
         for (String u : url.getUrls()) {
             if (path.containsKey(u)) {
                 hashset2 = path.get(u);
@@ -206,5 +206,13 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
             return null;
         }
 
+    }
+
+    public HashSet<String> getpagesWithURL(String URL) throws RemoteException{
+        if (path.containsKey(URL)) {
+            return path.get(URL);
+        } else {
+            return null;
+        }
     }
 }

@@ -6,7 +6,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Random;
-import java.util.Scanner;
+import java.util.Vector;
 
 /**
  * <p>
@@ -16,6 +16,7 @@ import java.util.Scanner;
  * <p>
  * Comunica com o Storage Barrels por RMI
  */
+//TODO: SUBSTITUIR ARRAYLIST POR QQ CENA THREAD SAFE , USEI O VECTOR MAS O STOR TINHA DITO QUE JA ESTAVA ULTRAPASSADO SLA
 public class RMISearchModule extends UnicastRemoteObject implements GoogolInterface, StorageBarrelInterface {
     static ArrayList<StorageBarrelInterfaceB> listOfBarrels;
     String menu;
@@ -87,8 +88,26 @@ public class RMISearchModule extends UnicastRemoteObject implements GoogolInterf
 
     }
 
-    public void pagesWithURL(String URL) throws RemoteException {
-
+    public Vector<String> pagesWithURL(String URL) throws RemoteException {
+        Vector<String> a = new Vector<>();
+        if (listOfBarrels.size() == 0) {
+            a.add("There are no active barrels!");
+            return a;
+        }
+        Random gerador = new Random();
+        StorageBarrelInterfaceB Barrel = listOfBarrels.get(gerador.nextInt(listOfBarrels.size()));
+        HashSet<URL> hash = Barrel.getUrlsToClient(URL);
+        if (hash != null) {
+            for (URL url : hash) {
+                for (String url2 : url.getUrls()) {
+                    a.add(url2);
+                }
+            }
+            return a;
+        } else {
+            a.add("There are no Urls with that URL!");
+            return a;
+        }
     }
 
     public void adminPage() throws RemoteException {

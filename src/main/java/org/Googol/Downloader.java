@@ -141,7 +141,7 @@ public class Downloader {
      * @param SMi Search Module interface
      * @return
      */
-    public URL crawlURL(URL url, GoogolInterface SMi) {
+    public URL crawlURL(URL url, GoogolInterface SMi) {//TODO: Nao colocar os url todos "mamados", ou seja, javascript e cenas assim que esta a guardar isso na class URL
 
         // try catch para apanhar strings que nao sejam URLs
         String urlString = url.getUrl();
