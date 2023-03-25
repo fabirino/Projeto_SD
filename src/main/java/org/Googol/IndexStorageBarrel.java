@@ -35,7 +35,8 @@ import javax.swing.plaf.synth.SynthScrollBarUI;
 public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBarrelInterfaceB {
     private HashMap<String, HashSet<URL>> index; // Palavra: lista de URLs
     private HashMap<String, HashSet<String>> path; // URL: lista de URLs que levam ate ele
-    private File file;
+    private File fileIndex;
+    private File filePath;
     private static String MULTICAST_ADDRESS = "224.3.2.1";
     private static int PORT = 4321;
     private static int bufferSize = 65507; // MAX: 65507
@@ -43,7 +44,8 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
 
     public IndexStorageBarrel() throws RemoteException {
         super();
-        file = new File("./info\\BARREL.obj");
+        fileIndex = new File("./info\\INDEX.obj");
+        filePath = new File("./info\\PATH.obj");
         this.index = new HashMap<>();
         this.path = new HashMap<>();
         onRecovery();
@@ -197,19 +199,33 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
      */
     public void onRecovery() {
         System.out.println("Barrel: System started, pulling last saved Hashmap barrel.");
-        if (file.exists() && file.isFile()) {
-            try (FileInputStream fis = new FileInputStream(file);
+        // Recovering index
+        if (fileIndex.exists() && fileIndex.isFile()) {
+            try (FileInputStream fis = new FileInputStream(fileIndex);
                     ObjectInputStream ois = new ObjectInputStream(fis)) {
                 index = (HashMap<String, HashSet<URL>>) ois.readObject();
                 ois.close();
                 fis.close();
             } catch (IOException e) {
-                System.out.println("Barrel: Error trying to read \"BARREL.obj\".");
+                System.out.println("Barrel: Error trying to read \"INDEX.obj\".");
             } catch (ClassNotFoundException e) {
                 System.out.println("Class \"BARREL\" not found.");
             }
         }
 
+        // Recovering path
+        if (filePath.exists() && filePath.isFile()) {
+            try (FileInputStream fis = new FileInputStream(filePath);
+                    ObjectInputStream ois = new ObjectInputStream(fis)) {
+                path = (HashMap<String, HashSet<String>>) ois.readObject();
+                ois.close();
+                fis.close();
+            } catch (IOException e) {
+                System.out.println("Barrel: Error trying to read \"PATH.obj\".");
+            } catch (ClassNotFoundException e) {
+                System.out.println("Class \"BARREL\" not found.");
+            }
+        }
     }
 
     /**
@@ -222,13 +238,24 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
     public void onCrash() {
         System.out.println("Barrel: System crashed, saving Hashmap barrel.");
         if (index.size() != 0) {
-            try (FileOutputStream fos = new FileOutputStream(file);
+            try (FileOutputStream fos = new FileOutputStream(fileIndex);
                     ObjectOutputStream oos = new ObjectOutputStream(fos)) {
                 oos.writeObject(index);
                 oos.close();
                 fos.close();
             } catch (IOException ioe) {
-                System.out.println("Barrel: Error trying to write to \"BARREL.obj\".");
+                System.out.println("Barrel: Error trying to write to \"INDEX.obj\".");
+            }
+        }
+
+        if (path.size() != 0) {
+            try (FileOutputStream fos = new FileOutputStream(filePath);
+                    ObjectOutputStream oos = new ObjectOutputStream(fos)) {
+                oos.writeObject(path);
+                oos.close();
+                fos.close();
+            } catch (IOException ioe) {
+                System.out.println("Barrel: Error trying to write to \"PATH.obj\".");
             }
         }
     }
