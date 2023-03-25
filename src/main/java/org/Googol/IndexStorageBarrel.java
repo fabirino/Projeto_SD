@@ -13,9 +13,6 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.concurrent.locks.ReentrantLock;
-
-import javax.swing.plaf.synth.SynthScrollBarUI;
 
 /**
  * <p>
@@ -271,33 +268,44 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
         // Uses pagesWithWord
         System.out.println("Barrel: Sending URLs that contain the words " + Keywords[0]);
         HashSet<URL> set = new HashSet<>();
-        boolean existe = false;
+
         for (String s : Keywords) {
             if (index.containsKey(s)) {
-                existe = true;
                 System.out.println("adding" + index.get(s));
+
                 set.addAll(index.get(s));
+                System.out.println(set.size() + s);
             }
         }
-
+        System.out.println("size set -> " + set.size());
         // only send 10 pages
         int min = pages * 10;
         int max = min + 10;
         int count = 0;
         Iterator<URL> it = set.iterator();
         HashSet<URL> set2 = new HashSet<>();
-        System.out.println(set);
+        //System.out.println(set);
 
-        while (it.hasNext()) {
+        for (URL url : set) {
+            count++;
             if (count >= min && count < max) {
                 System.out.println("URL n" + count);
                 set2.add(it.next());
-                if (min++ == max)
-                    break;
+            } else if (count >= max) {
+                break;
+            }
+        }
+        /*while (it.hasNext()) {
+            System.out.println(count);
+            if (count >= min && count < max) {
+                System.out.println("URL n" + count);
+                set2.add(it.next());
+            } else if (count >= max) {
+                break;
             }
             count++;
-        }
-        if (existe)
+        }*/
+        if (set2.size()!=0)
             return set2;
         else
             return null;

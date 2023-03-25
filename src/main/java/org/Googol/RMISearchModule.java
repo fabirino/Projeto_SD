@@ -80,6 +80,8 @@ public class RMISearchModule extends UnicastRemoteObject implements GoogolInterf
                 ret += url.toString() + '\n';
             }
             return ret;
+        } else if (hash == null && pages != 1) {
+            return "\nThere are no more Urls with that word!";
         } else {
             return "\nThere are no Urls with that word!";
         }

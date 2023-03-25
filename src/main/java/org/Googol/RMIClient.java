@@ -105,12 +105,11 @@ public class RMIClient {
                     case 3:
                         System.out.println("Type the URL you want to search:");
                         URL = scan.nextLine();
-                        // Vector<String> vec = SMi.pagesWithURL(URL);
-                        // System.out.println("\n");
-                        // for (int i = 0; i < vec.size(); i++) { // TODO: INDEXAR POR PAGINAS TB,n
-                        // tinha muito tempo xd
-                        // System.out.println(vec.get(i));
-                        // }
+                        Vector<String> vec = SMi.pagesWithURL(URL);
+                        System.out.println("\n");
+                        for (int i = 0; i < vec.size(); i++) { // TODO: INDEXAR POR PAGINAS TB,n tinha muito tempo xd
+                            System.out.println(vec.get(i));
+                        }
                         break;
                     default:
                         System.out.print("Option not available, choose a number from the menu: ");
