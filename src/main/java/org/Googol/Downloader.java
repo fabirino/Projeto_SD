@@ -101,12 +101,13 @@ public class Downloader {
             System.out.println("Downloader: The interface is not bound");
             return;
         } catch (RemoteException RM) {
-            System.out.println("Downloader: Remote Exception catched");
+            System.out.println("Downloader: Remote Exception catched, Search Module might not be running");
             return;
         } catch (IOException IO) {
             System.out.println("Downloader: Could not join Multicast group");
             return;
         }
+
         System.out.println("Downloader: System started");
         while (true) {
             try {
@@ -139,7 +140,7 @@ public class Downloader {
      * 
      * @param url object recived to crawl and fill the data
      * @param SMi Search Module interface
-     * @return
+     * @return URL object
      */
     public URL crawlURL(URL url, GoogolInterface SMi) {//TODO: Nao colocar os url todos "mamados", ou seja, javascript e cenas assim que esta a guardar isso na class URL
 

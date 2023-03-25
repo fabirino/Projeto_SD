@@ -9,8 +9,11 @@ import java.util.Vector;
 
 /**
  *
- * <p> Comunicam por RMI como RMISearchModule
- * <p> Tem uma interface simples com um conjunto de comandos limitados que invocam metodos remotos no servidor RMI
+ * <p>
+ * Comunicam por RMI como RMISearchModule
+ * <p>
+ * Tem uma interface simples com um conjunto de comandos limitados que invocam
+ * metodos remotos no servidor RMI
  */
 public class RMIClient {
 
@@ -36,6 +39,9 @@ public class RMIClient {
         boolean continuar = true;
         int escolha = 0;
         String URL = "";
+        String[] words = {};
+        int pages = 0;
+        String input = "";
 
         while (continuar) {
             try {
@@ -55,36 +61,64 @@ public class RMIClient {
                     case 0:
                         continuar = false;
                         break;
+
                     case 1:
                         // Adds the URL
                         System.out.println("Type the URL you want to Index:");
-                        // scan.nextLine();
+                        // scan.nextLin1e();
                         URL = scan.nextLine();
                         SMi.newURL(URL);
                         break;
-                    case 2: //TODO: para nao esquecer, AINDA ESTA A PROCURAR POR UMA PARAVRA!
-                        System.out.println("Type the Keyword you want to search:");
-                        URL = scan.nextLine();
-                        System.out.println(SMi.pagesWithWord(URL));
 
+                    case 2:
+                        System.out.println("Type the Keyword(s) you want to search for:");
+                        String line = scan.nextLine();
+                        words = line.split(" ");
+
+                        while (true) {
+                            String response = SMi.pagesWithWord(words, pages);
+                            if (!(response.equals("\nThere are no Urls with that word!")
+                                    || response.equals("\nThere are no active barrels!"))) {
+                                System.out.print(response);
+                                if (pages != 0)
+                                    System.out.println("p - Previous Page");
+                                System.out.println("n - Next Page");
+                                System.out.println("q - Quit Search");
+                                input = scan.nextLine();
+                                if (input.equals("q")) {
+                                    break;
+                                } else if (input.equals("n")) {
+                                    pages++;
+                                } else if (input.equals("p") && pages != 0) {
+                                    pages--;
+                                }
+                            } else{
+                                System.out.print(response);
+                                break;
+                            }
+                        }
+
+                        System.out.println();
+                        pages = 0;
                         break;
+
                     case 3:
                         System.out.println("Type the URL you want to search:");
                         URL = scan.nextLine();
-                        Vector<String> vec= SMi.pagesWithURL(URL);
-                        System.out.println("\n");
-                        for(int i=0; i< vec.size(); i++){ //TODO: INDEXAR POR PAGINAS TB,n tinha muito tempo xd 
-                            System.out.println(vec.get(i));
-                        }
+                        // Vector<String> vec = SMi.pagesWithURL(URL);
+                        // System.out.println("\n");
+                        // for (int i = 0; i < vec.size(); i++) { // TODO: INDEXAR POR PAGINAS TB,n
+                        // tinha muito tempo xd
+                        // System.out.println(vec.get(i));
+                        // }
                         break;
                     default:
                         System.out.print("Option not available, choose a number from the menu: ");
                         break;
                 }
             } catch (RemoteException e) {
-                // TODO Auto-generated catch block
                 System.out.println("System: Something went wrong :(");
-                e.printStackTrace();
+                System.out.println("The Search Module is not active");
             }
         }
         scan.close();

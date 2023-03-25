@@ -16,11 +16,13 @@ import java.util.Vector;
  * <p>
  * Comunica com o Storage Barrels por RMI
  */
-//TODO: SUBSTITUIR ARRAYLIST POR QQ CENA THREAD SAFE , USEI O VECTOR MAS O STOR TINHA DITO QUE JA ESTAVA ULTRAPASSADO SLA
+// TODO: SUBSTITUIR ARRAYLIST POR QQ CENA THREAD SAFE , USEI O VECTOR MAS O STOR
+// TINHA DITO QUE JA ESTAVA ULTRAPASSADO SLA
 public class RMISearchModule extends UnicastRemoteObject implements GoogolInterface, StorageBarrelInterface {
     static ArrayList<StorageBarrelInterfaceB> listOfBarrels;
     String menu;
     Queue urlQueue;
+    int nextBarrel = 0;
 
     public RMISearchModule(int i) throws RemoteException {
         super();
@@ -53,9 +55,9 @@ public class RMISearchModule extends UnicastRemoteObject implements GoogolInterf
         try {
             StorageBarrelInterface SMi2 = new RMISearchModule(1);
             LocateRegistry.createRegistry(1098).rebind("SB", SMi2);
-            System.out.println("Hello Server ready.");
+            System.out.println("Search Module: Server ready");
         } catch (Exception re) {
-            System.out.println("Exception in HelloImpl.main: " + re);
+            System.out.println("Exception in Search Module: " + re);
         }
     }
 
@@ -64,22 +66,19 @@ public class RMISearchModule extends UnicastRemoteObject implements GoogolInterf
         urlQueue.addURL(new URL(URLString));
     }
 
-    public String pagesWithWord(String word) throws RemoteException {
+    public String pagesWithWord(String[] word, int pages) throws RemoteException {
         // public void pagesWithWord(String[] word) throws RemoteException {
         String ret = "";
         if (listOfBarrels.size() == 0) {
 
             return "\nThere are no active barrels!";
         }
-        Random gerador = new Random();
-        StorageBarrelInterfaceB Barrel = listOfBarrels.get(gerador.nextInt(listOfBarrels.size()));
-        HashSet<URL> hash = Barrel.getUrlsToClient(word);
+        StorageBarrelInterfaceB Barrel = listOfBarrels.get((nextBarrel++) % listOfBarrels.size());
+        HashSet<URL> hash = Barrel.getUrlsToClient(word, pages);
         ret = "\n";
         if (hash != null) {
             for (URL url : hash) {
-                for (String url2 : url.getUrls()) {
-                    ret = ret + '\n' + url2;
-                }
+                ret += url.toString() + '\n';
             }
             return ret;
         } else {
@@ -94,14 +93,12 @@ public class RMISearchModule extends UnicastRemoteObject implements GoogolInterf
             a.add("There are no active barrels!");
             return a;
         }
-        Random gerador = new Random();
-        StorageBarrelInterfaceB Barrel = listOfBarrels.get(gerador.nextInt(listOfBarrels.size()));
-        HashSet<URL> hash = Barrel.getUrlsToClient(URL);
+
+        StorageBarrelInterfaceB Barrel = listOfBarrels.get((nextBarrel++) % listOfBarrels.size());
+        HashSet<String> hash = Barrel.getpagesWithURL(URL, 0);
         if (hash != null) {
-            for (URL url : hash) {
-                for (String url2 : url.getUrls()) {
-                    a.add(url2);
-                }
+            for (String url : hash) {
+                a.add(url);
             }
             return a;
         } else {
@@ -118,6 +115,20 @@ public class RMISearchModule extends UnicastRemoteObject implements GoogolInterf
         return menu;
     }
 
+    public void subscribe(String name, StorageBarrelInterfaceB c) throws RemoteException {
+        System.out.println("Search Module: Subscribing barrel" + listOfBarrels.size());
+        listOfBarrels.add(c);
+    }
+
+    public void unsubsribe(StorageBarrelInterfaceB client) throws RemoteException {
+        try {
+            listOfBarrels.remove(client);
+        } catch (Exception e) {
+            System.out.println("ARDEU A TENDA!");
+        }
+        System.out.println("Search Module: Unsubscribing barrel" + listOfBarrels.size());
+    }
+
     // QUEUE Functions ======================================================
     public boolean addURLQueue(URL URL) throws RemoteException {
         return urlQueue.addURL(URL);
@@ -125,11 +136,6 @@ public class RMISearchModule extends UnicastRemoteObject implements GoogolInterf
 
     public URL getURLQueue() throws RemoteException, InterruptedException {
         return urlQueue.getUrl();
-    }
-
-    public void subscribe(String name, StorageBarrelInterfaceB c) throws RemoteException {
-        System.out.println("Subscribing " + name);
-        listOfBarrels.add(c);
     }
 
 }

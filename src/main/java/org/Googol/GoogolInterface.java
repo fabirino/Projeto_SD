@@ -16,17 +16,15 @@ public interface GoogolInterface extends Remote{
 
     /**
      * <h4> Funcionalidades 3 e 4
-     * <p> TODO: substituir void por uma lista threadsafe
      * @param word list of words specified by the user
      * @throws RemoteException
      * @return the list of URLs that contain the word specified by the user
      */
     // public void pagesWithWord(String[] word) throws RemoteException;
-    public String pagesWithWord(String word) throws RemoteException;
+    public String pagesWithWord(String[] word, int pages) throws RemoteException;
 
     /**
      * <h4> Funcionalidades 5
-     * <p> TODO: substituir void por uma lista threadsafe
      * @param URL URL specified by the user
      * @throws RemoteException
      * @return the list of URLs that contain the URL specified by the user
