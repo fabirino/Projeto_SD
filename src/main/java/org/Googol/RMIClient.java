@@ -24,7 +24,6 @@ public class RMIClient {
         GoogolInterface SMi;
         try {
             SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
-            // TODO: substituir os returns por algo sustentavel
         } catch (NotBoundException NBE) {
             System.out.println("System: The interface is not bound");
             return;
@@ -45,6 +44,7 @@ public class RMIClient {
         // Login/Register
         boolean login = false;
         while (!login) {
+            System.out.println();
             System.out.println("1 - Login");
             System.out.println("2 - Register");
 
@@ -57,16 +57,29 @@ public class RMIClient {
                     System.out.print("Option not available, choose a number from the menu: ");
                 }
 
-            System.out.println("Enter your username:");
-            username = scan.nextLine();
-            System.out.println("Enter your password:");
-            password = scan.nextLine();
-
             try {
                 int result = 0;
                 switch (escolha) {
                     case 1:
-                        result = SMi.login(username, password);
+                        System.out.println("Enter your username:");
+                        username = scan.nextLine();
+                        System.out.println("Enter your password:");
+                        password = scan.nextLine();
+
+                        // Encrypt password
+                        String encrypted = null;
+                        MessageDigest m = MessageDigest.getInstance("MD5");
+                        m.update(password.getBytes());
+                        byte[] bytes = m.digest();
+                        StringBuilder s = new StringBuilder();
+                        for (int i = 0; i < bytes.length; i++) {
+                            s.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
+                        }
+                        encrypted = s.toString();
+
+                        result = SMi.login(username, encrypted);
+                        System.out.println();
+
                         if (result == 1) {
                             System.out.println("Hi, " + username);
                             login = true;
@@ -77,6 +90,11 @@ public class RMIClient {
                         }
                         break;
                     case 2:
+                        System.out.println("Enter your username:");
+                        username = scan.nextLine();
+                        System.out.println("Enter your password:");
+                        password = scan.nextLine();
+
                         result = SMi.register(username, password);
                         if (result == 1) {
                             System.out.println("Hi, " + username + ". You are now registered in Googol");
@@ -94,6 +112,13 @@ public class RMIClient {
                 System.out.println("System: Something went wrong :(");
                 System.out.println("The Search Module is not active");
                 return;
+            } catch (SQLException e) {
+                System.out.println("System: Something went wrong :(");
+                System.out.println("The DataBase is down");
+            } catch (NoSuchAlgorithmException e) {
+                System.out.println("System: Error encrypting password on login, no such encrypting algorithm");
+            } finally{
+                scan.close();
             }
         }
 
@@ -116,11 +141,14 @@ public class RMIClient {
                         break;
                     } catch (NumberFormatException nfe) {
                         System.out.print("Option not available, choose a number from the menu: ");
+                    }finally{
+                        scan.close();
                     }
 
                 switch (escolha) {
                     case 0:
                         continuar = false;
+                        scan.close();
                         break;
 
                     case 1:
@@ -186,6 +214,8 @@ public class RMIClient {
             } catch (SQLException e) {
                 System.out.println("System: Something went wrong :(");
                 System.out.println("The DataBase is down");
+            }finally{
+                scan.close();
             }
         }
         scan.close();

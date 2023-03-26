@@ -13,8 +13,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.TreeMap;
 import java.util.Vector;
-import java.security.NoSuchAlgorithmException;  
-import java.security.MessageDigest;  
+import java.security.NoSuchAlgorithmException;
+import java.security.MessageDigest;
 
 /**
  * <p>
@@ -201,20 +201,76 @@ public class RMISearchModule extends UnicastRemoteObject
         return menu;
     }
 
-    public int login(String username, String password)throws RemoteException{
+    public int login(String username, String password) throws RemoteException, SQLException {
+        // check if the username exists
+        String query = "SELECT username FROM users WHERE username LIKE ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setString(1, username);
+        ResultSet rs = statement.executeQuery();
+
+        if (rs.next()) {
+            // user exists
+            query = "SELECT password FROM users WHERE username LIKE ?";
+            statement = connection.prepareStatement(query);
+            statement.setString(1, username);
+            rs = statement.executeQuery();
+
+            if (rs.next()) {
+                if (password.equals(rs.getString("password"))) {
+                    // the password matches
+                    return 1;
+                } else {
+                    // wrong password
+                    return 0;
+                }
+            }
+        } else {
+            // the username doesnt exists
+            return 2;
+        }
 
         return 0;
     }
 
-    public int register(String username, String password) throws RemoteException{
+    public int register(String username, String password) throws RemoteException, SQLException {
+        // Check if there is another user with the same usename
+        String query = "SELECT username FROM users WHERE username LIKE ?";
+        PreparedStatement statement = connection.prepareStatement(query);
+        statement.setString(1, username);
+        ResultSet rs = statement.executeQuery();
+        if (rs.next()) {
+            // user already exists
+            return 0;
+        } else {
+            try {
+                // Encrypt password
+                String encrypted = null;
+                MessageDigest m = MessageDigest.getInstance("MD5");
+                m.update(password.getBytes());
+                byte[] bytes = m.digest();
+                StringBuilder s = new StringBuilder();
+                for (int i = 0; i < bytes.length; i++) {
+                    s.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
+                }
+                encrypted = s.toString();
 
-        return 0;
+                // Save to DB
+                query = "INSERT INTO users (username, password) values(?,?)";
+                PreparedStatement statement2 = connection.prepareStatement(query);
+                statement2.setString(1, username);
+                statement2.setString(2, encrypted);
+                statement2.executeUpdate();
+            } catch (NoSuchAlgorithmException e) {
+                System.out.println("Search Module: Error encrypting password on login, no such encrypting algorithm");
+            }
+            return 1;
+        }
+
     }
 
     // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
     // Storage Barrel Interface functions
     // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
-
 
     public void subscribe(String name, StorageBarrelInterfaceB c) throws RemoteException {
         System.out.println("Search Module: Subscribing barrel" + listOfBarrels.size());
@@ -282,24 +338,22 @@ public class RMISearchModule extends UnicastRemoteObject
      * @param word word to add to the Top Searches
      */
     public void addSearchDB(String word) {
-        System.out.println("Adding " + word + " to the DB");
         try {
-            String check = "select num from topSearches where word = ?";
+            String check = "SELECT num FROM topSearches wWHERE word = ?";
             PreparedStatement checkStatement = connection.prepareStatement(check);
             checkStatement.setString(1, word);
             ResultSet rs = checkStatement.executeQuery();
 
             if (rs.next()) {
                 int count = rs.getInt("num");
-                System.out.println("Contador base dados: " + count);
-                String query = "update topSearches set num = ? where word = ?";
+                String query = "UPDATE topSearches SET num = ? WHERE word = ?";
                 PreparedStatement statement = connection.prepareStatement(query);
                 statement.setInt(1, count + 1);
                 statement.setString(2, word);
                 statement.executeUpdate();
 
             } else {
-                String query = "insert into topSearches (word, num) values(?,?)";
+                String query = "INSERT INTO topSearches (word, num) values(?,?)";
                 PreparedStatement statement = connection.prepareStatement(query);
                 statement.setString(1, word);
                 statement.setInt(2, 1);
