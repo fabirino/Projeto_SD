@@ -4,6 +4,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.jsoup.helper.ValidationException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -15,6 +16,7 @@ import java.net.MulticastSocket;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
@@ -30,7 +32,7 @@ import java.util.StringTokenizer;
  * <p>
  * 1 URL indexado por 1 Downloader
  */
-public class Downloader {
+public class Downloader extends UnicastRemoteObject implements DownloaderInterfaceC {
 
     private static final String MULTICAST_ADDRESS = "224.3.2.1";
     private static final int PORT = 4321;
@@ -67,8 +69,13 @@ public class Downloader {
             "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than",
             "too", "very", "s", "t", "can", "will", "just", "don", "should", "no" };
 
-    private static ArrayList<String> PTStopWords;
-    private static ArrayList<String> ENStopWords;
+            private static ArrayList<String> PTStopWords;
+            private static ArrayList<String> ENStopWords;
+            private static DownloaderInterface SMi;
+
+    public Downloader() throws RemoteException {
+        super();
+    }
 
     public static void main(String[] args) {
 
@@ -77,60 +84,77 @@ public class Downloader {
         fillArray(PTStopWords, PT);
         fillArray(ENStopWords, EN);
 
-        GoogolInterface SMi;
-        Downloader downloader = new Downloader();
-        MulticastSocket socket = null;
-        InetAddress group;
-
-        // Catch Crtl C to save data
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() {
-                // Esperar que o Downloader processe o url
-                System.out.println("Downloader: Shutdown");
-            }
-        });
-
+        Downloader downloader;
         try {
-            SMi = (GoogolInterface) Naming.lookup("rmi://localhost/SM");
-            socket = new MulticastSocket(PORT); // create socket and bind it
-            group = InetAddress.getByName(MULTICAST_ADDRESS);
-            socket.joinGroup(group);
-            
-        // TODO: substituir os returns por algo sustentavel
-        } catch (NotBoundException NBE) {
-            System.out.println("Downloader: The interface is not bound");
-            return;
-        } catch (RemoteException RM) {
-            System.out.println("Downloader: Remote Exception catched, Search Module might not be running");
-            return;
-        } catch (IOException IO) {
-            System.out.println("Downloader: Could not join Multicast group");
-            return;
-        }
+            downloader = new Downloader();
+            MulticastSocket socket = null;
+            InetAddress group;
 
-        System.out.println("Downloader: System started");
-        while (true) {
+            // Catch Crtl C to save data
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+                public void run() {
+                    // Esperar que o Downloader processe o url
+                    System.out.println("Downloader: Shutdown");
+                    try {
+                        SMi.unsubsribeRMI((DownloaderInterfaceC) downloader);
+                    } catch (RemoteException re) {
+                        re.printStackTrace();
+                    }
+                }
+            });
+
             try {
-                // Pega o ultimo URL da Fila e faz o crawl
-                URL url = SMi.getURLQueue();
-                System.out.println("Downloader: Indexing " + url);
-                url = downloader.crawlURL(url, SMi);
+                SMi = (DownloaderInterface) Naming.lookup("rmi://localhost:1099/SM");
+                boolean exit = SMi.subscribeRMI((DownloaderInterfaceC) downloader);
+                System.out.println(exit);
+                if (exit == false) {
+                    System.out.println("Downloader: There are no Storage Barrels available");
+                    System.exit(2);
+                }
+                socket = new MulticastSocket(PORT); // create socket and bind it
+                group = InetAddress.getByName(MULTICAST_ADDRESS);
+                socket.joinGroup(group);
 
-                // Envia o URL por multicast para os Barrels
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                ObjectOutputStream oos = new ObjectOutputStream(baos);
-                oos.writeObject(url);
-                byte[] data = baos.toByteArray();
-
-                socket.send(new DatagramPacket(data, data.length, group, PORT));
-
-            } catch (RemoteException RE) {
-                System.out.println("Downloader: Remote Exception catched");
-            } catch (InterruptedException e) {
-                System.out.println(e);
+                // TODO: substituir os returns por algo sustentavel
+            } catch (NotBoundException NBE) {
+                System.out.println("Downloader: The interface is not bound");
+                return;
+            } catch (RemoteException RM) {
+                System.out.println("Downloader: Remote Exception catched, Search Module might not be running");
+                return;
             } catch (IOException IO) {
-                System.out.println("Downloader: Failed to send data through Multicast");
+                System.out.println("Downloader: Could not join Multicast group");
+                return;
             }
+
+            System.out.println("Downloader: System started");
+            while (true) {
+                try {
+                    // Pega o ultimo URL da Fila e faz o crawl
+                    URL url = SMi.getURLQueue();
+                    System.out.println("Downloader: Indexing " + url);
+                    url = downloader.crawlURL(url, SMi);
+
+                    // Envia o URL por multicast para os Barrels
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    ObjectOutputStream oos = new ObjectOutputStream(baos);
+                    oos.writeObject(url);
+                    byte[] data = baos.toByteArray();
+
+                    socket.send(new DatagramPacket(data, data.length, group, PORT));
+
+                } catch (RemoteException RE) {
+                    System.out.println("Downloader: Remote Exception catched");
+                } catch (InterruptedException e) {
+                    System.out.println(e);
+                } catch (IOException IO) {
+                    System.out.println("Downloader: Failed to send data through Multicast");
+                } catch (ValidationException Ve) {
+                    System.out.println("Downloader: Validation Exception catched");
+                }
+            }
+        } catch (RemoteException e) {
+            System.out.println("Downloader: Somthing went wrong :)");
         }
     }
 
@@ -142,7 +166,9 @@ public class Downloader {
      * @param SMi Search Module interface
      * @return URL object
      */
-    public URL crawlURL(URL url, GoogolInterface SMi) {//TODO: Nao colocar os url todos "mamados", ou seja, javascript e cenas assim que esta a guardar isso na class URL
+    public URL crawlURL(URL url, DownloaderInterface SMi) {// TODO: Nao colocar os url todos "mamados", ou seja,
+                                                           // javascript
+                                                           // e cenas assim que esta a guardar isso na class URL
 
         // try catch para apanhar strings que nao sejam URLs
         String urlString = url.getUrl();

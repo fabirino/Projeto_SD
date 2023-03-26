@@ -92,7 +92,7 @@ public class RMIClient {
                                 } else if (input.equals("p") && pages != 0) {
                                     pages--;
                                 }
-                            } else{
+                            } else {
                                 System.out.print(response);
                                 break;
                             }
@@ -110,6 +110,9 @@ public class RMIClient {
                         for (int i = 0; i < vec.size(); i++) { // TODO: INDEXAR POR PAGINAS TB,n tinha muito tempo xd
                             System.out.println(vec.get(i));
                         }
+                        break;
+                    case 4:
+                        System.out.println(SMi.adminPage());
                         break;
                     default:
                         System.out.print("Option not available, choose a number from the menu: ");

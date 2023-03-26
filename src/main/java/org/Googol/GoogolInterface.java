@@ -34,12 +34,12 @@ public interface GoogolInterface extends Remote{
     /**
      * <h4> Funcionalidades 6
      * <p> Show the running config:
-     * <li> List of Downloaders
-     * <li> List of Barrels (IP and Port)
-     * <li> 10 most common searches
+     * <li> - List of Downloaders
+     * <li> - List of Barrels (IP and Port)
+     * <li> - 10 most common searches
      * @throws RemoteException
      */
-    public void adminPage() throws RemoteException;
+    public String adminPage() throws RemoteException;
 
     /**
      *
@@ -52,19 +52,17 @@ public interface GoogolInterface extends Remote{
     // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
     // QUEUE functions
     // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
-    /**
-     *
-     * @param url to add
-     * @return sucess
-     * @throws RemoteException
-     */
-    public boolean addURLQueue(URL URL) throws RemoteException;
-
 
     /**
-     *
-     * @return next URL to index
+     * Used when the System Starts to get the Queue from the last Session or after a System Crash
+     * 
      * @throws RemoteException
      */
-    public URL getURLQueue() throws RemoteException, InterruptedException;
+    public void queueRecovery() throws RemoteException;
+
+    /**
+     * Used to save the state of the Queue on a Crash
+     * @throws RemoteException
+     */
+    public void queueCrash() throws RemoteException;
 }

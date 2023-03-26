@@ -13,12 +13,10 @@ public class Queue implements Serializable {
 
     private File file;
     private LinkedBlockingQueue<URL> queue;
-    private int DownloadersCounter;
 
     public Queue() {
         file = new File("./info\\QUEUE.obj");
         this.queue = new LinkedBlockingQueue<>();
-        DownloadersCounter = 0;
         onRecovery();
     }
 
@@ -59,6 +57,8 @@ public class Queue implements Serializable {
             try (FileOutputStream fos = new FileOutputStream(file);
                     ObjectOutputStream oos = new ObjectOutputStream(fos)) {
                 oos.writeObject(queue);
+                oos.close();
+                fos.close();
             } catch (IOException ioe) {
                 System.out.println("Error trying to write to \"QUEUE.obj\".");
             }
@@ -77,6 +77,8 @@ public class Queue implements Serializable {
             try (FileInputStream fis = new FileInputStream(file);
                     ObjectInputStream ois = new ObjectInputStream(fis)) {
                 queue = (LinkedBlockingQueue<URL>) ois.readObject();
+            ois.close();
+            fis.close();
             } catch (IOException e) {
                 System.out.println("Error trying to read \"QUEUE.obj\".");
             } catch (ClassNotFoundException e) {

@@ -57,13 +57,13 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
             // Catch Crtl C to save data
             Thread t0 = new Thread("t0") {
                 public void run() {
-                        storageBarrel.onCrash();
-                        System.out.println("Barrel: Shutdown");
-                        // storageBarrel.onCrash();
-                    try{
+                    storageBarrel.onCrash();
+                    System.out.println("Barrel: Shutdown");
+                    // storageBarrel.onCrash();
+                    try {
 
                         SBi.unsubsribe((StorageBarrelInterfaceB) storageBarrel);
-                    }catch(RemoteException re){
+                    } catch (RemoteException re) {
                         re.printStackTrace();
                     }
                 }
@@ -128,7 +128,7 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
                     } catch (RemoteException RM) {
                         System.out.println("System: Remote Exception, Search Module might not be running");
                         return;
-                    } 
+                    }
                 }
 
             });
@@ -137,11 +137,11 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
                 t2.start();
                 t1.join();
                 t2.join();
-            } catch (Exception e) {
-
+            } catch (InterruptedException e) {
+                System.out.println("Barrel: Something went wrong with the threads :/");
             }
-        } catch (Exception e) {
-            // TODO: handle exception
+        } catch (RemoteException e) {
+            System.out.println("Barrel: The Search Module not responding");
         }
 
     }
@@ -160,9 +160,9 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
                 hashset = index.get(Keyword);
                 if (!hashset.contains(url)) {
                     hashset.add(url);
+                    index.replace(Keyword, hashset);
                 }
-                // barrelMap.put(Keyword, urls);
-                index.replace(Keyword, hashset);
+
             } else {
                 hashset = new HashSet<>();
                 hashset.add(url);
@@ -171,18 +171,18 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
         }
 
         // save in this.path
-        HashSet<String> hashset2;// BUG: nao sei se e bug ou nao mas se conseguires ve se ele esta a guardar bem
-                                 // que eu fiz rmi atraves do cliente para mostras isto e nao esta a mandar nada
+        HashSet<String> hashset2;
+
         for (String u : url.getUrls()) {
             if (path.containsKey(u)) {
                 hashset2 = path.get(u);
                 if (!hashset2.contains(url.getUrl())) {
                     hashset2.add(url.getUrl());
+                    path.replace(u, hashset2);
                 }
-                path.replace(u, hashset2);
             } else {
                 hashset2 = new HashSet<>();
-                hashset2.add(u);
+                hashset2.add(url.getUrl());
                 path.put(u, hashset2);
             }
         }
@@ -284,7 +284,7 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
         int count = 0;
         Iterator<URL> it = set.iterator();
         HashSet<URL> set2 = new HashSet<>();
-        //System.out.println(set);
+        // System.out.println(set);
 
         for (URL url : set) {
             count++;
@@ -295,17 +295,19 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
                 break;
             }
         }
-        /*while (it.hasNext()) {
-            System.out.println(count);
-            if (count >= min && count < max) {
-                System.out.println("URL n" + count);
-                set2.add(it.next());
-            } else if (count >= max) {
-                break;
-            }
-            count++;
-        }*/
-        if (set2.size()!=0)
+        /*
+         * while (it.hasNext()) {
+         * System.out.println(count);
+         * if (count >= min && count < max) {
+         * System.out.println("URL n" + count);
+         * set2.add(it.next());
+         * } else if (count >= max) {
+         * break;
+         * }
+         * count++;
+         * }
+         */
+        if (set2.size() != 0)
             return set2;
         else
             return null;
