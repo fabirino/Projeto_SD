@@ -1,0 +1,17 @@
+-- Create Tables
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS topSearches;
+
+CREATE TABLE users (
+	id SERIAL,
+	username VARCHAR(512) UNIQUE NOT NULL,
+	password VARCHAR(512) NOT NULL,
+	PRIMARY KEY(id)
+);
+
+CREATE TABLE topSearches (
+	id SERIAL,
+	word VARCHAR(512) UNIQUE NOT NULL,
+	num INTEGER NOT NULL,
+	PRIMARY KEY(id)
+);

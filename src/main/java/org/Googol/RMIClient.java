@@ -121,6 +121,7 @@ public class RMIClient {
             } catch (RemoteException e) {
                 System.out.println("System: Something went wrong :(");
                 System.out.println("The Search Module is not active");
+                return;
             }
         }
         scan.close();

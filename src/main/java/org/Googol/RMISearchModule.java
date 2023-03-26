@@ -4,6 +4,11 @@ import java.io.File;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -25,7 +30,8 @@ public class RMISearchModule extends UnicastRemoteObject
     static ArrayList<StorageBarrelInterfaceB> listOfBarrels;
     static ArrayList<DownloaderInterfaceC> listOfDownloaders;
     static TreeMap<String, Integer> topSearches;
-    private File searchFile;
+    static Connection connection;
+
     String menu;
     Queue urlQueue;
     int nextBarrel = 0;
@@ -44,13 +50,25 @@ public class RMISearchModule extends UnicastRemoteObject
             listOfBarrels = new ArrayList<StorageBarrelInterfaceB>();
             listOfDownloaders = new ArrayList<DownloaderInterfaceC>();
             topSearches = new TreeMap<String, Integer>();
-            searchFile = new File("./info\\TOPSEARCH.obj");
         }
     }
 
     public static void main(String[] args) throws RemoteException {
-        
+
         System.out.println("Search Module: Server ready");
+
+        // Setup DataBase FIXME: guardar estes dados num ficheiro a parte por seguranca
+        String url = "jdbc:postgresql://localhost/ProjetoSD";
+        String username = "postgres";
+        String password = "postgres";
+        try {
+            DriverManager.registerDriver(new org.postgresql.Driver());
+            connection = DriverManager.getConnection(url, username, password);
+            System.out.println("Search Module: Connected to Database");
+        } catch (SQLException e) {
+            System.out.println("Search Module: Error connecting to DataBase");
+        }
+
         GoogolInterface SMi = new RMISearchModule(0);
         StorageBarrelInterface SMi2 = new RMISearchModule(1);
 
@@ -103,7 +121,7 @@ public class RMISearchModule extends UnicastRemoteObject
 
         // Add the search to the topSearches
         for (String word : words) {
-            addSearch(word);
+            addSearchDB(word);
         }
 
         // Choose a barrel to work (circular)
@@ -158,21 +176,6 @@ public class RMISearchModule extends UnicastRemoteObject
 
         result += "Most commun Searches:\n";
         count = 0;
-
-        TreeMap<String, Integer> reverseTreeMap = valueSort(topSearches);
-
-        if (reverseTreeMap.size() > 10) {
-            for (String key : reverseTreeMap.descendingKeySet()) {
-                result += key + ": " + topSearches.get(key) + "x\n";
-                if (count++ == 10) {
-                    break;
-                }
-            }
-        } else {
-            for (String key : reverseTreeMap.descendingKeySet()) {
-                result += key + ": " + topSearches.get(key) + "x\n";
-            }
-        }
 
         return result;
     }
@@ -243,50 +246,44 @@ public class RMISearchModule extends UnicastRemoteObject
     }
 
     // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
-    // OTHERS
+    // DataBase TODO: ver problemas de concorrencia
     // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
 
-    public boolean addSearch(String word) {
-        if (topSearches.containsKey(word)) {
-            int old = topSearches.get(word);
-            return topSearches.replace(word, old, old + 1);
-        } else {
-            topSearches.put(word, 1);
-        }
-        return true;
-    }
-
     /**
-     * Copied from
-     * https://www.geeksforgeeks.org/how-to-sort-a-treemap-by-value-in-java/
      * 
-     * @param <K> key
-     * @param <V> value
-     * @param map map to be sorted
-     * @return map sorted by reverse order of values
+     * @param word word to add to the Top Searches
      */
-    public static <K, V extends Comparable<V>> TreeMap<K, V> valueSort(final TreeMap<K, V> map) {
-        // Static Method with return type Map and
-        // extending comparator class which compares values
-        // associated with two keys
-        Comparator<K> valueComparator = new Comparator<K>() {
+    public void addSearchDB(String word) {
+        System.out.println("Adding " + word + " to the DB");
+        try {
+            String check = "select num from topSearches where word = ?";
+            PreparedStatement checkStatement = connection.prepareStatement(check);
+            checkStatement.setString(1, word);
+            ResultSet rs = checkStatement.executeQuery();
 
-            public int compare(K k1, K k2) {
+            if (rs.next()) {
+                int count = rs.getInt("num");
+                System.out.println("Contador base dados: " + count);
+                String query = "update topSearches set num = ? where word = ?";
+                PreparedStatement statement = connection.prepareStatement(query);
+                statement.setInt(1, count + 1);
+                statement.setString(2, word);
+                statement.executeUpdate();
 
-                int comp = map.get(k1).compareTo(map.get(k2));
-
-                if (comp == 0)
-                    return 1;
-
-                else
-                    return comp;
+            } else {
+                String query = "insert into topSearches (word, num) values(?,?)";
+                PreparedStatement statement = connection.prepareStatement(query);
+                statement.setString(1, word);
+                statement.setInt(2, 1);
+                statement.executeUpdate();
+                System.out.println("Success");
             }
-        };
 
-        // SortedMap created using the comparator
-        TreeMap<K, V> sorted = new TreeMap<K, V>(valueComparator);
-        sorted.putAll(map);
-        return sorted;
+        } catch (SQLException e) {
+            System.out.println("Search Module: Error trying so read/write to DataBase");
+            e.printStackTrace();
+        }
+
     }
 
 }
