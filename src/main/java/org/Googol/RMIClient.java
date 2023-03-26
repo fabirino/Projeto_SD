@@ -4,6 +4,7 @@ import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.sql.SQLException;
 import java.util.Scanner;
 import java.util.Vector;
 
@@ -122,6 +123,9 @@ public class RMIClient {
                 System.out.println("System: Something went wrong :(");
                 System.out.println("The Search Module is not active");
                 return;
+            } catch( SQLException e){
+                System.out.println("System: Something went wrong :(");
+                System.out.println("The DataBase is down");
             }
         }
         scan.close();

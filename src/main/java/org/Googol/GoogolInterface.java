@@ -2,6 +2,7 @@ package org.Googol;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.sql.SQLException;
 import java.util.Vector;
 
 public interface GoogolInterface extends Remote{
@@ -39,7 +40,7 @@ public interface GoogolInterface extends Remote{
      * <li> - 10 most common searches
      * @throws RemoteException
      */
-    public String adminPage() throws RemoteException;
+    public String adminPage() throws RemoteException, SQLException;
 
     /**
      *

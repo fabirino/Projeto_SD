@@ -162,7 +162,7 @@ public class RMISearchModule extends UnicastRemoteObject
         }
     }
 
-    public String adminPage() throws RemoteException {
+    public String adminPage() throws RemoteException, SQLException {
         String result = "Active Barrels: " + listOfBarrels.size() + "\n";
         int count = 0;
         for (StorageBarrelInterfaceB barrel : listOfBarrels) {
@@ -174,8 +174,23 @@ public class RMISearchModule extends UnicastRemoteObject
             result += "Downloader " + ++count + "\n";
         }
 
-        result += "Most commun Searches:\n";
+        result += "Most commun Searches (Word: Number of Searches):\n";
         count = 0;
+
+        String check = "SELECT word, num FROM topSearches ORDER BY num DESC";
+        PreparedStatement checkStatement = connection.prepareStatement(check);
+        ResultSet rs = checkStatement.executeQuery();
+        String word = "";
+        int num = 0;
+
+        while (rs.next()) {
+            word = rs.getString("word");
+            num = rs.getInt("num");
+            result += word + ": " + num + "\n";
+
+            if (count++ == 10)
+                break;
+        }
 
         return result;
     }
@@ -187,6 +202,7 @@ public class RMISearchModule extends UnicastRemoteObject
     // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
     // Storage Barrel Interface functions
     // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
+
 
     public void subscribe(String name, StorageBarrelInterfaceB c) throws RemoteException {
         System.out.println("Search Module: Subscribing barrel" + listOfBarrels.size());
