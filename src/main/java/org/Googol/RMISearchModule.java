@@ -10,10 +10,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.TreeMap;
 import java.util.Vector;
+import java.security.NoSuchAlgorithmException;  
+import java.security.MessageDigest;  
 
 /**
  * <p>
@@ -25,6 +26,7 @@ import java.util.Vector;
  */
 // TODO: SUBSTITUIR ARRAYLIST POR QQ CENA THREAD SAFE , USEI O VECTOR MAS O STOR
 // TINHA DITO QUE JA ESTAVA ULTRAPASSADO SLA
+// https://www.javatpoint.com/how-to-encrypt-password-in-java
 public class RMISearchModule extends UnicastRemoteObject
         implements GoogolInterface, StorageBarrelInterface, DownloaderInterface {
     static ArrayList<StorageBarrelInterfaceB> listOfBarrels;
@@ -197,6 +199,16 @@ public class RMISearchModule extends UnicastRemoteObject
 
     public String menu() throws RemoteException {
         return menu;
+    }
+
+    public int login(String username, String password)throws RemoteException{
+
+        return 0;
+    }
+
+    public int register(String username, String password) throws RemoteException{
+
+        return 0;
     }
 
     // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=

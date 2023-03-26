@@ -49,6 +49,23 @@ public interface GoogolInterface extends Remote{
      */
     public String menu() throws RemoteException;
 
+    /**
+     * Function used to log a user in the System
+     * @param username  username of the user
+     * @param password  password of the user
+     * @return 1 success, 0 wrong password, 2 username not found
+     * @throws RemoteException
+     */
+    public int login(String username, String password) throws RemoteException;
+
+    /**
+     * Function used to register a user in the System
+     * @param username username of the new user
+     * @param password password of the new user
+     * @return 1 success, 0 username already bound
+     * @throws RemoteException
+     */
+    public int register(String username, String password) throws RemoteException;
 
     // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
     // QUEUE functions

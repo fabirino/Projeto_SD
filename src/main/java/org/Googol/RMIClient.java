@@ -7,6 +7,8 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.util.Scanner;
 import java.util.Vector;
+import java.security.NoSuchAlgorithmException;
+import java.security.MessageDigest;
 
 /**
  *
@@ -34,11 +36,69 @@ public class RMIClient {
             return;
         }
 
+        Scanner scan = new Scanner(System.in);
+        int escolha = 0;
+        String username = "";
+        String password = "";
         System.out.println("Welcome to Googol");
 
-        Scanner scan = new Scanner(System.in);
+        // Login/Register
+        boolean login = false;
+        while (!login) {
+            System.out.println("1 - Login");
+            System.out.println("2 - Register");
+
+            // Get the right input from the user
+            while (true)
+                try {
+                    escolha = Integer.parseInt(scan.nextLine());
+                    break;
+                } catch (NumberFormatException nfe) {
+                    System.out.print("Option not available, choose a number from the menu: ");
+                }
+
+            System.out.println("Enter your username:");
+            username = scan.nextLine();
+            System.out.println("Enter your password:");
+            password = scan.nextLine();
+
+            try {
+                int result = 0;
+                switch (escolha) {
+                    case 1:
+                        result = SMi.login(username, password);
+                        if (result == 1) {
+                            System.out.println("Hi, " + username);
+                            login = true;
+                        } else if (result == 0) {
+                            System.out.println("The password is wrong");
+                        } else if (result == 2) {
+                            System.out.println("The username does not exists");
+                        }
+                        break;
+                    case 2:
+                        result = SMi.register(username, password);
+                        if (result == 1) {
+                            System.out.println("Hi, " + username + ". You are now registered in Googol");
+                            login = true;
+                        } else if (result == 0) {
+                            System.out.println("The username given already exists. Please choose another one");
+                        }
+
+                    default:
+                        System.out.print("Option not available, choose a number from the menu: ");
+                        break;
+                }
+
+            } catch (RemoteException e) {
+                System.out.println("System: Something went wrong :(");
+                System.out.println("The Search Module is not active");
+                return;
+            }
+        }
+
+        escolha = 0;
         boolean continuar = true;
-        int escolha = 0;
         String URL = "";
         String[] words = {};
         int pages = 0;
@@ -123,7 +183,7 @@ public class RMIClient {
                 System.out.println("System: Something went wrong :(");
                 System.out.println("The Search Module is not active");
                 return;
-            } catch( SQLException e){
+            } catch (SQLException e) {
                 System.out.println("System: Something went wrong :(");
                 System.out.println("The DataBase is down");
             }
