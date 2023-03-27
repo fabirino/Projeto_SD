@@ -116,15 +116,16 @@ public class RMISearchModule extends UnicastRemoteObject
 
     // TODO: para ordem de relevancia ir pesquisar ao PATH o tamanho do URL
     public String pagesWithWord(String[] words, int pages) throws RemoteException {
-        // public void pagesWithWord(String[] word) throws RemoteException {
         String ret = "";
         if (listOfBarrels.size() == 0) {
             return "\nThere are no active barrels!";
         }
 
         // Add the search to the topSearches
-        for (String word : words) {
-            addSearchDB(word);
+        if(pages == 0){
+            for (String word : words) {
+                addSearchDB(word);
+            }
         }
 
         // Choose a barrel to work (circular)

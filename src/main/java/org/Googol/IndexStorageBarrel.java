@@ -35,9 +35,9 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
     private HashMap<String, HashSet<String>> path; // URL: lista de URLs que levam ate ele
     private File fileIndex;
     private File filePath;
-    private static String MULTICAST_ADDRESS = "224.3.2.1";
-    private static int PORT = 4321;
-    private static int bufferSize = 65507; // MAX: 65507
+    private final static String MULTICAST_ADDRESS = "224.3.2.1";
+    private final static int PORT = 4321;
+    private final static int bufferSize = 65507; // MAX: 65507
     private static StorageBarrelInterface SBi;
     private static String name;
 
