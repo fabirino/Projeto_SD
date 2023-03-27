@@ -166,9 +166,8 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
      * @param SMi Search Module interface
      * @return URL object
      */
-    public URL crawlURL(URL url, DownloaderInterface SMi) {// TODO: Nao colocar os url todos "mamados", ou seja,
-                                                           // javascript
-                                                           // e cenas assim que esta a guardar isso na class URL
+    public URL crawlURL(URL url, DownloaderInterface SMi) {
+        // TODO: Nao colocar os url todos "mamados", ou seja, javascript e cenas assim que esta a guardar isso na class URL
 
         // try catch para apanhar strings que nao sejam URLs
         String urlString = url.getUrl();

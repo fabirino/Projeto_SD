@@ -111,14 +111,17 @@ public class RMIClient {
             } catch (RemoteException e) {
                 System.out.println("System: Something went wrong :(");
                 System.out.println("The Search Module is not active");
+                scan.close();
                 return;
             } catch (SQLException e) {
                 System.out.println("System: Something went wrong :(");
                 System.out.println("The DataBase is down");
+                scan.close();
+                return;
             } catch (NoSuchAlgorithmException e) {
                 System.out.println("System: Error encrypting password on login, no such encrypting algorithm");
-            } finally{
                 scan.close();
+                return;
             }
         }
 
@@ -141,8 +144,6 @@ public class RMIClient {
                         break;
                     } catch (NumberFormatException nfe) {
                         System.out.print("Option not available, choose a number from the menu: ");
-                    }finally{
-                        scan.close();
                     }
 
                 switch (escolha) {
@@ -167,7 +168,8 @@ public class RMIClient {
                         while (true) {
                             String response = SMi.pagesWithWord(words, pages);
                             if (!(response.equals("\nThere are no Urls with that word!")
-                                    || response.equals("\nThere are no active barrels!"))) {
+                                    || response.equals("\nThere are no active barrels!")
+                                    || response.equals("\nThere are no more Urls with that word!"))) {
                                 System.out.print(response);
                                 if (pages != 0)
                                     System.out.println("p - Previous Page");
@@ -210,12 +212,13 @@ public class RMIClient {
             } catch (RemoteException e) {
                 System.out.println("System: Something went wrong :(");
                 System.out.println("The Search Module is not active");
+                scan.close();
                 return;
             } catch (SQLException e) {
                 System.out.println("System: Something went wrong :(");
                 System.out.println("The DataBase is down");
-            }finally{
                 scan.close();
+                return;
             }
         }
         scan.close();

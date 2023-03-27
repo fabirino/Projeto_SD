@@ -114,6 +114,7 @@ public class RMISearchModule extends UnicastRemoteObject
         urlQueue.addURL(new URL(URLString));
     }
 
+    // TODO: para ordem de relevancia ir pesquisar ao PATH o tamanho do URL
     public String pagesWithWord(String[] words, int pages) throws RemoteException {
         // public void pagesWithWord(String[] word) throws RemoteException {
         String ret = "";
@@ -135,7 +136,7 @@ public class RMISearchModule extends UnicastRemoteObject
                 ret += url.toString() + '\n';
             }
             return ret;
-        } else if (hash == null && pages != 1) {
+        } else if (hash == null && pages > 0) {
             return "\nThere are no more Urls with that word!";
         } else {
             return "\nThere are no Urls with that word!";
@@ -143,6 +144,7 @@ public class RMISearchModule extends UnicastRemoteObject
 
     }
 
+    // TODO: para ordem de relevancia ir pesquisar ao PATH o tamanho do URL
     public Vector<String> pagesWithURL(String URL) throws RemoteException {
         Vector<String> a = new Vector<>();
         if (listOfBarrels.size() == 0) {
@@ -339,7 +341,7 @@ public class RMISearchModule extends UnicastRemoteObject
      */
     public void addSearchDB(String word) {
         try {
-            String check = "SELECT num FROM topSearches wWHERE word = ?";
+            String check = "SELECT num FROM topSearches WHERE word = ?";
             PreparedStatement checkStatement = connection.prepareStatement(check);
             checkStatement.setString(1, word);
             ResultSet rs = checkStatement.executeQuery();
