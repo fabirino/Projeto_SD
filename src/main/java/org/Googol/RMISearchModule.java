@@ -109,9 +109,9 @@ public class RMISearchModule extends UnicastRemoteObject
     // Googol Interface functions
     // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
 
-    public void newURL(String URLString) throws RemoteException {
+    public void newURL(String URLString) throws RemoteException {//TODO: fazer protecoes se algum erro acontecer !!
         System.out.println("Search Module: Adding \"" + URLString + "\" to the QUEUE");
-        urlQueue.addURL(new URL(URLString));
+        urlQueue.addURLHead(new URL(URLString));
     }
 
     // TODO: para ordem de relevancia ir pesquisar ao PATH o tamanho do URL

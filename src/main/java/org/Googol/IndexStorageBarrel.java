@@ -13,6 +13,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Scanner;
 
 /**
  * <p>
@@ -38,11 +39,13 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
     private static int PORT = 4321;
     private static int bufferSize = 65507; // MAX: 65507
     private static StorageBarrelInterface SBi;
+    private static String name;
+
 
     public IndexStorageBarrel() throws RemoteException {
         super();
-        fileIndex = new File("./info\\INDEX.obj");
-        filePath = new File("./info\\PATH.obj");
+        fileIndex = new File("./info\\INDEX_" + name +".obj");
+        filePath = new File("./info\\PATH_" + name +".obj");
         this.index = new HashMap<>();
         this.path = new HashMap<>();
         onRecovery();
@@ -52,6 +55,10 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
         IndexStorageBarrel storageBarrel;
 
         try {
+            Scanner scan = new Scanner(System.in);
+            System.out.print("Name of Barrel >> ");
+            name = scan.nextLine();
+            scan.close();
             storageBarrel = new IndexStorageBarrel();
 
             // Catch Crtl C to save data
@@ -59,7 +66,7 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
                 public void run() {
                     storageBarrel.onCrash();
                     System.out.println("Barrel: Shutdown");
-                    // storageBarrel.onCrash();
+                    storageBarrel.onCrash();
                     try {
 
                         SBi.unsubsribe((StorageBarrelInterfaceB) storageBarrel);
@@ -204,7 +211,7 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
                 ois.close();
                 fis.close();
             } catch (IOException e) {
-                System.out.println("Barrel: Error trying to read \"INDEX.obj\".");
+                System.out.println("Barrel: Error trying to read \"INDEX_" + name + ".obj\".");
             } catch (ClassNotFoundException e) {
                 System.out.println("Class \"BARREL\" not found.");
             }
@@ -218,7 +225,7 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
                 ois.close();
                 fis.close();
             } catch (IOException e) {
-                System.out.println("Barrel: Error trying to read \"PATH.obj\".");
+                System.out.println("Barrel: Error trying to read \"PATH_" + name + ".obj\".");
             } catch (ClassNotFoundException e) {
                 System.out.println("Class \"BARREL\" not found.");
             }
@@ -241,7 +248,7 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
                 oos.close();
                 fos.close();
             } catch (IOException ioe) {
-                System.out.println("Barrel: Error trying to write to \"INDEX.obj\".");
+                System.out.println("Barrel: Error trying to write to \"INDEX_" + name + ".obj\".");
             }
         }
 
@@ -252,7 +259,7 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
                 oos.close();
                 fos.close();
             } catch (IOException ioe) {
-                System.out.println("Barrel: Error trying to write to \"PATH.obj\".");
+                System.out.println("Barrel: Error trying to write to \"PATH_" + name + ".obj\".");
             }
         }
     }

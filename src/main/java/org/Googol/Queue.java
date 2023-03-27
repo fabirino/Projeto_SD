@@ -7,16 +7,16 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
 
 public class Queue implements Serializable {
 
     private File file;
-    private LinkedBlockingQueue<URL> queue;
+    private LinkedBlockingDeque<URL> queue;
 
     public Queue() {
         file = new File("./info\\QUEUE.obj");
-        this.queue = new LinkedBlockingQueue<>();
+        this.queue = new LinkedBlockingDeque<>();
         onRecovery();
     }
 
@@ -33,6 +33,24 @@ public class Queue implements Serializable {
         if (!queue.contains(url)) {
             System.out.println("Queue: Adding " + url.getUrl() + "to the queue");
             return queue.add(url);
+        } else
+            return false;
+    }
+
+    /**
+     *
+     * @param url that is added to the queue
+     * @return success
+     */
+    public boolean addURLHead(URL url) {
+        if (!queue.contains(url)) {
+            System.out.println("Queue: Adding " + url.getUrl() + "to the queue");
+            try {
+                queue.addFirst(url);
+                return true;
+            } catch (Exception e) {
+                return false;
+            }
         } else
             return false;
     }
@@ -76,7 +94,7 @@ public class Queue implements Serializable {
         if (file.exists() && file.isFile()) {
             try (FileInputStream fis = new FileInputStream(file);
                     ObjectInputStream ois = new ObjectInputStream(fis)) {
-                queue = (LinkedBlockingQueue<URL>) ois.readObject();
+                queue = (LinkedBlockingDeque<URL>) ois.readObject();
             ois.close();
             fis.close();
             } catch (IOException e) {
