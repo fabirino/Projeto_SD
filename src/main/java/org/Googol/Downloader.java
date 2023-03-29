@@ -96,7 +96,7 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
                     // Esperar que o Downloader processe o url
                     System.out.println("Downloader: Shutdown");
                     try {
-                        SMi.unsubsribeD((DownloaderInterfaceC) downloader);
+                        SMi.unsubscribeD((DownloaderInterfaceC) downloader);
                     } catch (RemoteException re) {
                         re.printStackTrace();
                     }

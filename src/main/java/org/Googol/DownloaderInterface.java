@@ -5,7 +5,7 @@ import java.rmi.*;
 public interface DownloaderInterface extends Remote {
     public boolean subscribeD(DownloaderInterfaceC client) throws RemoteException;
 
-    public void unsubsribeD(DownloaderInterfaceC client) throws RemoteException;
+    public void unsubscribeD(DownloaderInterfaceC client) throws RemoteException;
 
      /**
      * Gets the next URL to be processed

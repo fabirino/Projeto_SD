@@ -40,6 +40,7 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
     private final static int bufferSize = 65507; // MAX: 65507
     private static StorageBarrelInterface SBi;
     private static String name;
+    private int id;
 
 
     public IndexStorageBarrel() throws RemoteException {
@@ -69,7 +70,7 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
                     storageBarrel.onCrash();
                     try {
 
-                        SBi.unsubsribe((StorageBarrelInterfaceB) storageBarrel);
+                        SBi.unsubscribeI((StorageBarrelInterfaceB) storageBarrel);
                     } catch (RemoteException re) {
                         re.printStackTrace();
                     }
@@ -123,7 +124,7 @@ try {
 
                     try {
                         SBi = (StorageBarrelInterface) Naming.lookup("rmi://localhost:1098/SB");
-                        SBi.subscribe("localhost", (StorageBarrelInterfaceB) storageBarrel);
+                        SBi.subscribeI("localhost", (StorageBarrelInterfaceB) storageBarrel);
                         System.out.println("Barrel: Subscribed Search Module");
 
                     } catch (NotBoundException NBE) {
@@ -333,5 +334,13 @@ try {
         } else {
             return null;
         }
+    }
+
+    public int getId(){
+        return id;
+    }
+
+    public void setId(int id){
+        this.id = id;
     }
 }

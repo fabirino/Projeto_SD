@@ -271,18 +271,18 @@ public class RMISearchModule extends UnicastRemoteObject
     // Storage Barrel Interface functions
     // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
 
-    public void subscribe(String name, StorageBarrelInterfaceB c) throws RemoteException {
-        System.out.println("Search Module: Subscribing barrel" + listOfBarrels.size());
+    public void subscribeI(String name, StorageBarrelInterfaceB c) throws RemoteException {
+        System.out.println("Search Module: Subscribing Barrel" + listOfBarrels.size());
         listOfBarrels.add(c);
     }
 
-    public void unsubsribe(StorageBarrelInterfaceB client) throws RemoteException {
+    public void unsubscribeI(StorageBarrelInterfaceB client) throws RemoteException {
         try {
             listOfBarrels.remove(client);
         } catch (Exception e) {
             System.out.println("ARDEU A TENDA!");
         }
-        System.out.println("Search Module: Unsubscribing barrel" + listOfBarrels.size());
+        System.out.println("Search Module: Unsubscribing Barrel" + listOfBarrels.size());
     }
 
     // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
@@ -299,7 +299,7 @@ public class RMISearchModule extends UnicastRemoteObject
         }
     }
 
-    public void unsubsribeD(DownloaderInterfaceC client) throws RemoteException {
+    public void unsubscribeD(DownloaderInterfaceC client) throws RemoteException {
         try {
             listOfDownloaders.remove(client);
         } catch (Exception e) {
