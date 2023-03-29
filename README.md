@@ -42,5 +42,5 @@ To run the program, you need to run:
 - There can be more than one Downloader or Barrel running at the same time
 
 # Devs
-<p> `Eduardo Figueiredo` 2020213717
-<p> `Fábio Santos` 2020212310
+`Eduardo Figueiredo` 2020213717 <br>
+`Fábio Santos` 2020212310
