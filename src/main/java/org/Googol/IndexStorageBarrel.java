@@ -12,10 +12,16 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Scanner;
+
+import javax.annotation.processing.SupportedSourceVersion;
 
 /**
  * <p>
@@ -293,9 +299,9 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
      * @param pages    set of pages that will be sent to the client
      * @return Hashset of urls containing the {Keyword(s)} specified by the client
      */
-    public HashSet<URL> getUrlsToClient(String[] Keywords, int pages) throws RemoteException {
+    public String getUrlsToClient(String[] Keywords, int pages) throws RemoteException {
         // Uses pagesWithWord
-        System.out.println("Barrel: Sending URLs that contain the words " + Keywords.toString());
+        System.out.println("Barrel: Sending URLs that contain the words " + Keywords[0] + "...");
         HashSet<URL> communValues = new HashSet<>();
 
         for (int i = 0; i < Keywords.length; i++) {
@@ -309,28 +315,42 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
             }
         }
         
-        //TODO: ordenar conforme o path
+        // Order the results by relevance
+        ArrayList<Relevance> ordered = new ArrayList<>();
+        for(URL url: communValues){
+            Relevance aux = new Relevance(url, path.get(url.getUrl()).size());
+            ordered.add(aux);
+        }
+
+        // reverse order
+        Collections.sort(ordered, new Comparator<Relevance>() {
+            @Override
+            public int compare(Relevance r1, Relevance r2) {
+                return r2.getRelevance() - r1.getRelevance();
+            }
+        });
+
         
-        System.out.println("size set -> " + communValues.size());
-        // only send 10 pages
+        
+        // only send 10 pages 
+        String result = "";
+        int count = 0;
         int min = pages * 10;
         int max = min + 10;
-        int count = 0;
-        HashSet<URL> set2 = new HashSet<>();
-        // System.out.println(set);
-
-        for (URL url : communValues) {
+        
+        for (Relevance rel : ordered) {
+            // System.out.println(rel.getRelevance());
+            // System.out.println(rel.getURL());
             count++;
             if (count >= min && count < max) {
-                System.out.println("URL n" + count);
-                set2.add(url);
-            } else if (count >= max) {
+                result += rel.getURL() + '\n';
+            } else if (count >=max){
                 break;
             }
         }
 
-        if (set2.size() != 0)
-            return set2;
+        if (result != "")
+            return result;
         else
             return null;
     }

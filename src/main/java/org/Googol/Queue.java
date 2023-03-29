@@ -92,6 +92,7 @@ public class Queue implements Serializable {
      * object file
      */
     public void onRecovery() {
+        System.out.println("Queue: Starting...");
         if (file.exists() && file.isFile()) {
             try (FileInputStream fis = new FileInputStream(file);
                     ObjectInputStream ois = new ObjectInputStream(fis)) {

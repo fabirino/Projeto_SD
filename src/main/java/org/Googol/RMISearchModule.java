@@ -9,8 +9,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
-
+import java.util.LinkedHashMap;
+import java.util.Set;
 import java.security.NoSuchAlgorithmException;
 import java.security.MessageDigest;
 
@@ -113,7 +115,6 @@ public class RMISearchModule extends UnicastRemoteObject
 
     // TODO: para ordem de relevancia ir pesquisar ao PATH o tamanho do URL
     public String pagesWithWord(String[] words, int pages) throws RemoteException {
-        String ret = "";
         if (listOfBarrels.size() == 0) {
             return "\nThere are no active barrels!";
         }
@@ -127,14 +128,11 @@ public class RMISearchModule extends UnicastRemoteObject
 
         // Choose a barrel to work (circular)
         StorageBarrelInterfaceB Barrel = listOfBarrels.get((nextBarrel++) % listOfBarrels.size());
-        HashSet<URL> hash = Barrel.getUrlsToClient(words, pages);
-        ret = "\n";
-        if (hash != null) {
-            for (URL url : hash) {
-                ret += url.toString() + '\n';
-            }
-            return ret;
-        } else if (hash == null && pages > 0) {
+        String result = Barrel.getUrlsToClient(words, pages);
+
+        if (result != null) {
+            return result;
+        } else if (result == null && pages > 0) {
             return "\nThere are no more Urls with that word!";
         } else {
             return "\nThere are no Urls with that word!";
@@ -190,7 +188,7 @@ public class RMISearchModule extends UnicastRemoteObject
             num = rs.getInt("num");
             result += word + "-> " + num + "\n";
 
-            if (count++ == 10)
+            if (++count == 10)
                 break;
         }
 

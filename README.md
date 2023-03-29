@@ -3,9 +3,7 @@
 The workspace contains two folders by default, where:
 
 - `src`: the folder to maintain sources
-- `lib`: the folder to maintain dependencies
-
-
+- `info`: the folder to store all Object Files
 # Requerimentos
 1. PostgreSQL
 2. Java
@@ -33,6 +31,16 @@ grant all privileges on database ProjetoSD to postgres
 1. init.sql
 ```
 
+# Running the Program
+To run the program, you need to run:
+1. SearchModule.jar
+2. IndexStorageBarrel.jar
+3. Downloader.jar
+4. Client.jar
+## Notes
+- It is possible to Run only the Search Module and the Client if the client only wants to see the Stats
+- There can be more than one Downloader or Barrel running at the same time
+
 # Devs
-Eduardo Figueiredo<br/>
-Fábio Santos
+`Eduardo Figueiredo` 2020213717
+`Fábio Santos` 2020212310
