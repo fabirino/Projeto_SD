@@ -2,6 +2,7 @@ package org.Googol;
 
 import java.io.*;
 import java.io.FileInputStream;
+import java.net.ConnectException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
@@ -10,6 +11,7 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -39,14 +41,12 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
     private final static int PORT = 4321;
     private final static int bufferSize = 65507; // MAX: 65507
     private static StorageBarrelInterface SBi;
-    private static String name;
     private int id;
-
 
     public IndexStorageBarrel() throws RemoteException {
         super();
-        fileIndex = new File("./info\\INDEX_" + name +".obj");
-        filePath = new File("./info\\PATH_" + name +".obj");
+        fileIndex = new File("./info\\INDEX_" + id + ".obj");
+        filePath = new File("./info\\PATH_" + id + ".obj");
         this.index = new HashMap<>();
         this.path = new HashMap<>();
         onRecovery();
@@ -56,23 +56,21 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
         IndexStorageBarrel storageBarrel;
 
         try {
-            Scanner scan = new Scanner(System.in);
-            System.out.print("Name of Barrel >> ");
-            name = scan.nextLine();
-            scan.close();
             storageBarrel = new IndexStorageBarrel();
 
             // Catch Crtl C to save data
             Thread t0 = new Thread("t0") {
                 public void run() {
-                    storageBarrel.onCrash();
                     System.out.println("Barrel: Shutdown");
                     storageBarrel.onCrash();
                     try {
 
-                        SBi.unsubscribeI((StorageBarrelInterfaceB) storageBarrel);
+                        SBi.unsubscribeB((StorageBarrelInterfaceB) storageBarrel);
                     } catch (RemoteException re) {
                         re.printStackTrace();
+                    }catch (ConcurrentModificationException e){
+                        System.out.println("Barrel: Error trying to write to a Hashmap");
+                        storageBarrel.onCrash();
                     }
                 }
             };
@@ -95,19 +93,22 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
 
                             ByteArrayInputStream bais = new ByteArrayInputStream(buffer);
                             ObjectInputStream ois = new ObjectInputStream(bais);
-try {
-    Object readObject = ois.readObject();
-    if (readObject instanceof URL) {
-        URL url = (URL) readObject;
-        storageBarrel.saveURL(url);
-    } else {
-        System.out.println("Barrel: The received object is not of type String!");
-    }
-} catch (ClassNotFoundException e) {
-    System.out.println("Barrel: Error trying to read from Multicast Socket");
-    storageBarrel.onCrash();
-    return;
-}
+                            try {
+                                Object readObject = ois.readObject();
+                                if (readObject instanceof URL) {
+                                    URL url = (URL) readObject;
+                                    storageBarrel.saveURL(url);
+                                } else {
+                                    System.out.println("Barrel: The received object is not of type String!");
+                                }
+                            } catch (ClassNotFoundException e) {
+                                System.out.println("Barrel: Error trying to read from Multicast Socket");
+                                storageBarrel.onCrash();
+                                return;
+                            }catch (ConcurrentModificationException e){
+                                System.out.println("Barrel: Error trying to write to a Hashmap");
+                                storageBarrel.onCrash();
+                            }
 
                         }
                     } catch (IOException e) {
@@ -124,7 +125,8 @@ try {
 
                     try {
                         SBi = (StorageBarrelInterface) Naming.lookup("rmi://localhost:1098/SB");
-                        SBi.subscribeI("localhost", (StorageBarrelInterfaceB) storageBarrel);
+                        int num = SBi.subscribeB("localhost", (StorageBarrelInterfaceB) storageBarrel);
+                        storageBarrel.setId(num);
                         System.out.println("Barrel: Subscribed Search Module");
 
                     } catch (NotBoundException NBE) {
@@ -135,6 +137,9 @@ try {
                     } catch (RemoteException RM) {
                         System.out.println("System: Remote Exception, Search Module might not be running");
                         return;
+                    }catch (ConcurrentModificationException e){
+                        System.out.println("Barrel: Error trying to write to a Hashmap");
+                        storageBarrel.onCrash();
                     }
                 }
 
@@ -147,6 +152,7 @@ try {
             } catch (InterruptedException e) {
                 System.out.println("Barrel: Something went wrong with the threads :/");
             }
+            
         } catch (RemoteException e) {
             System.out.println("Barrel: The Search Module not responding");
         }
@@ -211,7 +217,7 @@ try {
                 ois.close();
                 fis.close();
             } catch (IOException e) {
-                System.out.println("Barrel: Error trying to read \"INDEX_" + name + ".obj\".");
+                System.out.println("Barrel: Error trying to read \"INDEX_" + id + ".obj\".");
             } catch (ClassNotFoundException e) {
                 System.out.println("Class \"BARREL\" not found.");
             }
@@ -225,7 +231,7 @@ try {
                 ois.close();
                 fis.close();
             } catch (IOException e) {
-                System.out.println("Barrel: Error trying to read \"PATH_" + name + ".obj\".");
+                System.out.println("Barrel: Error trying to read \"PATH_" + id + ".obj\".");
             } catch (ClassNotFoundException e) {
                 System.out.println("Class \"BARREL\" not found.");
             }
@@ -248,7 +254,7 @@ try {
                 oos.close();
                 fos.close();
             } catch (IOException ioe) {
-                System.out.println("Barrel: Error trying to write to \"INDEX_" + name + ".obj\".");
+                System.out.println("Barrel: Error trying to write to \"INDEX_" + id + ".obj\".");
             }
         }
 
@@ -259,7 +265,7 @@ try {
                 oos.close();
                 fos.close();
             } catch (IOException ioe) {
-                System.out.println("Barrel: Error trying to write to \"PATH_" + name + ".obj\".");
+                System.out.println("Barrel: Error trying to write to \"PATH_" + id + ".obj\".");
             }
         }
     }
@@ -336,11 +342,11 @@ try {
         }
     }
 
-    public int getId(){
+    public int getId() throws RemoteException{
         return id;
     }
 
-    public void setId(int id){
+    public void setId(int id) {
         this.id = id;
     }
 }

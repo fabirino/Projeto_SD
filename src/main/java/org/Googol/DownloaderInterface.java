@@ -3,7 +3,7 @@ package org.Googol;
 import java.rmi.*;
 
 public interface DownloaderInterface extends Remote {
-    public boolean subscribeD(DownloaderInterfaceC client) throws RemoteException;
+    public int subscribeD(DownloaderInterfaceC client) throws RemoteException;
 
     public void unsubscribeD(DownloaderInterfaceC client) throws RemoteException;
 

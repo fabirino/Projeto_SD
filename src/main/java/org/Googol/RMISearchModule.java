@@ -11,6 +11,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Vector;
+
+import javax.swing.text.AbstractDocument.BranchElement;
+
 import java.security.NoSuchAlgorithmException;
 import java.security.MessageDigest;
 
@@ -28,7 +31,9 @@ import java.security.MessageDigest;
 public class RMISearchModule extends UnicastRemoteObject
         implements GoogolInterface, StorageBarrelInterface, DownloaderInterface {
     static ArrayList<StorageBarrelInterfaceB> listOfBarrels;
+    static int barrelCount;
     static ArrayList<DownloaderInterfaceC> listOfDownloaders;
+    static int downloaderCount;
     static Connection connection;
 
     String menu;
@@ -54,6 +59,8 @@ public class RMISearchModule extends UnicastRemoteObject
     public static void main(String[] args) throws RemoteException {
 
         System.out.println("Search Module: Server ready");
+        downloaderCount = 0;
+        barrelCount = 0;
 
         // Setup DataBase FIXME: guardar estes dados num ficheiro a parte por seguranca
         String url = "jdbc:postgresql://localhost/ProjetoSD";
@@ -167,15 +174,15 @@ public class RMISearchModule extends UnicastRemoteObject
         String result = "Active Barrels: " + listOfBarrels.size() + "\n";
         int count = 0;
         for (StorageBarrelInterfaceB barrel : listOfBarrels) {
-            result += "Barrel " + ++count + "\n";
+            result += "Barrel" + barrel.getId() + "\n";
         }
         result += "Active Downloaders: " + listOfDownloaders.size() + "\n";
         count = 0;
         for (DownloaderInterfaceC downloader : listOfDownloaders) {
-            result += "Downloader " + ++count + "\n";
+            result += "Downloader" + downloader.getId() + "\n";
         }
 
-        result += "Most commun Searches (Word: Number of Searches):\n";
+        result += "Most commun Searches (Word-> Number of Searches):\n";
         count = 0;
 
         String check = "SELECT word, num FROM topSearches ORDER BY num DESC";
@@ -187,7 +194,7 @@ public class RMISearchModule extends UnicastRemoteObject
         while (rs.next()) {
             word = rs.getString("word");
             num = rs.getInt("num");
-            result += word + ": " + num + "\n";
+            result += word + "-> " + num + "\n";
 
             if (count++ == 10)
                 break;
@@ -271,31 +278,33 @@ public class RMISearchModule extends UnicastRemoteObject
     // Storage Barrel Interface functions
     // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
 
-    public void subscribeI(String name, StorageBarrelInterfaceB c) throws RemoteException {
-        System.out.println("Search Module: Subscribing Barrel" + listOfBarrels.size());
+    public int subscribeB(String name, StorageBarrelInterfaceB c) throws RemoteException {
+        System.out.println("Search Module: Subscribing Barrel" + ++barrelCount);
         listOfBarrels.add(c);
+        return barrelCount;
     }
 
-    public void unsubscribeI(StorageBarrelInterfaceB client) throws RemoteException {
+    public void unsubscribeB(StorageBarrelInterfaceB client) throws RemoteException {
         try {
             listOfBarrels.remove(client);
         } catch (Exception e) {
             System.out.println("ARDEU A TENDA!");
         }
-        System.out.println("Search Module: Unsubscribing Barrel" + listOfBarrels.size());
+        System.out.println("Search Module: Unsubscribing Barrel" + client.getId());
     }
 
     // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
     // Downloader Interface functions
     // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
 
-    public boolean subscribeD(DownloaderInterfaceC c) throws RemoteException {
-        System.out.println("Search Module: Subscribing Downloaders" + listOfDownloaders.size());
+    public int subscribeD(DownloaderInterfaceC c) throws RemoteException {
         listOfDownloaders.add(c);
         if (listOfBarrels.size() > 0) {
-            return true;
+            System.out.println("Search Module: Subscribing Downloader" + ++downloaderCount);
+            return downloaderCount;
         } else {
-            return false;
+            System.out.println("Search Module: Subscribing Downloader" + downloaderCount);
+            return 0;
         }
     }
 
@@ -305,7 +314,7 @@ public class RMISearchModule extends UnicastRemoteObject
         } catch (Exception e) {
             System.out.println("ARDEU A TENDA!");
         }
-        System.out.println("Search Module: Unsubscribing Downloader" + listOfDownloaders.size());
+        System.out.println("Search Module: Unsubscribing Downloader" + client.getId());
     }
 
     // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=

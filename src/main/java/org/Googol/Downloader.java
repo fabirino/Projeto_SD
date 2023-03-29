@@ -72,6 +72,7 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
             private static ArrayList<String> PTStopWords;
             private static ArrayList<String> ENStopWords;
             private static DownloaderInterface SMi;
+            private int id;
 
     public Downloader() throws RemoteException {
         super();
@@ -105,12 +106,12 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
 
             try {
                 SMi = (DownloaderInterface) Naming.lookup("rmi://localhost:1099/SM");
-                boolean exit = SMi.subscribeD((DownloaderInterfaceC) downloader);
-                System.out.println(exit);
-                if (exit == false) {
+                int num = SMi.subscribeD((DownloaderInterfaceC) downloader);
+                if (num == 0) {
                     System.out.println("Downloader: There are no Storage Barrels available");
                     System.exit(2);
                 }
+                downloader.setId(num);
                 socket = new MulticastSocket(PORT); // create socket and bind it
                 group = InetAddress.getByName(MULTICAST_ADDRESS);
                 socket.joinGroup(group);
@@ -217,5 +218,13 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
         for (int i = 0; i < list.length; i++) {
             AL.add(list[i]);
         }
+    }
+
+    public int getId() throws RemoteException{
+        return id;
+    }
+
+    public void setId(int id){
+        this.id = id;
     }
 }
