@@ -1,7 +1,3 @@
-## Getting Started
-
-Welcome to the VS Code Java world. Here is a guideline to help you get started to write Java code in Visual Studio Code.
-
 ## Folder Structure
 
 The workspace contains two folders by default, where:
@@ -9,10 +5,34 @@ The workspace contains two folders by default, where:
 - `src`: the folder to maintain sources
 - `lib`: the folder to maintain dependencies
 
-Meanwhile, the compiled output files will be generated in the `bin` folder by default.
 
-> If you want to customize the folder structure, open `.vscode/settings.json` and update the related settings there.
+# Requerimentos
+1. PostgreSQL
+2. Java
 
-## Dependency Management
+# DataBase
 
-The `JAVA PROJECTS` view allows you to manage your dependencies. More details can be found [here](https://github.com/microsoft/vscode-java-dependency#manage-dependencies).
+### Connect to database
+```shell
+psql -h localhost -p 5432 -d postgres -U postgres
+```
+### Create User
+``` shell
+create user postgres with encrypted password 'postgres'
+```
+### Create Database
+``` shell
+create database ProjetoSD
+```
+### Give Privileges to user
+``` shell
+grant all privileges on database ProjetoSD to postgres
+```
+### Run Sql files
+```txt
+1. init.sql
+```
+
+# Devs
+Eduardo Figueiredo<br/>
+Fábio Santos

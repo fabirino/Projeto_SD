@@ -3,9 +3,9 @@ package org.Googol;
 import java.rmi.*;
 
 public interface DownloaderInterface extends Remote {
-    public boolean subscribeRMI(DownloaderInterfaceC client) throws RemoteException;
+    public boolean subscribeD(DownloaderInterfaceC client) throws RemoteException;
 
-    public void unsubsribeRMI(DownloaderInterfaceC client) throws RemoteException;
+    public void unsubsribeD(DownloaderInterfaceC client) throws RemoteException;
 
      /**
      * Gets the next URL to be processed

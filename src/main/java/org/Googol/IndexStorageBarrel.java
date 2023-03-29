@@ -94,20 +94,19 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
 
                             ByteArrayInputStream bais = new ByteArrayInputStream(buffer);
                             ObjectInputStream ois = new ObjectInputStream(bais);
-                            try {
-                                Object readObject = ois.readObject();
-                                if (readObject instanceof URL) {
-                                    URL url = (URL) readObject;
-                                    storageBarrel.saveURL(url);
-                                    // System.out.println(url);
-                                } else {
-                                    System.out.println("Barrel: The received object is not of type String!");
-                                }
-                            } catch (ClassNotFoundException e) {
-                                System.out.println("Barrel: Error trying to read from Multicast Socket");
-                                storageBarrel.onCrash();
-                                return;
-                            }
+try {
+    Object readObject = ois.readObject();
+    if (readObject instanceof URL) {
+        URL url = (URL) readObject;
+        storageBarrel.saveURL(url);
+    } else {
+        System.out.println("Barrel: The received object is not of type String!");
+    }
+} catch (ClassNotFoundException e) {
+    System.out.println("Barrel: Error trying to read from Multicast Socket");
+    storageBarrel.onCrash();
+    return;
+}
 
                         }
                     } catch (IOException e) {
@@ -291,7 +290,6 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
         int count = 0;
         Iterator<URL> it = set.iterator();
         HashSet<URL> set2 = new HashSet<>();
-        // System.out.println(set);
 
         for (URL url : set) {
             count++;
@@ -322,7 +320,6 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
 
     /**
      * Function used when a client asks for what URLs lead to a certain URL
-     * TODO: mudar o nome da funcao que me confunde todo hahahah
      * 
      * @param URL   URL specified by the user
      * @param pages set of pages that will be sent to the client

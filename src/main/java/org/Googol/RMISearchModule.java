@@ -1,6 +1,5 @@
 package org.Googol;
 
-import java.io.File;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
@@ -11,7 +10,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.TreeMap;
 import java.util.Vector;
 import java.security.NoSuchAlgorithmException;
 import java.security.MessageDigest;
@@ -31,7 +29,6 @@ public class RMISearchModule extends UnicastRemoteObject
         implements GoogolInterface, StorageBarrelInterface, DownloaderInterface {
     static ArrayList<StorageBarrelInterfaceB> listOfBarrels;
     static ArrayList<DownloaderInterfaceC> listOfDownloaders;
-    static TreeMap<String, Integer> topSearches;
     static Connection connection;
 
     String menu;
@@ -51,7 +48,6 @@ public class RMISearchModule extends UnicastRemoteObject
             urlQueue = new Queue();
             listOfBarrels = new ArrayList<StorageBarrelInterfaceB>();
             listOfDownloaders = new ArrayList<DownloaderInterfaceC>();
-            topSearches = new TreeMap<String, Integer>();
         }
     }
 
@@ -109,7 +105,7 @@ public class RMISearchModule extends UnicastRemoteObject
     // Googol Interface functions
     // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
 
-    public void newURL(String URLString) throws RemoteException {//TODO: fazer protecoes se algum erro acontecer !!
+    public void newURL(String URLString) throws RemoteException {
         System.out.println("Search Module: Adding \"" + URLString + "\" to the QUEUE");
         urlQueue.addURLHead(new URL(URLString));
     }
@@ -122,7 +118,7 @@ public class RMISearchModule extends UnicastRemoteObject
         }
 
         // Add the search to the topSearches
-        if(pages == 0){
+        if (pages == 0) {
             for (String word : words) {
                 addSearchDB(word);
             }
@@ -293,7 +289,7 @@ public class RMISearchModule extends UnicastRemoteObject
     // Downloader Interface functions
     // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
 
-    public boolean subscribeRMI(DownloaderInterfaceC c) throws RemoteException {
+    public boolean subscribeD(DownloaderInterfaceC c) throws RemoteException {
         System.out.println("Search Module: Subscribing Downloaders" + listOfDownloaders.size());
         listOfDownloaders.add(c);
         if (listOfBarrels.size() > 0) {
@@ -303,7 +299,7 @@ public class RMISearchModule extends UnicastRemoteObject
         }
     }
 
-    public void unsubsribeRMI(DownloaderInterfaceC client) throws RemoteException {
+    public void unsubsribeD(DownloaderInterfaceC client) throws RemoteException {
         try {
             listOfDownloaders.remove(client);
         } catch (Exception e) {

@@ -25,7 +25,8 @@ public class Queue implements Serializable {
     }
 
     /**
-     *
+     * Adds an URL to the end of the Dequeue
+     * 
      * @param url that is added to the queue
      * @return success
      */
@@ -38,7 +39,8 @@ public class Queue implements Serializable {
     }
 
     /**
-     *
+     * Adds an URL to the head of the Dequeue
+     * 
      * @param url that is added to the queue
      * @return success
      */
@@ -90,18 +92,24 @@ public class Queue implements Serializable {
      * object file
      */
     public void onRecovery() {
-        System.out.println("Queue: System started, pulling last saved URL queue.");
         if (file.exists() && file.isFile()) {
             try (FileInputStream fis = new FileInputStream(file);
                     ObjectInputStream ois = new ObjectInputStream(fis)) {
                 queue = (LinkedBlockingDeque<URL>) ois.readObject();
-            ois.close();
-            fis.close();
+                if (queue.size() == 0) {
+                    System.out.println("Queue: Queue started empty, there was no data to read.");
+                } else {
+                    System.out.println("Queue: System started, pulling last saved URL queue.");
+                }
+                ois.close();
+                fis.close();
             } catch (IOException e) {
                 System.out.println("Error trying to read \"QUEUE.obj\".");
             } catch (ClassNotFoundException e) {
                 System.out.println("Class \"QUEUE\" not found.");
             }
+        } else {
+            System.out.println("Queue: Queue started empty, there was no data to read.");
         }
     }
 

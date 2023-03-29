@@ -96,7 +96,7 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
                     // Esperar que o Downloader processe o url
                     System.out.println("Downloader: Shutdown");
                     try {
-                        SMi.unsubsribeRMI((DownloaderInterfaceC) downloader);
+                        SMi.unsubsribeD((DownloaderInterfaceC) downloader);
                     } catch (RemoteException re) {
                         re.printStackTrace();
                     }
@@ -105,7 +105,7 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
 
             try {
                 SMi = (DownloaderInterface) Naming.lookup("rmi://localhost:1099/SM");
-                boolean exit = SMi.subscribeRMI((DownloaderInterfaceC) downloader);
+                boolean exit = SMi.subscribeD((DownloaderInterfaceC) downloader);
                 System.out.println(exit);
                 if (exit == false) {
                     System.out.println("Downloader: There are no Storage Barrels available");
