@@ -10,9 +10,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.MulticastSocket;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -36,6 +39,7 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
 
     private static final String MULTICAST_ADDRESS = "224.3.2.1";
     private static final int PORT = 4321;
+    private static int PORTUDP = 6789;
     private static String[] PT = { "de ", "a ", "o ", "que ", "e ", "do ", "da ", "em ", "um ", "para ", "é ", "com ",
             "não ", "uma ", "os ", "no ", "se ", "na ", "por ", "mais ", "as ", "dos ", "como ", "mas ", "foi ", "ao ",
             "ele ", "das ", "tem ", "à ", "seu ", "sua ", "ou ", "ser ", "quando ", "muito ", "há ", "nos ", "já ",
@@ -69,10 +73,12 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
             "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than",
             "too", "very", "s", "t", "can", "will", "just", "don", "should", "no" };
 
-            private static ArrayList<String> PTStopWords;
-            private static ArrayList<String> ENStopWords;
-            private static DownloaderInterface SMi;
-            private int id;
+    private static ArrayList<String> PTStopWords;
+    private static ArrayList<String> ENStopWords;
+    private static DownloaderInterface SMi;
+    private static MulticastSocket socket;
+    private static Downloader downloader;
+    private int id;
 
     public Downloader() throws RemoteException {
         super();
@@ -85,10 +91,9 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
         fillArray(PTStopWords, PT);
         fillArray(ENStopWords, EN);
 
-        Downloader downloader;
         try {
             downloader = new Downloader();
-            MulticastSocket socket = null;
+            socket = null;
             InetAddress group;
 
             // Catch Crtl C to save data
@@ -129,30 +134,73 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
             }
 
             System.out.println("Downloader: System started");
-            while (true) {
-                try {
-                    // Pega o ultimo URL da Fila e faz o crawl
-                    URL url = SMi.getURLQueue();
-                    System.out.println("Downloader: Indexing " + url);
-                    url = downloader.crawlURL(url, SMi);
+            try (DatagramSocket aSocket = new DatagramSocket(PORTUDP)) {
+                aSocket.setSoTimeout(1000);// timeout de 1 segundo!!
+                while (true) {
+                    try {
+                        // Pega o ultimo URL da Fila e faz o crawl
+                        URL url = SMi.getURLQueue();
+                        System.out.println("Downloader: Indexing " + url);
+                        url = downloader.crawlURL(url, SMi);
+                        if (url == null)
+                            continue;
 
-                    // Envia o URL por multicast para os Barrels
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    ObjectOutputStream oos = new ObjectOutputStream(baos);
-                    oos.writeObject(url);
-                    byte[] data = baos.toByteArray();
+                        Message m = new Message(url, false, PORTUDP);
+                        int attempts = 3; // DEBUG: 3 tentativas se o multicast enviar e algo falhar!!
+                        for (int i = 0; i < attempts; i++) {
+                            try {// Envia o URL por multicast para os Barrels
+                                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                                ObjectOutputStream oos = new ObjectOutputStream(baos);
+                                oos.writeObject(m);
+                                byte[] data = baos.toByteArray();
 
-                    socket.send(new DatagramPacket(data, data.length, group, PORT));
+                                System.out.println("lenght  -->>" + data.length);
+                                socket.send(new DatagramPacket(data, data.length, group, PORT));
 
-                } catch (RemoteException RE) {
-                    System.out.println("Downloader: Remote Exception catched");
-                } catch (InterruptedException e) {
-                    System.out.println(e);
-                } catch (IOException IO) {
-                    System.out.println("Downloader: Failed to send data through Multicast");
-                } catch (ValidationException Ve) {
-                    System.out.println("Downloader: Validation Exception catched");
+                                // Esperar pelo akn
+                                System.out.println("========udp!!==========");
+                                int nbarrel = SMi.getNBarrels();
+                                for (int j = 0; j < nbarrel; j++) {
+                                    byte[] buffer = new byte[1000];
+                                    DatagramPacket request = new DatagramPacket(buffer, buffer.length);
+
+                                    aSocket.receive(request);
+                                    String s = new String(request.getData(), 0, request.getLength());
+                                    System.out
+                                            .println("Server Recebeu: " + s + " de: " + request.getAddress()
+                                                    + " no porto "
+                                                    + request.getPort());
+
+                                }
+                            } catch (SocketTimeoutException e) {
+                                // timeout exception.
+                                System.out.println("Timeout reached!!! " + e);
+                                if (i == 2) {
+                                    System.out.println(" Lost URL: " + url.getUrl());
+                                } else {
+                                    continue;
+                                }
+                            }
+                            break;
+
+                        }
+                        // TA ANDAR DE MOTA
+                        System.out.println("NEXT!");
+
+                    } catch (RemoteException RE) {
+                        System.out.println("Downloader: Remote Exception catched");
+                    } catch (InterruptedException e) {
+                        System.out.println(e);
+                    } catch (IOException IO) {
+                        System.out.println("Downloader: Failed to send data through Multicast");
+                    } catch (ValidationException Ve) {
+                        System.out.println("Downloader: Validation Exception catched");
+                    }
                 }
+            } catch (SocketException e) {
+                System.out.println("Socket: " + e.getMessage());
+            } catch (IOException e) {
+                System.out.println("IO: " + e.getMessage());
             }
         } catch (RemoteException e) {
             System.out.println("Downloader: Somthing went wrong :)");
@@ -168,7 +216,8 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
      * @return URL object
      */
     public URL crawlURL(URL url, DownloaderInterface SMi) {
-        // TODO: Nao colocar os url todos "mamados", ou seja, javascript e cenas assim que esta a guardar isso na class URL
+        // TODO: Nao colocar os url todos "mamados", ou seja, javascript e cenas assim
+        // que esta a guardar isso na class URL
 
         // try catch para apanhar strings que nao sejam URLs
         String urlString = url.getUrl();
@@ -186,8 +235,9 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
             while (tokens.hasMoreElements()) {
                 str = tokens.nextToken();
                 String strLower = str.toLowerCase();
-                if (!(ENStopWords.contains(strLower) || PTStopWords.contains(strLower)))
-                    url.addKeyword(str);
+                if (!(ENStopWords.contains(strLower) || PTStopWords.contains(strLower))) {
+                    url.addKeyword(strLower);
+                }
                 // Quote
                 if (countTokens++ < 20) {
                     quote += (str + " ");
@@ -198,12 +248,13 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
             // Other URLs inside the first URL
             Elements links = doc.select("a[href]");
             for (Element link : links) {
-                System.out.println(link.attr("abs:href"));
+                // System.out.println(link.attr("abs:href"));
                 url.addURL(link.attr("abs:href"));
                 SMi.addURLQueue(new URL(link.attr("abs:href")));
             }
         } catch (MalformedURLException MFE) {
             System.out.println("Downloader: The URL specified is malformed");
+            return null;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -220,11 +271,21 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
         }
     }
 
-    public int getId() throws RemoteException{
+    public void crashSearchModel() throws RemoteException {
+        System.out.println("Downloader: Shutdown");
+        try {
+            SMi.unsubscribeD((DownloaderInterfaceC) downloader);
+        } catch (RemoteException re) {
+            re.printStackTrace();
+        }
+        System.exit(0);
+    }
+
+    public int getId() throws RemoteException {
         return id;
     }
 
-    public void setId(int id){
+    public void setId(int id) {
         this.id = id;
     }
 }

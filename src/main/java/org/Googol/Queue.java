@@ -32,7 +32,7 @@ public class Queue implements Serializable {
      */
     public boolean addURL(URL url) {
         if (!queue.contains(url)) {
-            System.out.println("Queue: Adding " + url.getUrl() + "to the queue");
+            // System.out.println("Queue: Adding " + url.getUrl() + "to the queue");
             return queue.add(url);
         } else
             return false;
@@ -46,7 +46,7 @@ public class Queue implements Serializable {
      */
     public boolean addURLHead(URL url) {
         if (!queue.contains(url)) {
-            System.out.println("Queue: Adding " + url.getUrl() + "to the queue");
+            System.out.println("Queue: Adding " + url.getUrl() + " to the queue");
             try {
                 queue.addFirst(url);
                 return true;

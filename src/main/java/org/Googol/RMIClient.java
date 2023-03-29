@@ -5,8 +5,8 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
+import java.util.ConcurrentModificationException;
 import java.util.Scanner;
-import java.util.Vector;
 import java.security.NoSuchAlgorithmException;
 import java.security.MessageDigest;
 
@@ -196,11 +196,31 @@ public class RMIClient {
                     case 3:
                         System.out.println("Type the URL you want to search:");
                         URL = scan.nextLine();
-                        Vector<String> vec = SMi.pagesWithURL(URL);
-                        System.out.println("\n");
-                        for (int i = 0; i < vec.size(); i++) { // TODO: INDEXAR POR PAGINAS TB,n tinha muito tempo xd
-                            System.out.println(vec.get(i));
+                        while (true) {
+                            String response = SMi.pagesWithURL(URL, pages);
+                            if (!(response.equals("\nThere are no active barrels!") ||
+                                    response.equals("\nThere are no Urls with that URL!") ||
+                                    response.equals("\nThere are no more Urls with that URL!"))) {
+                                System.out.println(response);
+                                if (pages != 0)
+                                    System.out.println("p - Previous Page");
+                                System.out.println("n - Next Page");
+                                System.out.println("q - Quit Search");
+                                input = scan.nextLine();
+                                if (input.equals("q")) {
+                                    break;
+                                } else if (input.equals("n")) {
+                                    pages++;
+                                } else if (input.equals("p") && pages != 0) {
+                                    pages--;
+                                }
+                            } else {
+                                System.out.print(response);
+                                break;
+                            }
                         }
+                        System.out.println();
+                        pages = 0;
                         break;
                     case 4:
                         System.out.println(SMi.adminPage());
@@ -219,6 +239,10 @@ public class RMIClient {
                 System.out.println("The DataBase is down");
                 scan.close();
                 return;
+            } catch (ConcurrentModificationException e) {
+                System.out.println("System: Something went wrong :(");
+                System.out.println("Error Reading data from server. Restarting...");
+                ;
             }
         }
         scan.close();

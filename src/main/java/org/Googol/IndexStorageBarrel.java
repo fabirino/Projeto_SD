@@ -2,11 +2,12 @@ package org.Googol;
 
 import java.io.*;
 import java.io.FileInputStream;
-import java.net.ConnectException;
 import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.MulticastSocket;
+import java.net.SocketException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -14,7 +15,6 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Scanner;
 
 /**
@@ -42,11 +42,12 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
     private final static int bufferSize = 65507; // MAX: 65507
     private static StorageBarrelInterface SBi;
     private int id;
+    private static String name;
 
     public IndexStorageBarrel() throws RemoteException {
         super();
-        fileIndex = new File("./info\\INDEX_" + id + ".obj");
-        filePath = new File("./info\\PATH_" + id + ".obj");
+        fileIndex = new File("./info\\INDEX_" + name + ".obj");
+        filePath = new File("./info\\PATH_" + name + ".obj");
         this.index = new HashMap<>();
         this.path = new HashMap<>();
         onRecovery();
@@ -56,19 +57,23 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
         IndexStorageBarrel storageBarrel;
 
         try {
+            Scanner scan = new Scanner(System.in);
+            System.out.print("Name of Barrel >> ");
+            name = scan.nextLine();
+            scan.close();
             storageBarrel = new IndexStorageBarrel();
 
             // Catch Crtl C to save data
             Thread t0 = new Thread("t0") {
                 public void run() {
-                    System.out.println("Barrel: Shutdown");
                     storageBarrel.onCrash();
+                    System.out.println("Barrel: Shutdown");
                     try {
 
                         SBi.unsubscribeB((StorageBarrelInterfaceB) storageBarrel);
                     } catch (RemoteException re) {
                         re.printStackTrace();
-                    }catch (ConcurrentModificationException e){
+                    } catch (ConcurrentModificationException e) {
                         System.out.println("Barrel: Error trying to write to a Hashmap");
                         storageBarrel.onCrash();
                     }
@@ -86,30 +91,42 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
                         InetAddress group = InetAddress.getByName(MULTICAST_ADDRESS);
                         socket.joinGroup(group);
 
-                        while (true) {
-                            // Create buffer
-                            byte[] buffer = new byte[bufferSize];
-                            socket.receive(new DatagramPacket(buffer, bufferSize, group, PORT));
+                        try (DatagramSocket aSocket = new DatagramSocket()) {
+                            while (true) {
+                                // Create buffer
+                                byte[] buffer = new byte[bufferSize];
+                                socket.receive(new DatagramPacket(buffer, bufferSize, group, PORT));
 
-                            ByteArrayInputStream bais = new ByteArrayInputStream(buffer);
-                            ObjectInputStream ois = new ObjectInputStream(bais);
-                            try {
-                                Object readObject = ois.readObject();
-                                if (readObject instanceof URL) {
-                                    URL url = (URL) readObject;
-                                    storageBarrel.saveURL(url);
-                                } else {
-                                    System.out.println("Barrel: The received object is not of type String!");
+                                ByteArrayInputStream bais = new ByteArrayInputStream(buffer);
+                                ObjectInputStream ois = new ObjectInputStream(bais);
+                                try {
+                                    Object readObject = ois.readObject();
+                                    if (readObject instanceof Message) {
+                                        Message m = (Message) readObject;
+                                        URL url = m.getURL();
+                                        String texto = "recebi" + name + "\n";
+                                        byte[] me = texto.getBytes();
+
+                                        InetAddress aHost = InetAddress.getByName("localhost");//DEBUG: para ser na mm maquina
+                                        DatagramPacket request = new DatagramPacket(me, me.length, aHost, m.getPORT());
+                                        aSocket.send(request);
+
+                                        storageBarrel.saveURL(url);
+                                        // System.out.println(url);
+                                    } else {
+                                        System.out.println("Barrel: The received object is not of type String!");
+                                    }
+                                } catch (ClassNotFoundException e) {
+                                    System.out.println("Barrel: Error trying to read from Multicast Socket");
+                                    storageBarrel.onCrash();
+                                    return;
                                 }
-                            } catch (ClassNotFoundException e) {
-                                System.out.println("Barrel: Error trying to read from Multicast Socket");
-                                storageBarrel.onCrash();
-                                return;
-                            }catch (ConcurrentModificationException e){
-                                System.out.println("Barrel: Error trying to write to a Hashmap");
-                                storageBarrel.onCrash();
-                            }
 
+                            }
+                        } catch (SocketException e) {
+                            System.out.println("Socket: " + e.getMessage());
+                        } catch (IOException e) {
+                            System.out.println("IO: " + e.getMessage());
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -137,7 +154,7 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
                     } catch (RemoteException RM) {
                         System.out.println("System: Remote Exception, Search Module might not be running");
                         return;
-                    }catch (ConcurrentModificationException e){
+                    } catch (ConcurrentModificationException e) {
                         System.out.println("Barrel: Error trying to write to a Hashmap");
                         storageBarrel.onCrash();
                     }
@@ -152,7 +169,7 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
             } catch (InterruptedException e) {
                 System.out.println("Barrel: Something went wrong with the threads :/");
             }
-            
+
         } catch (RemoteException e) {
             System.out.println("Barrel: The Search Module not responding");
         }
@@ -243,7 +260,6 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
      * Function used when an exception ocurres
      * <p>
      * It saves the corrunt state of the index in an object file
-     * TODO: unsubscribe from Search Module
      */
     public void onCrash() {
         System.out.println("Barrel: System crashed, saving Hashmap barrel.");
@@ -279,46 +295,40 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
      */
     public HashSet<URL> getUrlsToClient(String[] Keywords, int pages) throws RemoteException {
         // Uses pagesWithWord
-        System.out.println("Barrel: Sending URLs that contain the words " + Keywords[0]);
-        HashSet<URL> set = new HashSet<>();
+        System.out.println("Barrel: Sending URLs that contain the words " + Keywords.toString());
+        HashSet<URL> communValues = new HashSet<>();
 
-        for (String s : Keywords) {
-            if (index.containsKey(s)) {
-                System.out.println("adding" + index.get(s));
-
-                set.addAll(index.get(s));
-                System.out.println(set.size() + s);
+        for (int i = 0; i < Keywords.length; i++) {
+            if (index.containsKey(Keywords[i])) {
+                HashSet<URL> values = index.get(Keywords[i]);
+                if (i == 0) {
+                    communValues.addAll(values);
+                } else {
+                    communValues.retainAll(values);
+                }
             }
         }
-        System.out.println("size set -> " + set.size());
+        
+        //TODO: ordenar conforme o path
+        
+        System.out.println("size set -> " + communValues.size());
         // only send 10 pages
         int min = pages * 10;
         int max = min + 10;
         int count = 0;
-        Iterator<URL> it = set.iterator();
         HashSet<URL> set2 = new HashSet<>();
+        // System.out.println(set);
 
-        for (URL url : set) {
+        for (URL url : communValues) {
             count++;
             if (count >= min && count < max) {
                 System.out.println("URL n" + count);
-                set2.add(it.next());
+                set2.add(url);
             } else if (count >= max) {
                 break;
             }
         }
-        /*
-         * while (it.hasNext()) {
-         * System.out.println(count);
-         * if (count >= min && count < max) {
-         * System.out.println("URL n" + count);
-         * set2.add(it.next());
-         * } else if (count >= max) {
-         * break;
-         * }
-         * count++;
-         * }
-         */
+
         if (set2.size() != 0)
             return set2;
         else
@@ -335,14 +345,38 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
     public HashSet<String> getpagesWithURL(String URL, int pages) throws RemoteException {
         // Uses pagesWithULR
         System.out.println("Barrel: Sending URLs that lead to " + URL);
+        HashSet<String> set = new HashSet<>();
+
         if (path.containsKey(URL)) {
-            return path.get(URL);
-        } else {
-            return null;
+            System.out.println("adding" + path.get(URL));
+
+            set.addAll(path.get(URL));
+            System.out.println(set.size() + URL);
         }
+        System.out.println("size set -> " + set.size());
+        // only send 10 pages
+        int min = pages * 10;
+        int max = min + 10;
+        int count = 0;
+        HashSet<String> set2 = new HashSet<>();
+        // System.out.println(set);
+
+        for (String url : set) {
+            count++;
+            if (count >= min && count < max) {
+                System.out.println("URL n" + count);
+                set2.add(url);
+            } else if (count >= max) {
+                break;
+            }
+        }
+        if (set2.size() != 0)
+            return set2;
+        else
+            return null;
     }
 
-    public int getId() throws RemoteException{
+    public int getId() throws RemoteException {
         return id;
     }
 

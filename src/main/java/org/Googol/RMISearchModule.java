@@ -10,9 +10,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Vector;
-
-import javax.swing.text.AbstractDocument.BranchElement;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.MessageDigest;
@@ -25,9 +22,6 @@ import java.security.MessageDigest;
  * <p>
  * Comunica com o Storage Barrels por RMI
  */
-// TODO: SUBSTITUIR ARRAYLIST POR QQ CENA THREAD SAFE , USEI O VECTOR MAS O STOR
-// TINHA DITO QUE JA ESTAVA ULTRAPASSADO SLA
-// https://www.javatpoint.com/how-to-encrypt-password-in-java
 public class RMISearchModule extends UnicastRemoteObject
         implements GoogolInterface, StorageBarrelInterface, DownloaderInterface {
     static ArrayList<StorageBarrelInterfaceB> listOfBarrels;
@@ -149,24 +143,24 @@ public class RMISearchModule extends UnicastRemoteObject
     }
 
     // TODO: para ordem de relevancia ir pesquisar ao PATH o tamanho do URL
-    public Vector<String> pagesWithURL(String URL) throws RemoteException {
-        Vector<String> a = new Vector<>();
+    public String pagesWithURL(String URL, int pages) throws RemoteException {
         if (listOfBarrels.size() == 0) {
-            a.add("There are no active barrels!");
-            return a;
+            return "\nThere are no active barrels!";
         }
 
         // Choose a barrel to work (circular)
         StorageBarrelInterfaceB Barrel = listOfBarrels.get((nextBarrel++) % listOfBarrels.size());
-        HashSet<String> hash = Barrel.getpagesWithURL(URL, 0);
+        HashSet<String> hash = Barrel.getpagesWithURL(URL, pages);
+        String response = "";
         if (hash != null) {
             for (String url : hash) {
-                a.add(url);
+                response += url + "\n\n";
             }
-            return a;
+            return response;
+        } else if (hash == null && pages > 0) {
+            return "\nThere are no more Urls with that URL!";
         } else {
-            a.add("There are no Urls with that URL!");
-            return a;
+            return "\nThere are no Urls with that URL!";
         }
     }
 
@@ -272,6 +266,10 @@ public class RMISearchModule extends UnicastRemoteObject
             return 1;
         }
 
+    }
+
+    public int getNBarrels() throws RemoteException{
+        return listOfBarrels.size();
     }
 
     // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=

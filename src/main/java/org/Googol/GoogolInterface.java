@@ -3,8 +3,6 @@ package org.Googol;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
-import java.util.Vector;
-
 public interface GoogolInterface extends Remote{
     /**
      * <h4> Funcionalidades 1 e 2
@@ -30,7 +28,7 @@ public interface GoogolInterface extends Remote{
      * @throws RemoteException
      * @return the list of URLs that contain the URL specified by the user
      */
-    public Vector<String> pagesWithURL(String URL) throws RemoteException;
+    public String pagesWithURL(String URL, int pages) throws RemoteException;
 
     /**
      * <h4> Funcionalidades 6

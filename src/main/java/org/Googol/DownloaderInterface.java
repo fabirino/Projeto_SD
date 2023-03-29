@@ -22,4 +22,11 @@ public interface DownloaderInterface extends Remote {
      */
     public boolean addURLQueue(URL URL) throws RemoteException;
 
+     /**
+     * 
+     * @return
+     * @throws RemoteException
+     */
+    public int getNBarrels() throws RemoteException;
+
 }
