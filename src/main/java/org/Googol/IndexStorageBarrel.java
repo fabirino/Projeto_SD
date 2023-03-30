@@ -38,7 +38,7 @@ import java.util.Scanner;
  */
 public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBarrelInterfaceB {
     private HashMap<String, HashSet<URL>> index; // Palavra: lista de URLs
-    private HashMap<String, HashSet<String>> path; // URL: lista de URLs que levam ate ele
+    private HashMap<String, HashSet<URL>> path; // URL: lista de URLs que levam ate ele
     private File fileIndex;
     private File filePath;
     private final static String MULTICAST_ADDRESS = "224.3.2.1";
@@ -210,18 +210,18 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
         }
 
         // save in this.path
-        HashSet<String> hashset2;
+        HashSet<URL> hashset2;
 
         for (String u : url.getUrls()) {
             if (path.containsKey(u)) {
                 hashset2 = path.get(u);
-                if (!hashset2.contains(url.getUrl())) {
-                    hashset2.add(url.getUrl());
+                if (!hashset2.contains(url)) {
+                    hashset2.add(url);
                     path.replace(u, hashset2);
                 }
             } else {
                 hashset2 = new HashSet<>();
-                hashset2.add(url.getUrl());
+                hashset2.add(url);
                 path.put(u, hashset2);
             }
         }
@@ -253,7 +253,7 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
         if (filePath.exists() && filePath.isFile()) {
             try (FileInputStream fis = new FileInputStream(filePath);
                     ObjectInputStream ois = new ObjectInputStream(fis)) {
-                path = (HashMap<String, HashSet<String>>) ois.readObject();
+                path = (HashMap<String, HashSet<URL>>) ois.readObject();
                 ois.close();
                 fis.close();
             } catch (IOException e) {
@@ -371,10 +371,10 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
      * @param pages set of pages that will be sent to the client
      * @return Hashset containing the 10 URLs of the page
      */
-    public HashSet<String> getpagesWithURL(String URL, int pages) throws RemoteException {
+    public HashSet<URL> getpagesWithURL(String URL, int pages) throws RemoteException {
         // Uses pagesWithULR
         System.out.println("Barrel: Sending URLs that lead to " + URL);
-        HashSet<String> set = new HashSet<>();
+        HashSet<URL> set = new HashSet<>();
 
         if (path.containsKey(URL)) {
             System.out.println("adding" + path.get(URL));
@@ -387,10 +387,10 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
         int min = pages * 10;
         int max = min + 10;
         int count = 0;
-        HashSet<String> set2 = new HashSet<>();
+        HashSet<URL> set2 = new HashSet<>();
         // System.out.println(set);
 
-        for (String url : set) {
+        for (URL url : set) {
             count++;
             if (count >= min && count < max) {
                 System.out.println("URL n" + count);
