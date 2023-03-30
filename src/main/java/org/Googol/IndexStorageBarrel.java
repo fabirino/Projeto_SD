@@ -14,12 +14,14 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Scanner;
+import java.util.zip.GZIPInputStream;
 
 /**
  * <p>
@@ -99,10 +101,14 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
                             while (true) {
                                 // Create buffer
                                 byte[] buffer = new byte[bufferSize];
-                                socket.receive(new DatagramPacket(buffer, bufferSize, group, PORT));
-
-                                ByteArrayInputStream bais = new ByteArrayInputStream(buffer);
-                                ObjectInputStream ois = new ObjectInputStream(bais);
+                                DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+                                socket.receive(packet);
+                                
+                                byte[] data = Arrays.copyOf(packet.getData(), packet.getLength());
+                                
+                                ByteArrayInputStream bais = new ByteArrayInputStream(data);
+                                GZIPInputStream gzis = new GZIPInputStream(bais);
+                                ObjectInputStream ois = new ObjectInputStream(gzis);
                                 try {
                                     Object readObject = ois.readObject();
                                     if (readObject instanceof Message) {

@@ -25,6 +25,8 @@ import java.util.StringTokenizer;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.zip.GZIPOutputStream;
+
 /**
  * <p>
  * Trabalham em paralelo
@@ -171,7 +173,7 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
                 while (true) {
                     try {
                         esperarVariavel();
-                    
+
                         // Pega o ultimo URL da Fila e faz o crawl
                         URL url = SMi.getURLQueue();
                         System.out.println("Downloader: Indexing " + url);
@@ -185,32 +187,34 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
                             try {
                                 // Envia o URL por multicast para os Barrels
                                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                                ObjectOutputStream oos = new ObjectOutputStream(baos);
+                                ObjectOutputStream oos = new ObjectOutputStream(new GZIPOutputStream(baos));
                                 oos.writeObject(m);
+                                oos.close();
                                 byte[] data = baos.toByteArray();
 
-                                System.out.println("lenght  -->>" + data.length);
+                                // System.out.println("lenght -->>" + data.length);
                                 socket.send(new DatagramPacket(data, data.length, group, PORT));
 
                                 // Esperar pelo akn
-                                System.out.println("========udp!!==========");
+                                // System.out.println("========udp!!==========");
                                 int nbarrel = SMi.getNBarrels();
-                                if(nbarrel == 0){
+                                if (nbarrel == 0) {
                                     SMi.addURLQueue(url);
-                                    System.out.println("n barrels -> " + nbarrel + " Send to QUEUE again!");
+                                    System.out.println("Send to QUEUE again!");
                                     break;
                                 }
-                                System.out.println("n barrels -> " + nbarrel);
+                                // System.out.println("n barrels -> " + nbarrel);
                                 for (int j = 0; j < nbarrel; j++) {
                                     byte[] buffer = new byte[1000];
                                     DatagramPacket request = new DatagramPacket(buffer, buffer.length);
 
                                     aSocket.receive(request);
+                                    
                                     String s = new String(request.getData(), 0, request.getLength());
-                                    System.out
-                                            .println("Server Recebeu: " + s + " de: " + request.getAddress()
-                                                    + " no porto "
-                                                    + request.getPort());
+                                    System.out.println("Server Recebeu: " + s + " de: "
+                                            + request.getAddress()
+                                            + " no porto "
+                                            + request.getPort());
 
                                 }
                             } catch (SocketTimeoutException e) {
@@ -249,16 +253,14 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
     }
 
     /**
-     * The URL received by the Downloader only has the link. It is necessary 
-     * to add its title, quote,  keywords and list of UELs
+     * The URL received by the Downloader only has the link. It is necessary
+     * to add its title, quote, keywords and list of UELs
      * 
      * @param url object recived to crawl and fill the data
      * @param SMi Search Module interface
      * @return URL object
      */
     public URL crawlURL(URL url, DownloaderInterface SMi) {
-        // TODO: Nao colocar os url todos "mamados", ou seja, javascript e cenas assim
-        // que esta a guardar isso na class URL
 
         // try catch para apanhar strings que nao sejam URLs
         String urlString = url.getUrl();
@@ -302,7 +304,7 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
         } catch (RemoteException e) {
             System.out.println("Downloader: The Search Module is no longer running");
             // e.printStackTrace();
-        } catch (IOException e){
+        } catch (IOException e) {
             System.out.println("Downloader: Unable to crawl " + url.getUrl());
         }
 
@@ -314,7 +316,8 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
 
     /**
      * Used to convert the StopWords in an ArrayList
-     * @param AL Arraylist to store the keywords
+     * 
+     * @param AL   Arraylist to store the keywords
      * @param list List of keywords
      */
     public static void fillArray(ArrayList<String> AL, String[] list) {
@@ -338,11 +341,11 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
         return id;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setId(int id2) {
+        id = id2;
     }
-    public void setvariavel(int variavel) throws RemoteException{
+
+    public void setvariavel(int variavel) throws RemoteException {
         mudarVariavel(variavel);
-        System.out.println("mudei!!");
     }
 }
