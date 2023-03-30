@@ -9,10 +9,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Set;
+import java.util.concurrent.TimeoutException;
 import java.security.NoSuchAlgorithmException;
 import java.security.MessageDigest;
 
@@ -36,6 +34,11 @@ public class RMISearchModule extends UnicastRemoteObject
     Queue urlQueue;
     int nextBarrel = 0;
 
+    /**
+     * Constructor
+     * @param i Distinguishes the Interface used
+     * @throws RemoteException
+     */
     public RMISearchModule(int i) throws RemoteException {
         super();
         if (i == 0) {
@@ -91,7 +94,6 @@ public class RMISearchModule extends UnicastRemoteObject
             LocateRegistry.createRegistry(1099).rebind("SM", SMi);
         } catch (RemoteException RE) {
             System.out.println("Search Module: System crashed, Remote Exception ocurred");
-            // FIXME: nao sei se o crash e aqui ou no finally
             SMi.queueCrash();
         } finally {
 
@@ -113,7 +115,7 @@ public class RMISearchModule extends UnicastRemoteObject
         urlQueue.addURLHead(new URL(URLString));
     }
 
-    // TODO: para ordem de relevancia ir pesquisar ao PATH o tamanho do URL
+
     public String pagesWithWord(String[] words, int pages) throws RemoteException {
         if (listOfBarrels.size() == 0) {
             return "\nThere are no active barrels!";
@@ -140,7 +142,7 @@ public class RMISearchModule extends UnicastRemoteObject
 
     }
 
-    // TODO: para ordem de relevancia ir pesquisar ao PATH o tamanho do URL
+
     public String pagesWithURL(String URL, int pages) throws RemoteException {
         if (listOfBarrels.size() == 0) {
             return "\nThere are no active barrels!";
@@ -266,9 +268,6 @@ public class RMISearchModule extends UnicastRemoteObject
 
     }
 
-    public int getNBarrels() throws RemoteException{
-        return listOfBarrels.size();
-    }
 
     // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
     // Storage Barrel Interface functions
@@ -317,6 +316,30 @@ public class RMISearchModule extends UnicastRemoteObject
             System.out.println("ARDEU A TENDA!");
         }
         System.out.println("Search Module: Unsubscribing Downloader" + client.getId());
+    }
+
+    public int getNBarrels() throws RemoteException{
+        return listOfBarrels.size();
+    }
+
+    public void pingBarrels() throws RemoteException{
+        int count=0;
+        System.out.println("Search Module: A packet was lost, pinging all Barrels");
+        for(StorageBarrelInterfaceB barrel: listOfBarrels){
+            try{
+                if(barrel.tryPing()){
+                    count++;
+                    System.out.println(count);
+                    System.out.println("Barrel " + barrel.getId() + " is alive");
+                }
+            } catch (RemoteException e){
+                System.out.println("Search Module: A barrel stopped responding. Removing from list of active Barrels");
+                listOfBarrels.remove(barrel);
+                System.out.println("Search Module: Unsubscribing this Barrel");
+                break;
+            } 
+        }
+        System.out.println("Saiu do loop");
     }
 
     // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
@@ -368,7 +391,6 @@ public class RMISearchModule extends UnicastRemoteObject
                 statement.setString(1, word);
                 statement.setInt(2, 1);
                 statement.executeUpdate();
-                System.out.println("Success");
             }
 
         } catch (SQLException e) {

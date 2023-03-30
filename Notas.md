@@ -52,3 +52,6 @@ stament.executeUpdate();
 
 Guardar por exemplo num num hashset de palavras as palavras que nao sao para ser processadas (EN & PT)
 StopWords
+### Contacto stor
+
+andre.pascoal.bento@gmail.com

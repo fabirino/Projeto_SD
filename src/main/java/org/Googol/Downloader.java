@@ -85,6 +85,9 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
     private final static Condition condicao = lock.newCondition();
     private static int variavel = 1;
 
+    /**
+     * Construtor
+     */
     public Downloader() throws RemoteException {
         super();
     }
@@ -131,7 +134,8 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
                     try {
                         SMi.unsubscribeD((DownloaderInterfaceC) downloader);
                     } catch (RemoteException re) {
-                        re.printStackTrace();
+                        // re.printStackTrace();
+                        System.out.println("Downloader: The Search Module is no longer running");
                     }
                 }
             });
@@ -148,7 +152,6 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
                 group = InetAddress.getByName(MULTICAST_ADDRESS);
                 socket.joinGroup(group);
 
-                // TODO: substituir os returns por algo sustentavel
             } catch (NotBoundException NBE) {
                 System.out.println("Downloader: The interface is not bound");
                 return;
@@ -177,7 +180,8 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
                         Message m = new Message(url, PORTUDP);
                         int attempts = 3; // DEBUG: 3 tentativas se o multicast enviar e algo falhar!!
                         for (int i = 0; i < attempts; i++) {
-                            try {// Envia o URL por multicast para os Barrels
+                            try {
+                                // Envia o URL por multicast para os Barrels
                                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                                 ObjectOutputStream oos = new ObjectOutputStream(baos);
                                 oos.writeObject(m);
@@ -209,7 +213,8 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
                                 }
                             } catch (SocketTimeoutException e) {
                                 // timeout exception.
-                                System.out.println("Timeout reached!!! ");
+                                System.out.println("Timeout reached!!! " + e);
+                                SMi.pingBarrels();
                                 if (i == 2) {
                                     System.out.println(" Lost URL: " + url.getUrl());
                                 } else {
@@ -234,17 +239,15 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
                 }
             } catch (SocketException e) {
                 System.out.println("Socket: " + e.getMessage());
-            } catch (IOException e) {
-                System.out.println("IO: " + e.getMessage());
             }
         } catch (RemoteException e) {
-            System.out.println("Downloader: Somthing went wrong :)");
+            System.out.println("Downloader: Something went wrong :)");
         }
     }
 
     /**
-     * O URL quando chega ao Downloader apenas tem o link, e necessario depois
-     * adicionar a quote, title, keywords e lista de URL's
+     * The URL received by the Downloader only has the link. It is necessary 
+     * to add its title, quote,  keywords and list of UELs
      * 
      * @param url object recived to crawl and fill the data
      * @param SMi Search Module interface
@@ -291,10 +294,13 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
             System.out.println("Downloader: The URL specified is malformed");
             return null;
         } catch (IllegalArgumentException IAE) {
-            System.out.println("Downloader: The URL specified is malformed");
+            System.out.println("Downloader: Unable to crawl " + url.getUrl());
             return null;
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (RemoteException e) {
+            System.out.println("Downloader: The Search Module is no longer running");
+            // e.printStackTrace();
+        } catch (IOException e){
+            System.out.println("Downloader: Unable to crawl " + url.getUrl());
         }
 
         url.setTitle(title);
@@ -303,6 +309,11 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
         return url;
     }
 
+    /**
+     * Used to convert the StopWords in an ArrayList
+     * @param AL Arraylist to store the keywords
+     * @param list List of keywords
+     */
     public static void fillArray(ArrayList<String> AL, String[] list) {
         for (int i = 0; i < list.length; i++) {
             AL.add(list[i]);
@@ -314,7 +325,8 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
         try {
             SMi.unsubscribeD((DownloaderInterfaceC) downloader);
         } catch (RemoteException re) {
-            re.printStackTrace();
+            System.out.println("Downloader: The Search Module is no longer running");
+            // re.printStackTrace();
         }
         System.exit(0);
     }

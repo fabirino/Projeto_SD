@@ -25,13 +25,14 @@ public class RMIClient {
         try {
             SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
         } catch (NotBoundException NBE) {
-            System.out.println("System: The interface is not bound");
+            System.out.println("System: The Interface is not bound");
             return;
         } catch (MalformedURLException MFE) {
             System.out.println("System: The URL specified is malformed");
             return;
         } catch (RemoteException RM) {
             System.out.println("System: Remote Exception catched");
+            System.out.println("System: The Search Module is not running");
             return;
         }
 
@@ -232,7 +233,7 @@ public class RMIClient {
             } catch (RemoteException e) {
                 System.out.println("System: Something went wrong :(");
                 System.out.println("The Search Module is not active");
-                e.printStackTrace();
+                // e.printStackTrace();
                 scan.close();
                 return;
             } catch (SQLException e) {
