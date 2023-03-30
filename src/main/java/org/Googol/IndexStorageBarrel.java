@@ -20,7 +20,6 @@ import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Scanner;
-import java.util.zip.ZipInputStream;
 
 /**
  * <p>
@@ -71,17 +70,16 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
             // Catch Crtl C to save data
             Thread t0 = new Thread("t0") {
                 public void run() {
-                    storageBarrel.onCrash();
-                    System.out.println("Barrel: Shutdown");
                     try {
-
                         SBi.unsubscribeB((StorageBarrelInterfaceB) storageBarrel);
                     } catch (RemoteException re) {
                         System.out.println("Barrel: The Search Module is no longer running");
                         // re.printStackTrace();
                     } catch (ConcurrentModificationException e) {
                         System.out.println("Barrel: Error trying to write to a Hashmap");
+                    }finally{
                         storageBarrel.onCrash();
+                        System.out.println("Barrel: Shutdown");
                     }
                 }
             };

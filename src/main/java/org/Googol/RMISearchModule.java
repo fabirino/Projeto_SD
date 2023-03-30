@@ -336,6 +336,9 @@ public class RMISearchModule extends UnicastRemoteObject
                 System.out.println("Search Module: A barrel stopped responding. Removing from list of active Barrels");
                 listOfBarrels.remove(barrel);
                 System.out.println("Search Module: Unsubscribing this Barrel");
+                for (DownloaderInterfaceC cl : listOfDownloaders) {
+                    cl.setvariavel(listOfBarrels.size());
+                }
                 break;
             } 
         }

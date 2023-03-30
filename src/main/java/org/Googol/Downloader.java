@@ -195,7 +195,7 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
                                 int nbarrel = SMi.getNBarrels();
                                 if(nbarrel == 0){
                                     SMi.addURLQueue(url);
-                                    System.out.println("n barrels -> " + nbarrel + "Send to QUEUE again!");
+                                    System.out.println("n barrels -> " + nbarrel + " Send to QUEUE again!");
                                     break;
                                 }
                                 System.out.println("n barrels -> " + nbarrel);
@@ -216,7 +216,8 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
                                 System.out.println("Timeout reached!!! " + e);
                                 SMi.pingBarrels();
                                 if (i == 2) {
-                                    System.out.println(" Lost URL: " + url.getUrl());
+                                    SMi.addURLQueue(url);
+                                    System.out.println("Send to QUEUE again!");
                                 } else {
                                     continue;
                                 }
