@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.concurrent.TimeoutException;
 import java.security.NoSuchAlgorithmException;
 import java.security.MessageDigest;
 
@@ -267,9 +268,6 @@ public class RMISearchModule extends UnicastRemoteObject
 
     }
 
-    public int getNBarrels() throws RemoteException{
-        return listOfBarrels.size();
-    }
 
     // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
     // Storage Barrel Interface functions
@@ -312,6 +310,30 @@ public class RMISearchModule extends UnicastRemoteObject
             System.out.println("ARDEU A TENDA!");
         }
         System.out.println("Search Module: Unsubscribing Downloader" + client.getId());
+    }
+
+    public int getNBarrels() throws RemoteException{
+        return listOfBarrels.size();
+    }
+
+    public void pingBarrels() throws RemoteException{
+        int count=0;
+        System.out.println("Search Module: A packet was lost, pinging all Barrels");
+        for(StorageBarrelInterfaceB barrel: listOfBarrels){
+            try{
+                if(barrel.tryPing()){
+                    count++;
+                    System.out.println(count);
+                    System.out.println("Barrel " + barrel.getId() + " is alive");
+                }
+            } catch (RemoteException e){
+                System.out.println("Search Module: A barrel stopped responding. Removing from list of active Barrels");
+                listOfBarrels.remove(barrel);
+                System.out.println("Search Module: Unsubscribing this Barrel");
+                break;
+            } 
+        }
+        System.out.println("Saiu do loop");
     }
 
     // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
@@ -363,7 +385,6 @@ public class RMISearchModule extends UnicastRemoteObject
                 statement.setString(1, word);
                 statement.setInt(2, 1);
                 statement.executeUpdate();
-                System.out.println("Success");
             }
 
         } catch (SQLException e) {

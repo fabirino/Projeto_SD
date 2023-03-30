@@ -33,4 +33,11 @@ public interface StorageBarrelInterfaceB extends Remote{
      */
     public int getId() throws RemoteException;
 
+    /**
+     * Used to verify if a Barrel is still active
+     * @return true if is active, exception is catched if its not alive
+     * @throws RemoteException
+     */
+    public boolean tryPing() throws RemoteException;
+
 }

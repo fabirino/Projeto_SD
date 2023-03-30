@@ -40,10 +40,12 @@ public interface DownloaderInterface extends Remote {
 
     /**
      * Used by the Downloaders to know how many active Barrels there are, and then know how 
-     * many acknowledgments it needs to receive in Multicast
+     * many      it needs to receive in Multicast
      * @return number of active Barrels
      * @throws RemoteException
      */
     public int getNBarrels() throws RemoteException;
+
+    public void pingBarrels() throws RemoteException;
 
 }

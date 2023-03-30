@@ -8,6 +8,7 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.MulticastSocket;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -75,7 +76,8 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
 
                         SBi.unsubscribeB((StorageBarrelInterfaceB) storageBarrel);
                     } catch (RemoteException re) {
-                        re.printStackTrace();
+                        System.out.println("Barrel: The Search Module is no longer running");
+                        // re.printStackTrace();
                     } catch (ConcurrentModificationException e) {
                         System.out.println("Barrel: Error trying to write to a Hashmap");
                         storageBarrel.onCrash();
@@ -110,7 +112,8 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
                                         String texto = "recebi" + name + "\n";
                                         byte[] me = texto.getBytes();
 
-                                        InetAddress aHost = InetAddress.getByName("localhost");//DEBUG: para ser na mm maquina
+                                        InetAddress aHost = InetAddress.getByName("localhost");// DEBUG: para ser na mm
+                                                                                               // maquina
                                         DatagramPacket request = new DatagramPacket(me, me.length, aHost, m.getPORT());
                                         aSocket.send(request);
 
@@ -131,8 +134,12 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
                         } catch (IOException e) {
                             System.out.println("IO: " + e.getMessage());
                         }
+                    } catch (RemoteException e) {
+                        System.out.println("Barrel: The Search Module is no longer running");
+                    } catch (UnknownHostException e) {
+                        System.out.println("Barrel: The Host does not exist");
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        System.out.println("Barrel: Error creating Multicast Socket");
                     } finally {
                         socket.close();
                     }
@@ -290,12 +297,15 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
     }
 
     /**
-     * <p> Function used when a client search for a set of words
-     * <p> The search is ordered by relevance and its separated by pages of 10 URLs each
+     * <p>
+     * Function used when a client search for a set of words
+     * <p>
+     * The search is ordered by relevance and its separated by pages of 10 URLs each
      * 
      * @param Keywords Words specified by the client for the search
      * @param pages    set of pages that will be sent to the client
-     * @return String containing the URLs that contain the {@code Keyword(s)} specified by the client
+     * @return String containing the URLs that contain the {@code Keyword(s)}
+     *         specified by the client
      */
     public String getUrlsToClient(String[] Keywords, int pages) throws RemoteException {
         // Uses pagesWithWord
@@ -312,12 +322,14 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
                 }
             }
         }
-        
+
         // Order the results by relevance
         ArrayList<Relevance> ordered = new ArrayList<>();
-        for(URL url: commonValues){
-            Relevance aux = new Relevance(url, path.get(url.getUrl()).size());
-            ordered.add(aux);
+        for (URL url : commonValues) {
+            if (path.get(url.getUrl()) != null) {
+                Relevance aux = new Relevance(url, path.get(url.getUrl()).size());
+                ordered.add(aux);
+            }
         }
         // reverse order
         Collections.sort(ordered, new Comparator<Relevance>() {
@@ -327,20 +339,19 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
             }
         });
 
-        
-        // only send 10 pages 
+        // only send 10 pages
         String result = "";
         int count = 0;
         int min = pages * 10;
         int max = min + 10;
-        
+
         for (Relevance rel : ordered) {
             // System.out.println(rel.getRelevance());
             // System.out.println(rel.getURL());
             count++;
             if (count >= min && count < max) {
                 result += rel.getURL() + '\n';
-            } else if (count >=max){
+            } else if (count >= max) {
                 break;
             }
         }
@@ -352,8 +363,10 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
     }
 
     /**
-     * <p> Function used when a client asks for what URLs lead to a certain URL
-     * <p> The result is separeted by pages of 10 URLs each
+     * <p>
+     * Function used when a client asks for what URLs lead to a certain URL
+     * <p>
+     * The result is separeted by pages of 10 URLs each
      * 
      * @param URL   URL specified by the user
      * @param pages set of pages that will be sent to the client
@@ -399,5 +412,9 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public boolean tryPing() throws RemoteException {
+        return true;
     }
 }
