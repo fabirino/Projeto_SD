@@ -13,15 +13,12 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Scanner;
-
-import javax.annotation.processing.SupportedSourceVersion;
 
 /**
  * <p>
@@ -183,7 +180,7 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
     }
 
     /**
-     * Function that saves the URL in the structures
+     * Function that saves the URL in the structures index and path
      * 
      * @param url URL object to be stored
      */
@@ -293,35 +290,35 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
     }
 
     /**
-     * Function used when a client search for a set of words
+     * <p> Function used when a client search for a set of words
+     * <p> The search is ordered by relevance and its separated by pages of 10 URLs each
      * 
      * @param Keywords Words specified by the client for the search
      * @param pages    set of pages that will be sent to the client
-     * @return Hashset of urls containing the {Keyword(s)} specified by the client
+     * @return String containing the URLs that contain the {@code Keyword(s)} specified by the client
      */
     public String getUrlsToClient(String[] Keywords, int pages) throws RemoteException {
         // Uses pagesWithWord
         System.out.println("Barrel: Sending URLs that contain the words " + Keywords[0] + "...");
-        HashSet<URL> communValues = new HashSet<>();
+        HashSet<URL> commonValues = new HashSet<>();
 
         for (int i = 0; i < Keywords.length; i++) {
             if (index.containsKey(Keywords[i])) {
                 HashSet<URL> values = index.get(Keywords[i]);
                 if (i == 0) {
-                    communValues.addAll(values);
+                    commonValues.addAll(values);
                 } else {
-                    communValues.retainAll(values);
+                    commonValues.retainAll(values);
                 }
             }
         }
         
         // Order the results by relevance
         ArrayList<Relevance> ordered = new ArrayList<>();
-        for(URL url: communValues){
+        for(URL url: commonValues){
             Relevance aux = new Relevance(url, path.get(url.getUrl()).size());
             ordered.add(aux);
         }
-
         // reverse order
         Collections.sort(ordered, new Comparator<Relevance>() {
             @Override
@@ -330,7 +327,6 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
             }
         });
 
-        
         
         // only send 10 pages 
         String result = "";
@@ -356,11 +352,12 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
     }
 
     /**
-     * Function used when a client asks for what URLs lead to a certain URL
+     * <p> Function used when a client asks for what URLs lead to a certain URL
+     * <p> The result is separeted by pages of 10 URLs each
      * 
      * @param URL   URL specified by the user
      * @param pages set of pages that will be sent to the client
-     * @return
+     * @return Hashset containing the 10 URLs of the page
      */
     public HashSet<String> getpagesWithURL(String URL, int pages) throws RemoteException {
         // Uses pagesWithULR
@@ -373,7 +370,7 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
             set.addAll(path.get(URL));
             System.out.println(set.size() + URL);
         }
-        System.out.println("size set -> " + set.size());
+
         // only send 10 pages
         int min = pages * 10;
         int max = min + 10;

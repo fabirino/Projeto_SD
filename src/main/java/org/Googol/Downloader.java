@@ -80,6 +80,9 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
     private static Downloader downloader;
     private int id;
 
+    /**
+     * Construtor
+     */
     public Downloader() throws RemoteException {
         super();
     }
@@ -121,7 +124,6 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
                 group = InetAddress.getByName(MULTICAST_ADDRESS);
                 socket.joinGroup(group);
 
-                // TODO: substituir os returns por algo sustentavel
             } catch (NotBoundException NBE) {
                 System.out.println("Downloader: The interface is not bound");
                 return;
@@ -199,8 +201,6 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
                 }
             } catch (SocketException e) {
                 System.out.println("Socket: " + e.getMessage());
-            } catch (IOException e) {
-                System.out.println("IO: " + e.getMessage());
             }
         } catch (RemoteException e) {
             System.out.println("Downloader: Somthing went wrong :)");
@@ -208,8 +208,8 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
     }
 
     /**
-     * O URL quando chega ao Downloader apenas tem o link, e necessario depois
-     * adicionar a quote, title, keywords e lista de URL's
+     * The URL received by the Downloader only has the link. It is necessary 
+     * to add its title, quote,  keywords and list of UELs
      * 
      * @param url object recived to crawl and fill the data
      * @param SMi Search Module interface
@@ -265,6 +265,11 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
         return url;
     }
 
+    /**
+     * Used to convert the StopWords in an ArrayList
+     * @param AL Arraylist to store the keywords
+     * @param list List of keywords
+     */
     public static void fillArray(ArrayList<String> AL, String[] list) {
         for (int i = 0; i < list.length; i++) {
             AL.add(list[i]);

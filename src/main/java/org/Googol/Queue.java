@@ -9,11 +9,17 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.concurrent.LinkedBlockingDeque;
 
+/**
+ * Classe utilizada pelos Downloaders para gerir a Dequeue de URLs que existe no Search Module
+ */
 public class Queue implements Serializable {
 
     private File file;
     private LinkedBlockingDeque<URL> queue;
 
+    /**
+     * Construtor
+     */
     public Queue() {
         file = new File("./info\\QUEUE.obj");
         this.queue = new LinkedBlockingDeque<>();
@@ -68,7 +74,8 @@ public class Queue implements Serializable {
     }
 
     /**
-     * Serialize queue into file in case of a crash or in the end of a program
+     * <p> Used when an exception ocurres
+     * <p> Serialize queue into file in case of a crash or in the end of a program
      * session
      */
     public void onCrash() {
@@ -86,9 +93,9 @@ public class Queue implements Serializable {
     }
 
     /**
-     * In the start of the program, if there is a queue from another session, it is
+     * <p> Used n the start of the program, if there is a queue from another session, it is
      * recovered, else the queue is empty
-     * In case of a crash, if recovery file exists the queue is recovered from a
+     * <p> In case of a crash, if recovery file exists the queue is recovered from a
      * object file
      */
     public void onRecovery() {

@@ -9,10 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Set;
 import java.security.NoSuchAlgorithmException;
 import java.security.MessageDigest;
 
@@ -36,6 +33,11 @@ public class RMISearchModule extends UnicastRemoteObject
     Queue urlQueue;
     int nextBarrel = 0;
 
+    /**
+     * Constructor
+     * @param i Distinguishes the Interface used
+     * @throws RemoteException
+     */
     public RMISearchModule(int i) throws RemoteException {
         super();
         if (i == 0) {
@@ -91,7 +93,6 @@ public class RMISearchModule extends UnicastRemoteObject
             LocateRegistry.createRegistry(1099).rebind("SM", SMi);
         } catch (RemoteException RE) {
             System.out.println("Search Module: System crashed, Remote Exception ocurred");
-            // FIXME: nao sei se o crash e aqui ou no finally
             SMi.queueCrash();
         } finally {
 
@@ -113,7 +114,7 @@ public class RMISearchModule extends UnicastRemoteObject
         urlQueue.addURLHead(new URL(URLString));
     }
 
-    // TODO: para ordem de relevancia ir pesquisar ao PATH o tamanho do URL
+
     public String pagesWithWord(String[] words, int pages) throws RemoteException {
         if (listOfBarrels.size() == 0) {
             return "\nThere are no active barrels!";
@@ -140,7 +141,7 @@ public class RMISearchModule extends UnicastRemoteObject
 
     }
 
-    // TODO: para ordem de relevancia ir pesquisar ao PATH o tamanho do URL
+
     public String pagesWithURL(String URL, int pages) throws RemoteException {
         if (listOfBarrels.size() == 0) {
             return "\nThere are no active barrels!";
