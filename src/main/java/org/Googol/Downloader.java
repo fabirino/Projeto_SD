@@ -231,8 +231,6 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
                             break;
 
                         }
-                        // TA ANDAR DE MOTA
-                        System.out.println("NEXT!");
 
                     } catch (RemoteException RE) {
                         System.out.println("Downloader: Remote Exception catched");
