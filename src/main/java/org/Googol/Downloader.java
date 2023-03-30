@@ -22,7 +22,9 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
-
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 /**
  * <p>
  * Trabalham em paralelo
@@ -78,10 +80,35 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
     private static DownloaderInterface SMi;
     private static MulticastSocket socket;
     private static Downloader downloader;
-    private int id;
+    private static int id;
+    private static Lock lock = new ReentrantLock();
+    private final static Condition condicao = lock.newCondition();
+    private static int variavel = 1;
 
     public Downloader() throws RemoteException {
         super();
+    }
+
+    public static void esperarVariavel() throws InterruptedException {
+        lock.lock();
+        try {
+            while (variavel == 0) {
+                System.out.println("Downloader: Waiting for barrels to remain active!");
+                condicao.await();
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void mudarVariavel(int valor) {
+        lock.lock();
+        try {
+            variavel = valor;
+            condicao.signalAll();
+        } finally {
+            lock.unlock();
+        }
     }
 
     public static void main(String[] args) {
@@ -138,6 +165,8 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
                 aSocket.setSoTimeout(1000);// timeout de 1 segundo!!
                 while (true) {
                     try {
+                        esperarVariavel();
+                    
                         // Pega o ultimo URL da Fila e faz o crawl
                         URL url = SMi.getURLQueue();
                         System.out.println("Downloader: Indexing " + url);
@@ -145,7 +174,7 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
                         if (url == null)
                             continue;
 
-                        Message m = new Message(url, false, PORTUDP);
+                        Message m = new Message(url, PORTUDP);
                         int attempts = 3; // DEBUG: 3 tentativas se o multicast enviar e algo falhar!!
                         for (int i = 0; i < attempts; i++) {
                             try {// Envia o URL por multicast para os Barrels
@@ -160,6 +189,12 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
                                 // Esperar pelo akn
                                 System.out.println("========udp!!==========");
                                 int nbarrel = SMi.getNBarrels();
+                                if(nbarrel == 0){
+                                    SMi.addURLQueue(url);
+                                    System.out.println("n barrels -> " + nbarrel + "Send to QUEUE again!");
+                                    break;
+                                }
+                                System.out.println("n barrels -> " + nbarrel);
                                 for (int j = 0; j < nbarrel; j++) {
                                     byte[] buffer = new byte[1000];
                                     DatagramPacket request = new DatagramPacket(buffer, buffer.length);
@@ -174,7 +209,7 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
                                 }
                             } catch (SocketTimeoutException e) {
                                 // timeout exception.
-                                System.out.println("Timeout reached!!! " + e);
+                                System.out.println("Timeout reached!!! ");
                                 if (i == 2) {
                                     System.out.println(" Lost URL: " + url.getUrl());
                                 } else {
@@ -255,6 +290,9 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
         } catch (MalformedURLException MFE) {
             System.out.println("Downloader: The URL specified is malformed");
             return null;
+        } catch (IllegalArgumentException IAE) {
+            System.out.println("Downloader: The URL specified is malformed");
+            return null;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -287,5 +325,9 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
 
     public void setId(int id) {
         this.id = id;
+    }
+    public void setvariavel(int variavel) throws RemoteException{
+        mudarVariavel(variavel);
+        System.out.println("mudei!!");
     }
 }

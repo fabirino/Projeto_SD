@@ -54,7 +54,6 @@ public class RMISearchModule extends UnicastRemoteObject
 
     public static void main(String[] args) throws RemoteException {
 
-        System.out.println("Search Module: Server ready");
         downloaderCount = 0;
         barrelCount = 0;
 
@@ -73,6 +72,7 @@ public class RMISearchModule extends UnicastRemoteObject
         GoogolInterface SMi = new RMISearchModule(0);
         StorageBarrelInterface SMi2 = new RMISearchModule(1);
 
+        System.out.println("Search Module: Server ready");
         // Catch Crtl C to save data
         Thread t0 = new Thread("t0") {
             public void run() {
@@ -277,6 +277,9 @@ public class RMISearchModule extends UnicastRemoteObject
     public int subscribeB(String name, StorageBarrelInterfaceB c) throws RemoteException {
         System.out.println("Search Module: Subscribing Barrel" + ++barrelCount);
         listOfBarrels.add(c);
+        for (DownloaderInterfaceC cl : listOfDownloaders) {
+            cl.setvariavel(listOfBarrels.size());
+        }
         return barrelCount;
     }
 
@@ -285,6 +288,9 @@ public class RMISearchModule extends UnicastRemoteObject
             listOfBarrels.remove(client);
         } catch (Exception e) {
             System.out.println("ARDEU A TENDA!");
+        }
+        for (DownloaderInterfaceC cl : listOfDownloaders) {
+            cl.setvariavel(listOfBarrels.size());
         }
         System.out.println("Search Module: Unsubscribing Barrel" + client.getId());
     }

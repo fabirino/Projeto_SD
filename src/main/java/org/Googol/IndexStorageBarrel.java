@@ -20,6 +20,7 @@ import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Scanner;
+import java.util.zip.ZipInputStream;
 
 import javax.annotation.processing.SupportedSourceVersion;
 
@@ -45,7 +46,7 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
     private File filePath;
     private final static String MULTICAST_ADDRESS = "224.3.2.1";
     private final static int PORT = 4321;
-    private final static int bufferSize = 65507; // MAX: 65507
+    private final static int bufferSize = 65536; // MAX: 65507
     private static StorageBarrelInterface SBi;
     private int id;
     private static String name;
@@ -314,10 +315,10 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
                 }
             }
         }
-        
+
         // Order the results by relevance
         ArrayList<Relevance> ordered = new ArrayList<>();
-        for(URL url: communValues){
+        for (URL url : communValues) {
             Relevance aux = new Relevance(url, path.get(url.getUrl()).size());
             ordered.add(aux);
         }
@@ -330,21 +331,19 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
             }
         });
 
-        
-        
-        // only send 10 pages 
+        // only send 10 pages
         String result = "";
         int count = 0;
         int min = pages * 10;
         int max = min + 10;
-        
+
         for (Relevance rel : ordered) {
             // System.out.println(rel.getRelevance());
             // System.out.println(rel.getURL());
             count++;
             if (count >= min && count < max) {
                 result += rel.getURL() + '\n';
-            } else if (count >=max){
+            } else if (count >= max) {
                 break;
             }
         }
