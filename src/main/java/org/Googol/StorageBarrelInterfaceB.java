@@ -24,7 +24,7 @@ public interface StorageBarrelInterfaceB extends Remote{
      * @return
      * @throws RemoteException
      */
-    public HashSet<String> getpagesWithURL(String URL, int pages) throws RemoteException;
+    public HashSet<URL> getpagesWithURL(String URL, int pages) throws RemoteException;
 
     /**
      * Get Method

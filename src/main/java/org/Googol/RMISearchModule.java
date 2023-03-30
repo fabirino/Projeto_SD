@@ -149,11 +149,11 @@ public class RMISearchModule extends UnicastRemoteObject
 
         // Choose a barrel to work (circular)
         StorageBarrelInterfaceB Barrel = listOfBarrels.get((nextBarrel++) % listOfBarrels.size());
-        HashSet<String> hash = Barrel.getpagesWithURL(URL, pages);
+        HashSet<URL> hash = Barrel.getpagesWithURL(URL, pages);
         String response = "";
         if (hash != null) {
-            for (String url : hash) {
-                response += url + "\n\n";
+            for (URL url : hash) {
+                response += url.toString() + "\n\n";
             }
             return response;
         } else if (hash == null && pages > 0) {
