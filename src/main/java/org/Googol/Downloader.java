@@ -148,6 +148,8 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
                     System.exit(2);
                 }
                 downloader.setId(num);
+                PORTUDP += id;
+                System.out.println("PORTUDP-> " + PORTUDP);
                 socket = new MulticastSocket(PORT); // create socket and bind it
                 group = InetAddress.getByName(MULTICAST_ADDRESS);
                 socket.joinGroup(group);
