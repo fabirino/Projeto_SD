@@ -89,24 +89,18 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
 
             // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
             // Sync files obj
-            try {
-                Thread.sleep(5000);//aguarda que sincronize os outros servers tds 
-            } catch (Exception e) {
-            }
-            HashMap<String, HashSet<URL>> hash = SBi.syncIndex((StorageBarrelInterfaceB) storageBarrel,storageBarrel.index);
-            if(hash != null){
+            HashMap<String, HashSet<URL>> hash = SBi.syncIndex((StorageBarrelInterfaceB) storageBarrel,
+                    storageBarrel.index);
+            if (hash != null) {
                 storageBarrel.index = hash;
             }
-            hash = SBi.syncPath((StorageBarrelInterfaceB) storageBarrel,storageBarrel.path);
-            if(hash != null){
+            hash = SBi.syncPath((StorageBarrelInterfaceB) storageBarrel, storageBarrel.path);
+            if (hash != null) {
                 storageBarrel.path = hash;
             }
-            try {
-                Thread.sleep(1000);//aguarda que sincronize os outros servers tds 
-            } catch (Exception e) {
-            }
+
             SBi.updatesyncD();
-            
+
             // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
 
             // Catch Crtl C to save data
@@ -213,10 +207,19 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
 
         // save in this.index
         HashSet<URL> hashset;
+        String strurl = url.getUrl();
         for (String Keyword : url.getKeywords()) {
             if (index.containsKey(Keyword)) {
                 hashset = index.get(Keyword);
-                if (!hashset.contains(url)) {
+                boolean contains = false;
+                for (URL url2 : hashset) {
+                    if (url2.getUrl().equals(strurl)) {
+                        hashset.add(url);
+                        contains = true;
+                        break;
+                    }
+                }
+                if (!contains) {
                     hashset.add(url);
                     index.replace(Keyword, hashset);
                 }
@@ -234,10 +237,19 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
         for (String u : url.getUrls()) {
             if (path.containsKey(u)) {
                 hashset2 = path.get(u);
-                if (!hashset2.contains(url)) {
-                    hashset2.add(url);
-                    path.replace(u, hashset2);
+                boolean contains = false;
+                for (URL url2 : hashset2) {
+                    if (url2.getUrl().equals(strurl)) {
+                        contains = true;
+                        hashset2.add(url);
+                        break;
+                    }
                 }
+                if (!contains) {
+                    hashset2.add(url);
+                    index.replace(u, hashset2);
+                }
+
             } else {
                 hashset2 = new HashSet<>();
                 hashset2.add(url);
@@ -431,28 +443,27 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
     public void setId(int id) {
         this.id = id;
     }
-    
-    public void setIndex(HashMap<String, HashSet<URL>> in) throws RemoteException{
+
+    public void setIndex(HashMap<String, HashSet<URL>> in) throws RemoteException {
         this.index = in;
-        System.out.println("size index>> " + this.index.size());//APENAS PARA DEBUG!!
+        System.out.println("size index>> " + this.index.size());// APENAS PARA DEBUG!!
     }
 
-    public void setPath(HashMap<String, HashSet<URL>> in) throws RemoteException{
+    public void setPath(HashMap<String, HashSet<URL>> in) throws RemoteException {
         this.path = in;
-        System.out.println("size path >> " + this.path.size());//APENAS PARA DEBUG!!
+        System.out.println("size path >> " + this.path.size());// APENAS PARA DEBUG!!
     }
 
     public boolean tryPing() throws RemoteException {
         return true;
     }
 
-    public HashMap<String, HashSet<URL>> getIndex() throws RemoteException{
+    public HashMap<String, HashSet<URL>> getIndex() throws RemoteException {
         return this.index;
     }
 
-    public HashMap<String, HashSet<URL>> getPath() throws RemoteException{
+    public HashMap<String, HashSet<URL>> getPath() throws RemoteException {
         return this.path;
     }
-
 
 }

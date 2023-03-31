@@ -11,7 +11,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.security.NoSuchAlgorithmException;
 import java.security.MessageDigest;
 
@@ -157,7 +156,7 @@ public class RMISearchModule extends UnicastRemoteObject
         String response = "";
         if (hash != null) {
             for (URL url : hash) {
-                response += url.toString() + "\n\n";
+                response += url.printURL() + "\n\n";
             }
             return response;
         } else if (hash == null && pages > 0) {
@@ -316,7 +315,21 @@ public class RMISearchModule extends UnicastRemoteObject
                     if (hash.containsKey(key)) {
                         HashSet<URL> set1 = hash.get(key);
                         HashSet<URL> set2 = index.get(key);
-                        set1.addAll(set2);
+                        for (URL s : set2) {
+                            boolean contains = false;
+                            String currentUrl = s.getUrl();
+                            for (URL url : set1) {
+                                if (currentUrl.equals(url.getUrl())) {
+                                    contains = true;
+                                    break;
+                                }
+                            }
+                            if (!contains) {
+                                set1.add(s);
+                            }
+                        }
+        
+                        System.out.println(set1);
                     } else {
                         hash.put(key, index.get(key));
                     }
@@ -347,7 +360,20 @@ public class RMISearchModule extends UnicastRemoteObject
                     if (hash.containsKey(key)) {
                         HashSet<URL> set1 = hash.get(key);
                         HashSet<URL> set2 = path.get(key);
-                        set1.addAll(set2);
+                        for (URL s : set2) {
+                            boolean contains = false;
+                            String currentUrl = s.getUrl();
+                            for (URL url : set1) {
+                                if (currentUrl.equals(url.getUrl())) {
+                                    contains = true;
+                                    break;
+                                }
+                            }
+                            if (!contains) {
+                                set1.add(s);
+                            }
+                        }
+        
                     } else {
                         hash.put(key, path.get(key));
                     }
