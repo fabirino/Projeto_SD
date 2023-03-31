@@ -25,13 +25,17 @@ public class RMIClient {
         if (args.length == 1) {
             ipServer = args[0];
         } else {
-            System.out.println("Barrel: Use the ip address of the server as an arg");
-            return;
+            ipServer = "";
         }
 
+        String test = "rmi://" + ipServer + ":1099/SM";
         GoogolInterface SMi;
         try {
-            SMi = (GoogolInterface) Naming.lookup("rmi://" + ipServer + ":1099/SM");
+            if(ipServer.equals("")){
+            SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
+        }else{
+            SMi = (GoogolInterface) Naming.lookup(test);
+            }
         } catch (NotBoundException NBE) {
             System.out.println("System: The Interface is not bound");
             return;

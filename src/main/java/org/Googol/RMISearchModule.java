@@ -429,8 +429,8 @@ public class RMISearchModule extends UnicastRemoteObject
             try{
                 if(barrel.tryPing()){
                     count++;
-                    System.out.println(count);
-                    System.out.println("Barrel " + barrel.getId() + " is alive");
+                    // System.out.println(count);
+                    // System.out.println("Barrel " + barrel.getId() + " is alive");
                 }
             } catch (RemoteException e){
                 System.out.println("Search Module: A barrel stopped responding. Removing from list of active Barrels");
@@ -442,7 +442,7 @@ public class RMISearchModule extends UnicastRemoteObject
                 break;
             } 
         }
-        System.out.println("Saiu do loop");
+        // System.out.println("Saiu do loop");
     }
 
     // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=

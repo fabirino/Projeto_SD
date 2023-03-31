@@ -65,9 +65,9 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
         if (args.length == 1) {
             ipServer = args[0];
         } else {
-            System.out.println("Barrel: Use the ip address of the server as an arg");
-            return;
+            ipServer = "";
         }
+        String test = "rmi://" + ipServer + ":1099/SM";
 
         IndexStorageBarrel storageBarrel;
 
@@ -78,7 +78,13 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
             scan.close();
             storageBarrel = new IndexStorageBarrel();
             try {
-                SBi = (StorageBarrelInterface) Naming.lookup("rmi://" + ipServer + ":1098/SB");
+                if(ipServer.equals("")){
+                    SBi = (StorageBarrelInterface) Naming.lookup("rmi://localhost:1098/SB");
+                }else{
+                    SBi = (StorageBarrelInterface) Naming.lookup(test);
+                }
+                // SBi = (StorageBarrelInterface) Naming.lookup("rmi://" + ipServer + ":1098/SB");
+                SBi = (StorageBarrelInterface) Naming.lookup("rmi://localhost:1098/SB");
                 int num = SBi.subscribeB("localhost", (StorageBarrelInterfaceB) storageBarrel);
                 storageBarrel.setId(num);
                 System.out.println("Barrel: Subscribed Search Module");
@@ -168,8 +174,8 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
                                         String texto = "recebi" + name + "\n";
                                         byte[] me = texto.getBytes();
 
-                                        InetAddress aHost = InetAddress.getByName("localhost");// DEBUG: para ser na mm
-                                                                                               // maquina
+                                        InetAddress aHost = InetAddress.getByName("localhost");
+                                        // InetAddress aHost = InetAddress.getByName(m.getIP());// DEBUG: out off machine
                                         DatagramPacket request = new DatagramPacket(me, me.length, aHost, m.getPORT());
                                         aSocket.send(request);
 

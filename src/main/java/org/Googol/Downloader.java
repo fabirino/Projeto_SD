@@ -16,11 +16,13 @@ import java.net.MalformedURLException;
 import java.net.MulticastSocket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Scanner;
 import java.util.StringTokenizer;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -98,6 +100,7 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
 
     /**
      * Number or active barrels, if it is 0, waits
+     * 
      * @throws InterruptedException
      */
     public static void esperarVariavel() throws InterruptedException {
@@ -114,6 +117,7 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
 
     /**
      * signals the wait
+     * 
      * @param valor value to change
      */
     public void mudarVariavelint(int valor) {
@@ -128,6 +132,7 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
 
     /**
      * signals the wait
+     * 
      * @param valor value to change
      */
     public void mudarVariavelsync(Boolean valor) {
@@ -143,12 +148,12 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
     public static void main(String[] args) {
 
         if (args.length == 1) {
-            ipServer = args[0];
+        ipServer = args[0];
         } else {
-            System.out.println("Barrel: Use the ip address of the server as an arg");
-            return;
+        ipServer = "";
         }
 
+        String test = "rmi://" + ipServer + ":1099/SM";
         PTStopWords = new ArrayList<>();
         ENStopWords = new ArrayList<>();
         fillArray(PTStopWords, PT);
@@ -175,7 +180,11 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
             });
 
             try {
-                SMi = (DownloaderInterface) Naming.lookup("rmi://"+ipServer+":1099/SM");
+                if(ipServer.equals("")){
+                    SMi = (DownloaderInterface) Naming.lookup("rmi://localhost:1099/SM");
+                }else{
+                    SMi = (DownloaderInterface) Naming.lookup(test);
+                }
                 int num = SMi.subscribeD((DownloaderInterfaceC) downloader);
                 if (num == 0) {
                     System.out.println("Downloader: There are no Storage Barrels available");
@@ -198,6 +207,15 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
                 System.out.println("Downloader: Could not join Multicast group");
                 return;
             }
+            String IP;
+            try {
+                InetAddress endereco = InetAddress.getLocalHost();
+                IP = endereco.getHostAddress();
+                System.out.println("IP: " + IP);
+            } catch (UnknownHostException ex) {
+                System.out.println("Não foi possível obter o endereço IP da máquina.");
+                return;
+            }
 
             System.out.println("Downloader: System started");
             try (DatagramSocket aSocket = new DatagramSocket(PORTUDP)) {
@@ -214,6 +232,8 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
                             continue;
 
                         Message m = new Message(url, PORTUDP);
+                        // Message m = new Message(url, PORTUDP,IP);//out off machine
+
                         int attempts = 3; // DEBUG: 3 tentativas se o multicast enviar e algo falhar!!
                         for (int i = 0; i < attempts; i++) {
                             try {
@@ -268,17 +288,20 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
                         System.out.println("Downloader: Remote Exception catched");
                     } catch (InterruptedException e) {
                         System.out.println(e);
-                    } catch (IOException IO) {
-                        System.out.println("Downloader: Failed to send data through Multicast");
                     } catch (ValidationException Ve) {
                         System.out.println("Downloader: Validation Exception catched");
+                    } catch (IOException IO) {
+                        System.out.println("Downloader: Failed to send data through Multicast");
                     }
+
                 }
             } catch (SocketException e) {
                 System.out.println("Socket: " + e.getMessage());
+                return;
             }
         } catch (RemoteException e) {
             System.out.println("Downloader: Something went wrong :)");
+            return;
         }
     }
 
@@ -373,6 +396,7 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
 
     /**
      * Set Method
+     * 
      * @param id2 param to set
      */
     public void setId(int id2) {
