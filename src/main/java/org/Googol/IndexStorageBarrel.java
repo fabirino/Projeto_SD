@@ -93,7 +93,7 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
                 return;
             } catch (ConcurrentModificationException e) {
                 System.out.println("Barrel: Error trying to write to a Hashmap");
-                storageBarrel.onCrash();
+                storageBarrel.onCrash(1);
             }
 
             // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
@@ -130,7 +130,7 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
                     } catch (ConcurrentModificationException e) {
                         System.out.println("Barrel: Error trying to write to a Hashmap");
                     } finally {
-                        storageBarrel.onCrash();
+                        storageBarrel.onCrash(1);
                         System.out.println("Barrel: Shutdown");
                     }
                 }
@@ -148,6 +148,7 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
                         socket.joinGroup(group);
 
                         try (DatagramSocket aSocket = new DatagramSocket()) {
+                            int count = 0;
                             while (true) {
                                 // Create buffer
                                 byte[] buffer = new byte[bufferSize];
@@ -174,12 +175,16 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
 
                                         storageBarrel.saveURL(url);
                                         // System.out.println(url);
+                                        if(++count==10){
+                                            storageBarrel.onCrash(0);
+                                            count = 0;
+                                        }
                                     } else {
                                         System.out.println("Barrel: The received object is not of type String!");
                                     }
                                 } catch (ClassNotFoundException e) {
                                     System.out.println("Barrel: Error trying to read from Multicast Socket");
-                                    storageBarrel.onCrash();
+                                    storageBarrel.onCrash(1);
                                     return;
                                 }
 
@@ -317,8 +322,9 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
      * <p>
      * It saves the corrunt state of the index in an object file
      */
-    public void onCrash() {
-        System.out.println("Barrel: System crashed, saving Hashmap barrel.");
+    public void onCrash(int print) {
+        if(print==1)
+            System.out.println("Barrel: System crashed, saving Hashmap barrel.");
         if (index.size() != 0) {
             try (FileOutputStream fos = new FileOutputStream(fileIndex);
                     ObjectOutputStream oos = new ObjectOutputStream(fos)) {
