@@ -223,10 +223,19 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
 
         // save in this.index
         HashSet<URL> hashset;
+        String strurl = url.getUrl();
         for (String Keyword : url.getKeywords()) {
             if (index.containsKey(Keyword)) {
                 hashset = index.get(Keyword);
-                if (!hashset.contains(url)) {
+                boolean contains = false;
+                for (URL url2 : hashset) {
+                    if (url2.getUrl().equals(strurl)) {
+                        hashset.add(url);
+                        contains = true;
+                        break;
+                    }
+                }
+                if (!contains) {
                     hashset.add(url);
                     index.replace(Keyword, hashset);
                 }
@@ -244,10 +253,19 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
         for (String u : url.getUrls()) {
             if (path.containsKey(u)) {
                 hashset2 = path.get(u);
-                if (!hashset2.contains(url)) {
-                    hashset2.add(url);
-                    path.replace(u, hashset2);
+                boolean contains = false;
+                for (URL url2 : hashset2) {
+                    if (url2.getUrl().equals(strurl)) {
+                        contains = true;
+                        hashset2.add(url);
+                        break;
+                    }
                 }
+                if (!contains) {
+                    hashset2.add(url);
+                    index.replace(u, hashset2);
+                }
+
             } else {
                 hashset2 = new HashSet<>();
                 hashset2.add(url);

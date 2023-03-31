@@ -61,6 +61,10 @@ public class URL implements Serializable{
     }
 
     public String toString(){
+        return  url ;
+    }
+
+    public String printURL(){
         return "URL: " + url + "\nTitle: " + title + "\nQuote: " + quote + "\n";
     }
 

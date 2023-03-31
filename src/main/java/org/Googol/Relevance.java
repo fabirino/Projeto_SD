@@ -22,7 +22,7 @@ public class Relevance {
      * @return URL
      */
     public String getURL() {
-        return url.toString();
+        return url.printURL();
     }
 
     /**
