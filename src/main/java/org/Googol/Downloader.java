@@ -379,20 +379,10 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
         id = id2;
     }
 
-    /** 
-     * Used by the server when a barrels is active or a barrel dies
-     * @param variavel number of barrels
-     * @throws RemoteException
-     */
     public void setvariavel(int variavel) throws RemoteException {
         mudarVariavelint(variavel);
     }
 
-    /**
-     * used to sync the information between barrels
-     * @param variavel change to true, and the barrels wait
-     * @throws RemoteException
-     */
     public void setsyncD(Boolean variavel) throws RemoteException {
         mudarVariavelsync(variavel);
     }

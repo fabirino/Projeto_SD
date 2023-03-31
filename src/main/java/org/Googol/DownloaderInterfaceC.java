@@ -20,8 +20,18 @@ public interface DownloaderInterfaceC extends Remote {
      */
     public void crashSearchModel() throws RemoteException;
 
+    /** 
+     * Used by the server when a barrels is active or a barrel dies
+     * @param variavel number of barrels
+     * @throws RemoteException
+     */
     public void setvariavel(int variavel) throws RemoteException;
 
+    /**
+     * used to sync the information between barrels
+     * @param variavel change to true, and the barrels wait
+     * @throws RemoteException
+     */
     public void setsyncD(Boolean variavel) throws RemoteException;
 
 }

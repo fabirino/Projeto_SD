@@ -46,6 +46,10 @@ public interface DownloaderInterface extends Remote {
      */
     public int getNBarrels() throws RemoteException;
 
+    /**
+     * used to check if all barrels are alive, if not, removes it from the list of barrels
+     * @throws RemoteException
+     */
     public void pingBarrels() throws RemoteException;
 
 }
