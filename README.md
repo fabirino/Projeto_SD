@@ -40,6 +40,8 @@ To run the program, you need to run:
 ## Notes
 - It is possible to Run only the Search Module and the Client if the client only wants to see the Stats
 - There can be more than one Downloader or Barrel running at the same time
+- To run every program but the Search Module as intended, the ip of the server must be passed as an argument (ip = args[0])
+- It is necessary to create the folder ./info so the Barrels can store their information in it 
 
 # Devs
 `Eduardo Figueiredo` 2020213717 <br>
