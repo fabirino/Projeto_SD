@@ -41,12 +41,34 @@ public interface StorageBarrelInterfaceB extends Remote{
      */
     public boolean tryPing() throws RemoteException;
 
+    /**
+     * Set Method
+     * Used to set the Path after a sync with other barrels
+     * @param in Path to be set
+     * @throws RemoteException
+     */
     public void setIndex(HashMap<String, HashSet<URL>> in) throws RemoteException;
 
+    /**
+     * Set Method
+     * Used to set the Index after a sync with other barrels
+     * @param in index to be set
+     * @throws RemoteException
+     */
     public void setPath(HashMap<String, HashSet<URL>> in) throws RemoteException;
 
+    /**
+     * Get Method
+     * @return Index
+     * @throws RemoteException
+     */
     public HashMap<String, HashSet<URL>> getIndex() throws RemoteException;
 
+    /**
+     * Get Method
+     * @return Path
+     * @throws RemoteException
+     */
     public HashMap<String, HashSet<URL>> getPath() throws RemoteException;
 
 }

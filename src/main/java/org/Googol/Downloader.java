@@ -96,6 +96,10 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
         super();
     }
 
+    /**
+     * Number or active barrels, if it is 0, waits
+     * @throws InterruptedException
+     */
     public static void esperarVariavel() throws InterruptedException {
         lock.lock();
         try {
@@ -108,6 +112,10 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
         }
     }
 
+    /**
+     * signals the wait
+     * @param valor value to change
+     */
     public void mudarVariavelint(int valor) {
         lock.lock();
         try {
@@ -118,6 +126,10 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
         }
     }
 
+    /**
+     * signals the wait
+     * @param valor value to change
+     */
     public void mudarVariavelsync(Boolean valor) {
         lock.lock();
         try {
@@ -359,14 +371,28 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
         return id;
     }
 
+    /**
+     * Set Method
+     * @param id2 param to set
+     */
     public void setId(int id2) {
         id = id2;
     }
 
+    /** 
+     * Used by the server when a barrels is active or a barrel dies
+     * @param variavel number of barrels
+     * @throws RemoteException
+     */
     public void setvariavel(int variavel) throws RemoteException {
         mudarVariavelint(variavel);
     }
 
+    /**
+     * used to sync the information between barrels
+     * @param variavel change to true, and the barrels wait
+     * @throws RemoteException
+     */
     public void setsyncD(Boolean variavel) throws RemoteException {
         mudarVariavelsync(variavel);
     }

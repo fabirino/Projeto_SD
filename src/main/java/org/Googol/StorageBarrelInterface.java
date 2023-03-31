@@ -21,10 +21,28 @@ public interface StorageBarrelInterface extends Remote{
      */
     public void unsubscribeB(StorageBarrelInterfaceB client) throws RemoteException;
 
+    /**
+     * used to syncronize
+     * @throws RemoteException
+     */
     public void updatesyncD() throws RemoteException;
 
+    /**
+     * Used to sync the information of the barrels if a barrel starts after the another, so they have similar information
+     * @param c barrel
+     * @param index data
+     * @return hashset
+     * @throws RemoteException
+     */
     public HashMap<String, HashSet<URL>> syncIndex(StorageBarrelInterfaceB c ,HashMap<String, HashSet<URL>> index) throws RemoteException; 
 
+    /**
+     * Used to sync the information of the barrels if a barrel starts after the another, so they have similar information
+     * @param c barrel
+     * @param path data
+     * @return hashset
+     * @throws RemoteException
+     */
     public HashMap<String, HashSet<URL>> syncPath(StorageBarrelInterfaceB c ,HashMap<String, HashSet<URL>> path) throws RemoteException;
 
 }

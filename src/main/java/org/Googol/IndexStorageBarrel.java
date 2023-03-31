@@ -175,7 +175,7 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
 
                                         storageBarrel.saveURL(url);
                                         // System.out.println(url);
-                                        if(++count==10){
+                                        if (++count == 10) {
                                             storageBarrel.onCrash(0);
                                             count = 0;
                                         }
@@ -321,9 +321,10 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
      * Function used when an exception ocurres
      * <p>
      * It saves the corrunt state of the index in an object file
+     * @param print used to print if a crash occures
      */
     public void onCrash(int print) {
-        if(print==1)
+        if (print == 1)
             System.out.println("Barrel: System crashed, saving Hashmap barrel.");
         if (index.size() != 0) {
             try (FileOutputStream fos = new FileOutputStream(fileIndex);
@@ -458,10 +459,18 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
             return null;
     }
 
+    /**
+     * Get Method
+     * @throws RemoteException
+     */
     public int getId() throws RemoteException {
         return id;
     }
 
+    /**
+     * Set method
+     * @param id id to set
+     */
     public void setId(int id) {
         this.id = id;
     }
@@ -476,14 +485,21 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
         System.out.println("size path >> " + this.path.size());// APENAS PARA DEBUG!!
     }
 
+
     public boolean tryPing() throws RemoteException {
         return true;
     }
+
+
 
     public HashMap<String, HashSet<URL>> getIndex() throws RemoteException {
         return this.index;
     }
 
+    /**
+     * Get Method
+     * 
+     */
     public HashMap<String, HashSet<URL>> getPath() throws RemoteException {
         return this.path;
     }
