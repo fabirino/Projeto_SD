@@ -9,7 +9,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.security.NoSuchAlgorithmException;
 import java.security.MessageDigest;
 
@@ -28,6 +30,7 @@ public class RMISearchModule extends UnicastRemoteObject
     static ArrayList<DownloaderInterfaceC> listOfDownloaders;
     static int downloaderCount;
     static Connection connection;
+    static boolean sync;
 
     String menu;
     Queue urlQueue;
@@ -58,6 +61,7 @@ public class RMISearchModule extends UnicastRemoteObject
 
         downloaderCount = 0;
         barrelCount = 0;
+        sync = false;
 
         // Setup DataBase FIXME: guardar estes dados num ficheiro a parte por seguranca
         String url = "jdbc:postgresql://localhost/ProjetoSD";
@@ -277,6 +281,7 @@ public class RMISearchModule extends UnicastRemoteObject
         listOfBarrels.add(c);
         for (DownloaderInterfaceC cl : listOfDownloaders) {
             cl.setvariavel(listOfBarrels.size());
+            cl.setsyncD(true);
         }
         return barrelCount;
     }
@@ -291,6 +296,76 @@ public class RMISearchModule extends UnicastRemoteObject
             cl.setvariavel(listOfBarrels.size());
         }
         System.out.println("Search Module: Unsubscribing Barrel" + client.getId());
+    }
+
+    public HashMap<String, HashSet<URL>> syncIndex(StorageBarrelInterfaceB c ,HashMap<String, HashSet<URL>> index) throws RemoteException{
+        HashMap<String, HashSet<URL>> hash;
+
+        if(listOfBarrels.size() == 1){
+            return null;
+        }else{
+            if(index.size() == 0){
+                StorageBarrelInterfaceB Barrel = listOfBarrels.get((nextBarrel++) % listOfBarrels.size());
+                hash = Barrel.getIndex();
+                return hash;
+            }
+            else{
+                StorageBarrelInterfaceB Barrel = listOfBarrels.get((nextBarrel++) % listOfBarrels.size());
+                hash = Barrel.getIndex();
+                for (String key : index.keySet()) {
+                    if (hash.containsKey(key)) {
+                        HashSet<URL> set1 = hash.get(key);
+                        HashSet<URL> set2 = index.get(key);
+                        set1.addAll(set2);
+                    } else {
+                        hash.put(key, index.get(key));
+                    }
+                }
+                for (StorageBarrelInterfaceB b : listOfBarrels) {
+                    b.setIndex(hash);
+                }
+                return null;
+            }
+        }
+
+    }
+
+    public HashMap<String, HashSet<URL>> syncPath(StorageBarrelInterfaceB c ,HashMap<String, HashSet<URL>> path) throws RemoteException{
+        HashMap<String, HashSet<URL>> hash;
+
+        if(listOfBarrels.size() == 1){
+            return null;
+        }else{
+            StorageBarrelInterfaceB Barrel = listOfBarrels.get((nextBarrel++) % listOfBarrels.size());
+            if(path.size() == 0){
+                hash = Barrel.getPath();
+                return hash;
+            }
+            else{
+                hash = Barrel.getPath();
+                for (String key : path.keySet()) {
+                    if (hash.containsKey(key)) {
+                        HashSet<URL> set1 = hash.get(key);
+                        HashSet<URL> set2 = path.get(key);
+                        set1.addAll(set2);
+                    } else {
+                        hash.put(key, path.get(key));
+                    }
+                }
+                for (StorageBarrelInterfaceB b : listOfBarrels) {
+                    b.setPath(hash);
+                }
+                return null;
+            }
+        }
+
+    }
+
+    public void updatesyncD() throws RemoteException {
+        for (DownloaderInterfaceC cl : listOfDownloaders) {
+            cl.setsyncD(false);
+        }
+        
     }
 
     // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=

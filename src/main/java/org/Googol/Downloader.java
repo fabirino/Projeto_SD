@@ -86,6 +86,7 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
     private static Lock lock = new ReentrantLock();
     private final static Condition condicao = lock.newCondition();
     private static int variavel = 1;
+    private static boolean sync;
 
     /**
      * Construtor
@@ -97,7 +98,7 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
     public static void esperarVariavel() throws InterruptedException {
         lock.lock();
         try {
-            while (variavel == 0) {
+            while (variavel == 0 || sync == true) {
                 System.out.println("Downloader: Waiting for barrels to remain active!");
                 condicao.await();
             }
@@ -106,10 +107,19 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
         }
     }
 
-    public void mudarVariavel(int valor) {
+    public void mudarVariavelint(int valor) {
         lock.lock();
         try {
             variavel = valor;
+            condicao.signalAll();
+        } finally {
+            lock.unlock();
+        }
+    }
+    public void mudarVariavelsync(Boolean valor) {
+        lock.lock();
+        try {
+            sync = valor;
             condicao.signalAll();
         } finally {
             lock.unlock();
@@ -127,6 +137,7 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
             downloader = new Downloader();
             socket = null;
             InetAddress group;
+            sync = false;
 
             // Catch Crtl C to save data
             Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -344,6 +355,10 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
     }
 
     public void setvariavel(int variavel) throws RemoteException {
-        mudarVariavel(variavel);
+        mudarVariavelint(variavel);
+    }
+
+    public void setsyncD(Boolean variavel) throws RemoteException {
+        mudarVariavelsync(variavel);
     }
 }

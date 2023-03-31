@@ -1,6 +1,7 @@
 package org.Googol;
 
 import java.rmi.*;
+import java.util.HashMap;
 import java.util.HashSet;
 /**
  * Interface impementada pelos Barrels para responderem às Queries pedidas pelos Clientes
@@ -39,5 +40,13 @@ public interface StorageBarrelInterfaceB extends Remote{
      * @throws RemoteException
      */
     public boolean tryPing() throws RemoteException;
+
+    public void setIndex(HashMap<String, HashSet<URL>> in) throws RemoteException;
+
+    public void setPath(HashMap<String, HashSet<URL>> in) throws RemoteException;
+
+    public HashMap<String, HashSet<URL>> getIndex() throws RemoteException;
+
+    public HashMap<String, HashSet<URL>> getPath() throws RemoteException;
 
 }

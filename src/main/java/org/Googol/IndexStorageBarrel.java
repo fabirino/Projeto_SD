@@ -68,6 +68,46 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
             name = scan.nextLine();
             scan.close();
             storageBarrel = new IndexStorageBarrel();
+            try {
+                SBi = (StorageBarrelInterface) Naming.lookup("rmi://localhost:1098/SB");
+                int num = SBi.subscribeB("localhost", (StorageBarrelInterfaceB) storageBarrel);
+                storageBarrel.setId(num);
+                System.out.println("Barrel: Subscribed Search Module");
+
+            } catch (NotBoundException NBE) {
+                System.out.println("System: The interface is not bound");
+                return;
+            } catch (MalformedURLException MFE) {
+                System.out.println("System: The URL specified is malformed");
+            } catch (RemoteException RM) {
+                System.out.println("System: Remote Exception, Search Module might not be running");
+                return;
+            } catch (ConcurrentModificationException e) {
+                System.out.println("Barrel: Error trying to write to a Hashmap");
+                storageBarrel.onCrash();
+            }
+
+            // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
+            // Sync files obj
+            try {
+                Thread.sleep(5000);//aguarda que sincronize os outros servers tds 
+            } catch (Exception e) {
+            }
+            HashMap<String, HashSet<URL>> hash = SBi.syncIndex((StorageBarrelInterfaceB) storageBarrel,storageBarrel.index);
+            if(hash != null){
+                storageBarrel.index = hash;
+            }
+            hash = SBi.syncPath((StorageBarrelInterfaceB) storageBarrel,storageBarrel.path);
+            if(hash != null){
+                storageBarrel.path = hash;
+            }
+            try {
+                Thread.sleep(1000);//aguarda que sincronize os outros servers tds 
+            } catch (Exception e) {
+            }
+            SBi.updatesyncD();
+            
+            // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
 
             // Catch Crtl C to save data
             Thread t0 = new Thread("t0") {
@@ -79,7 +119,7 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
                         // re.printStackTrace();
                     } catch (ConcurrentModificationException e) {
                         System.out.println("Barrel: Error trying to write to a Hashmap");
-                    }finally{
+                    } finally {
                         storageBarrel.onCrash();
                         System.out.println("Barrel: Shutdown");
                     }
@@ -103,9 +143,9 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
                                 byte[] buffer = new byte[bufferSize];
                                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
                                 socket.receive(packet);
-                                
+
                                 byte[] data = Arrays.copyOf(packet.getData(), packet.getLength());
-                                
+
                                 ByteArrayInputStream bais = new ByteArrayInputStream(data);
                                 GZIPInputStream gzis = new GZIPInputStream(bais);
                                 ObjectInputStream ois = new ObjectInputStream(gzis);
@@ -151,36 +191,9 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
                 }
             });
 
-            // Thread usada para comunicar com o server por RMI
-            Thread t2 = new Thread(new Runnable() {
-                public void run() {
-
-                    try {
-                        SBi = (StorageBarrelInterface) Naming.lookup("rmi://localhost:1098/SB");
-                        int num = SBi.subscribeB("localhost", (StorageBarrelInterfaceB) storageBarrel);
-                        storageBarrel.setId(num);
-                        System.out.println("Barrel: Subscribed Search Module");
-
-                    } catch (NotBoundException NBE) {
-                        System.out.println("System: The interface is not bound");
-                        return;
-                    } catch (MalformedURLException MFE) {
-                        System.out.println("System: The URL specified is malformed");
-                    } catch (RemoteException RM) {
-                        System.out.println("System: Remote Exception, Search Module might not be running");
-                        return;
-                    } catch (ConcurrentModificationException e) {
-                        System.out.println("Barrel: Error trying to write to a Hashmap");
-                        storageBarrel.onCrash();
-                    }
-                }
-
-            });
             try {
                 t1.start();
-                t2.start();
                 t1.join();
-                t2.join();
             } catch (InterruptedException e) {
                 System.out.println("Barrel: Something went wrong with the threads :/");
             }
@@ -418,8 +431,28 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
     public void setId(int id) {
         this.id = id;
     }
+    
+    public void setIndex(HashMap<String, HashSet<URL>> in) throws RemoteException{
+        this.index = in;
+        System.out.println("size index>> " + this.index.size());//APENAS PARA DEBUG!!
+    }
+
+    public void setPath(HashMap<String, HashSet<URL>> in) throws RemoteException{
+        this.path = in;
+        System.out.println("size path >> " + this.path.size());//APENAS PARA DEBUG!!
+    }
 
     public boolean tryPing() throws RemoteException {
         return true;
     }
+
+    public HashMap<String, HashSet<URL>> getIndex() throws RemoteException{
+        return this.index;
+    }
+
+    public HashMap<String, HashSet<URL>> getPath() throws RemoteException{
+        return this.path;
+    }
+
+
 }

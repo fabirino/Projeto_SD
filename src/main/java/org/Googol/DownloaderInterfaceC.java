@@ -22,4 +22,6 @@ public interface DownloaderInterfaceC extends Remote {
 
     public void setvariavel(int variavel) throws RemoteException;
 
+    public void setsyncD(Boolean variavel) throws RemoteException;
+
 }

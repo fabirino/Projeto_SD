@@ -1,6 +1,8 @@
 package org.Googol;
 
 import java.rmi.*;
+import java.util.HashMap;
+import java.util.HashSet;
 
 public interface StorageBarrelInterface extends Remote{
     /**
@@ -18,4 +20,11 @@ public interface StorageBarrelInterface extends Remote{
      * @throws RemoteException
      */
     public void unsubscribeB(StorageBarrelInterfaceB client) throws RemoteException;
+
+    public void updatesyncD() throws RemoteException;
+
+    public HashMap<String, HashSet<URL>> syncIndex(StorageBarrelInterfaceB c ,HashMap<String, HashSet<URL>> index) throws RemoteException; 
+
+    public HashMap<String, HashSet<URL>> syncPath(StorageBarrelInterfaceB c ,HashMap<String, HashSet<URL>> path) throws RemoteException;
+
 }
