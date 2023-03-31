@@ -49,6 +49,7 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
     private static StorageBarrelInterface SBi;
     private int id;
     private static String name;
+    private static String ipServer;
 
     public IndexStorageBarrel() throws RemoteException {
         super();
@@ -60,6 +61,14 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
     }
 
     public static void main(String[] args) {
+
+        if (args.length == 1) {
+            ipServer = args[0];
+        } else {
+            System.out.println("Barrel: Use the ip address of the server as an arg");
+            return;
+        }
+
         IndexStorageBarrel storageBarrel;
 
         try {
@@ -69,7 +78,7 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
             scan.close();
             storageBarrel = new IndexStorageBarrel();
             try {
-                SBi = (StorageBarrelInterface) Naming.lookup("rmi://localhost:1098/SB");
+                SBi = (StorageBarrelInterface) Naming.lookup("rmi://" + ipServer + ":1098/SB");
                 int num = SBi.subscribeB("localhost", (StorageBarrelInterfaceB) storageBarrel);
                 storageBarrel.setId(num);
                 System.out.println("Barrel: Subscribed Search Module");
@@ -90,23 +99,24 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
             // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
             // Sync files obj
             try {
-                Thread.sleep(5000);//aguarda que sincronize os outros servers tds 
+                Thread.sleep(5000);// aguarda que sincronize os outros servers tds
             } catch (Exception e) {
             }
-            HashMap<String, HashSet<URL>> hash = SBi.syncIndex((StorageBarrelInterfaceB) storageBarrel,storageBarrel.index);
-            if(hash != null){
+            HashMap<String, HashSet<URL>> hash = SBi.syncIndex((StorageBarrelInterfaceB) storageBarrel,
+                    storageBarrel.index);
+            if (hash != null) {
                 storageBarrel.index = hash;
             }
-            hash = SBi.syncPath((StorageBarrelInterfaceB) storageBarrel,storageBarrel.path);
-            if(hash != null){
+            hash = SBi.syncPath((StorageBarrelInterfaceB) storageBarrel, storageBarrel.path);
+            if (hash != null) {
                 storageBarrel.path = hash;
             }
             try {
-                Thread.sleep(1000);//aguarda que sincronize os outros servers tds 
+                Thread.sleep(1000);// aguarda que sincronize os outros servers tds
             } catch (Exception e) {
             }
             SBi.updatesyncD();
-            
+
             // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
 
             // Catch Crtl C to save data
@@ -431,28 +441,27 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
     public void setId(int id) {
         this.id = id;
     }
-    
-    public void setIndex(HashMap<String, HashSet<URL>> in) throws RemoteException{
+
+    public void setIndex(HashMap<String, HashSet<URL>> in) throws RemoteException {
         this.index = in;
-        System.out.println("size index>> " + this.index.size());//APENAS PARA DEBUG!!
+        System.out.println("size index>> " + this.index.size());// APENAS PARA DEBUG!!
     }
 
-    public void setPath(HashMap<String, HashSet<URL>> in) throws RemoteException{
+    public void setPath(HashMap<String, HashSet<URL>> in) throws RemoteException {
         this.path = in;
-        System.out.println("size path >> " + this.path.size());//APENAS PARA DEBUG!!
+        System.out.println("size path >> " + this.path.size());// APENAS PARA DEBUG!!
     }
 
     public boolean tryPing() throws RemoteException {
         return true;
     }
 
-    public HashMap<String, HashSet<URL>> getIndex() throws RemoteException{
+    public HashMap<String, HashSet<URL>> getIndex() throws RemoteException {
         return this.index;
     }
 
-    public HashMap<String, HashSet<URL>> getPath() throws RemoteException{
+    public HashMap<String, HashSet<URL>> getPath() throws RemoteException {
         return this.path;
     }
-
 
 }

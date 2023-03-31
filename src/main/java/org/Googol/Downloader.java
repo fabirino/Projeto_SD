@@ -87,6 +87,7 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
     private final static Condition condicao = lock.newCondition();
     private static int variavel = 1;
     private static boolean sync;
+    public static String ipServer;
 
     /**
      * Construtor
@@ -116,6 +117,7 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
             lock.unlock();
         }
     }
+
     public void mudarVariavelsync(Boolean valor) {
         lock.lock();
         try {
@@ -127,6 +129,13 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
     }
 
     public static void main(String[] args) {
+
+        if (args.length == 1) {
+            ipServer = args[0];
+        } else {
+            System.out.println("Barrel: Use the ip address of the server as an arg");
+            return;
+        }
 
         PTStopWords = new ArrayList<>();
         ENStopWords = new ArrayList<>();
@@ -154,7 +163,7 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
             });
 
             try {
-                SMi = (DownloaderInterface) Naming.lookup("rmi://localhost:1099/SM");
+                SMi = (DownloaderInterface) Naming.lookup("rmi://"+ipServer+":1099/SM");
                 int num = SMi.subscribeD((DownloaderInterfaceC) downloader);
                 if (num == 0) {
                     System.out.println("Downloader: There are no Storage Barrels available");
@@ -220,7 +229,7 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
                                     DatagramPacket request = new DatagramPacket(buffer, buffer.length);
 
                                     aSocket.receive(request);
-                                    
+
                                     String s = new String(request.getData(), 0, request.getLength());
                                     System.out.println("Server Recebeu: " + s + " de: "
                                             + request.getAddress()

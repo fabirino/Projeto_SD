@@ -21,9 +21,17 @@ import java.security.MessageDigest;
 public class RMIClient {
 
     public static void main(String[] args) {
+        String ipServer = "";
+        if (args.length == 1) {
+            ipServer = args[0];
+        } else {
+            System.out.println("Barrel: Use the ip address of the server as an arg");
+            return;
+        }
+
         GoogolInterface SMi;
         try {
-            SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
+            SMi = (GoogolInterface) Naming.lookup("rmi://" + ipServer + ":1099/SM");
         } catch (NotBoundException NBE) {
             System.out.println("System: The Interface is not bound");
             return;
