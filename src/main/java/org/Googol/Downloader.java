@@ -22,7 +22,6 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
-import java.util.Scanner;
 import java.util.StringTokenizer;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -183,7 +182,7 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
                 if(ipServer.equals("")){
                     SMi = (DownloaderInterface) Naming.lookup("rmi://localhost:1099/SM");
                 }else{
-                    SMi = (DownloaderInterface) Naming.lookup(test);
+                    SMi = (DownloaderInterface) Naming.lookup(test); // DEBUG: out off machine
                 }
                 int num = SMi.subscribeD((DownloaderInterfaceC) downloader);
                 if (num == 0) {
@@ -232,7 +231,7 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
                             continue;
 
                         Message m = new Message(url, PORTUDP);
-                        // Message m = new Message(url, PORTUDP,IP);//out off machine
+                        // Message m = new Message(url, PORTUDP,IP);// DEBUG: out off machine
 
                         int attempts = 3; // DEBUG: 3 tentativas se o multicast enviar e algo falhar!!
                         for (int i = 0; i < attempts; i++) {

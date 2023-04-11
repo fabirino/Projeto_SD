@@ -31,10 +31,10 @@ public class RMIClient {
         String test = "rmi://" + ipServer + ":1099/SM";
         GoogolInterface SMi;
         try {
-            if(ipServer.equals("")){
-            SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
-        }else{
-            SMi = (GoogolInterface) Naming.lookup(test);
+            if (ipServer.equals("")) {
+                SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
+            } else {
+                SMi = (GoogolInterface) Naming.lookup(test);
             }
         } catch (NotBoundException NBE) {
             System.out.println("System: The Interface is not bound");

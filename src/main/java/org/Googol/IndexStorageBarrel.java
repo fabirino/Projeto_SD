@@ -81,10 +81,8 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
                 if(ipServer.equals("")){
                     SBi = (StorageBarrelInterface) Naming.lookup("rmi://localhost:1098/SB");
                 }else{
-                    SBi = (StorageBarrelInterface) Naming.lookup(test);
+                    SBi = (StorageBarrelInterface) Naming.lookup(test);// DEBUG: out off machine
                 }
-                // SBi = (StorageBarrelInterface) Naming.lookup("rmi://" + ipServer + ":1098/SB");
-                SBi = (StorageBarrelInterface) Naming.lookup("rmi://localhost:1098/SB");
                 int num = SBi.subscribeB("localhost", (StorageBarrelInterfaceB) storageBarrel);
                 storageBarrel.setId(num);
                 System.out.println("Barrel: Subscribed Search Module");

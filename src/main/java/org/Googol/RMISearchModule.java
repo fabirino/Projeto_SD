@@ -94,6 +94,7 @@ public class RMISearchModule extends UnicastRemoteObject
 
         try {
             LocateRegistry.createRegistry(1099).rebind("SM", SMi);
+            // LocateRegistry.createRegistry(1099).rebind("rmi://<public-ip>:1099/SM", SMi);// DEBUG: out off machine
         } catch (RemoteException RE) {
             System.out.println("Search Module: System crashed, Remote Exception ocurred");
             SMi.queueCrash();
@@ -103,6 +104,7 @@ public class RMISearchModule extends UnicastRemoteObject
 
         try {
             LocateRegistry.createRegistry(1098).rebind("SB", SMi2);
+            // LocateRegistry.createRegistry(1098).rebind("rmi://<public-ip>:1098/SB", SMi2);// DEBUG: out off machine
         } catch (Exception re) {
             System.out.println("Exception in Search Module: " + re);
         }
