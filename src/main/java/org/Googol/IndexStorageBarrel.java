@@ -78,9 +78,9 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
             scan.close();
             storageBarrel = new IndexStorageBarrel();
             try {
-                if(ipServer.equals("")){
+                if (ipServer.equals("")) {
                     SBi = (StorageBarrelInterface) Naming.lookup("rmi://localhost:1098/SB");
-                }else{
+                } else {
                     SBi = (StorageBarrelInterface) Naming.lookup(test);// DEBUG: out off machine
                 }
                 int num = SBi.subscribeB("localhost", (StorageBarrelInterfaceB) storageBarrel);
@@ -173,7 +173,8 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
                                         byte[] me = texto.getBytes();
 
                                         InetAddress aHost = InetAddress.getByName("localhost");
-                                        // InetAddress aHost = InetAddress.getByName(m.getIP());// DEBUG: out off machine
+                                        // InetAddress aHost = InetAddress.getByName(m.getIP());// DEBUG: out off
+                                        // machine
                                         DatagramPacket request = new DatagramPacket(me, me.length, aHost, m.getPORT());
                                         aSocket.send(request);
 
@@ -236,17 +237,22 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
         for (String Keyword : url.getKeywords()) {
             if (index.containsKey(Keyword)) {
                 hashset = index.get(Keyword);
-                boolean contains = false;
-                for (URL url2 : hashset) {
-                    if (url2.getUrl().equals(strurl)) {
-                        hashset.add(url);
-                        contains = true;
-                        break;
+                if (hashset.contains(url)) {
+                    // System.out.println("Barrel: URL already exists");
+                    continue;
+                } else {
+                    boolean contains = false;
+                    for (URL url2 : hashset) {
+                        if (url2.getUrl().equals(strurl)) {
+                            contains = true;
+                            break;
+                        }
                     }
-                }
-                if (!contains) {
-                    hashset.add(url);
-                    index.replace(Keyword, hashset);
+                    if (!contains) {
+                        hashset.add(url);
+                        index.replace(Keyword, hashset);
+                        // System.out.println("DEBUG:" + Keyword + " :" + hashset);
+                    }
                 }
 
             } else {
@@ -262,17 +268,22 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
         for (String u : url.getUrls()) {
             if (path.containsKey(u)) {
                 hashset2 = path.get(u);
-                boolean contains = false;
-                for (URL url2 : hashset2) {
-                    if (url2.getUrl().equals(strurl)) {
-                        contains = true;
-                        hashset2.add(url);
-                        break;
+                if (hashset2.contains(url)) {
+                    // System.out.println("Barrel: URL already exists");
+                    continue;
+                } else {
+                    boolean contains = false;
+                    for (URL url2 : hashset2) {
+                        if (url2.getUrl().equals(strurl)) {
+                            contains = true;
+                            break;
+                        }
                     }
-                }
-                if (!contains) {
-                    hashset2.add(url);
-                    index.replace(u, hashset2);
+                    if (!contains) {
+                        hashset2.add(url);
+                        index.replace(u, hashset2);
+                        // System.out.println("DEBUG2:"+ u + " :" + hashset2);
+                    }
                 }
 
             } else {
@@ -325,6 +336,7 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
      * Function used when an exception ocurres
      * <p>
      * It saves the corrunt state of the index in an object file
+     * 
      * @param print used to print if a crash occures
      */
     public void onCrash(int print) {
@@ -465,6 +477,7 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
 
     /**
      * Get Method
+     * 
      * @throws RemoteException
      */
     public int getId() throws RemoteException {
@@ -473,6 +486,7 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
 
     /**
      * Set method
+     * 
      * @param id id to set
      */
     public void setId(int id) {
@@ -489,12 +503,9 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
         System.out.println("size path >> " + this.path.size());// APENAS PARA DEBUG!!
     }
 
-
     public boolean tryPing() throws RemoteException {
         return true;
     }
-
-
 
     public HashMap<String, HashSet<URL>> getIndex() throws RemoteException {
         return this.index;

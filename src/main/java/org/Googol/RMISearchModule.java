@@ -33,6 +33,7 @@ public class RMISearchModule extends UnicastRemoteObject
 
     String menu;
     Queue urlQueue;
+    Queue urlindexQueue;
     int nextBarrel = 0;
 
     /**
@@ -50,7 +51,8 @@ public class RMISearchModule extends UnicastRemoteObject
                     4 - Show Stats
                     0 - Exit
                     """;
-            urlQueue = new Queue();
+            urlQueue = new Queue("_crawl");
+            urlindexQueue = new Queue("_index");
             listOfBarrels = new ArrayList<StorageBarrelInterfaceB>();
             listOfDownloaders = new ArrayList<DownloaderInterfaceC>();
         }
@@ -451,20 +453,33 @@ public class RMISearchModule extends UnicastRemoteObject
     // QUEUE functions
     // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
 
+    //URLQUEUE
     public boolean addURLQueue(URL URL) throws RemoteException {
         return urlQueue.addURL(URL);
     }
-
+    
     public URL getURLQueue() throws RemoteException, InterruptedException {
         return urlQueue.getUrl();
     }
-
+    
     public void queueRecovery() throws RemoteException {
         urlQueue.onRecovery();
+        urlindexQueue.onRecovery();
     }
-
+    
     public void queueCrash() throws RemoteException {
         urlQueue.onCrash();
+        urlindexQueue.onCrash();
+    }
+
+    //URLINDEXQUEUE
+    public boolean addURLQueue2(URL URL) throws RemoteException {
+        // System.out.println("Search Module: Adding \"" + URL.getUrl() + "\" to the QUEUE2");
+        return urlindexQueue.addURL(URL);
+    }
+
+    public boolean checkUrlQueue2(URL URL) throws RemoteException {
+        return urlindexQueue.checkUrl(URL);
     }
 
     // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=

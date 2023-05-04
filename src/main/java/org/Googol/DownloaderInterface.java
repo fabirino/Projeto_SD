@@ -52,4 +52,8 @@ public interface DownloaderInterface extends Remote {
      */
     public void pingBarrels() throws RemoteException;
 
+    public boolean addURLQueue2(URL URL) throws RemoteException ;
+
+    public boolean checkUrlQueue2(URL URL) throws RemoteException ;
+
 }

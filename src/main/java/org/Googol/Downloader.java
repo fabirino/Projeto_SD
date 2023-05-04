@@ -226,62 +226,80 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
                         // Pega o ultimo URL da Fila e faz o crawl
                         URL url = SMi.getURLQueue();
                         System.out.println("Downloader: Indexing " + url);
-                        url = downloader.crawlURL(url, SMi);
-                        if (url == null)
-                            continue;
+                        //TODO: verificar se o url ja foi indexado
+                        
 
-                        Message m = new Message(url, PORTUDP);
-                        // Message m = new Message(url, PORTUDP,IP);// DEBUG: out off machine
+                        if(SMi.checkUrlQueue2(url)){
+                            // System.out.println("Downloader: URL{" + url +"} already indexed");
+                        }else{
 
-                        int attempts = 3; // DEBUG: 3 tentativas se o multicast enviar e algo falhar!!
-                        for (int i = 0; i < attempts; i++) {
-                            try {
-                                // Envia o URL por multicast para os Barrels
-                                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                                ObjectOutputStream oos = new ObjectOutputStream(new GZIPOutputStream(baos));
-                                oos.writeObject(m);
-                                oos.close();
-                                byte[] data = baos.toByteArray();
-
-                                // System.out.println("lenght -->>" + data.length);
-                                socket.send(new DatagramPacket(data, data.length, group, PORT));
-
-                                // Esperar pelo akn
-                                // System.out.println("========udp!!==========");
-                                int nbarrel = SMi.getNBarrels();
-                                if (nbarrel == 0) {
-                                    SMi.addURLQueue(url);
-                                    System.out.println("Send to QUEUE again!");
-                                    break;
+                            url = downloader.crawlURL(url, SMi);
+                            if (url == null)
+                                continue;
+    
+                            Message m = new Message(url, PORTUDP);
+                            // Message m = new Message(url, PORTUDP,"<ip-downloader!>");// DEBUG: out off machine
+                            
+                            // Message m = new Message(url, PORTUDP,IP);// DEBUG: out off machine
+    
+                            int attempts = 3; // DEBUG: 3 tentativas se o multicast enviar e algo falhar!!
+                            for (int i = 0; i < attempts; i++) {
+                                try {
+                                    // Envia o URL por multicast para os Barrels
+                                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                                    ObjectOutputStream oos = new ObjectOutputStream(new GZIPOutputStream(baos));
+                                    oos.writeObject(m);
+                                    oos.close();
+                                    byte[] data = baos.toByteArray();
+    
+                                    // System.out.println("lenght -->>" + data.length);
+                                    socket.send(new DatagramPacket(data, data.length, group, PORT));
+    
+                                    // Esperar pelo akn
+                                    // System.out.println("========udp!!==========");
+                                    int receive = 0;
+                                    int nbarrel = SMi.getNBarrels();
+                                    if (nbarrel == 0) {
+                                        SMi.addURLQueue(url);
+                                        System.out.println("Send to QUEUE again!");
+                                        break;
+                                    }
+                                    // System.out.println("n barrels -> " + nbarrel);
+                                    for (int j = 0; j < nbarrel; j++) {
+                                        byte[] buffer = new byte[1000];
+                                        DatagramPacket request = new DatagramPacket(buffer, buffer.length);
+    
+                                        aSocket.receive(request);
+                                        receive++;
+                                        String s = new String(request.getData(), 0, request.getLength());
+                                        System.out.println("Server Recebeu: " + s + " de: "
+                                                + request.getAddress()
+                                                + " no porto "
+                                                + request.getPort());
+    
+                                    }
+                                    if(receive == nbarrel){
+                                        // System.out.println("Downloader: URL{" + url +"} indexed");
+                                        SMi.addURLQueue2(url);
+                                    }
+                                } catch (SocketTimeoutException e) {
+                                    // timeout exception.
+                                    System.out.println("Timeout reached!!! " + e);
+                                    SMi.pingBarrels();
+                                    if (i == 2) {
+                                        SMi.addURLQueue(url);
+                                        System.out.println("Send to QUEUE again!");
+                                    } else {
+                                        continue;
+                                    }
                                 }
-                                // System.out.println("n barrels -> " + nbarrel);
-                                for (int j = 0; j < nbarrel; j++) {
-                                    byte[] buffer = new byte[1000];
-                                    DatagramPacket request = new DatagramPacket(buffer, buffer.length);
-
-                                    aSocket.receive(request);
-
-                                    String s = new String(request.getData(), 0, request.getLength());
-                                    System.out.println("Server Recebeu: " + s + " de: "
-                                            + request.getAddress()
-                                            + " no porto "
-                                            + request.getPort());
-
-                                }
-                            } catch (SocketTimeoutException e) {
-                                // timeout exception.
-                                System.out.println("Timeout reached!!! " + e);
-                                SMi.pingBarrels();
-                                if (i == 2) {
-                                    SMi.addURLQueue(url);
-                                    System.out.println("Send to QUEUE again!");
-                                } else {
-                                    continue;
-                                }
+                                
+                                break;
+    
                             }
-                            break;
-
                         }
+
+
 
                     } catch (RemoteException RE) {
                         System.out.println("Downloader: Remote Exception catched");
