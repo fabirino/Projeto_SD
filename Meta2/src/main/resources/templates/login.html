@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html lang="pt">
-  <head>
+<html lang="pt" xmlns:th="http://www.thymeleaf.org">
+
+<head>
     <title>Login</title>
     <meta charset="UTF-8" />
     <link
@@ -14,7 +15,11 @@
     <link th:href="@{/login.css}" rel="stylesheet" />
   </head>
 
-  <body>
+<body>
+    <!-- navbar -->
+    <!-- <div th:insert="~{navbar :: navbar}"></div> -->
+
+    <!-- body -->
     <div class="login-card-container">
       <div class="login-card">
         <div class="login-card-logo">
