@@ -11,6 +11,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+
+import io.github.cdimascio.dotenv.Dotenv;
+
 import java.security.NoSuchAlgorithmException;
 import java.security.MessageDigest;
 
@@ -59,15 +62,15 @@ public class RMISearchModule extends UnicastRemoteObject
     }
 
     public static void main(String[] args) throws RemoteException {
-
+        Dotenv dotenv = Dotenv.load();
         downloaderCount = 0;
         barrelCount = 0;
         sync = false;
 
         // Setup DataBase FIXME: guardar estes dados num ficheiro a parte por seguranca
         String url = "jdbc:postgresql://localhost/ProjetoSD";
-        String username = "postgres";
-        String password = "postgres";
+        String username = dotenv.get("DB_USER"); // "postgres
+        String password =  dotenv.get("DB_PASSWORD");
         try {
             DriverManager.registerDriver(new org.postgresql.Driver());
             connection = DriverManager.getConnection(url, username, password);
