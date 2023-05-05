@@ -1,9 +1,14 @@
 .navbar {
-  background-color: #333;
+  background: rgba(255,255,255, 0.5);
   color: #fff;
   display: flex;
-  justify-content: space-between;
-  padding: 10px;
+  justify-content: center;
+  padding: 5px;
+  position: fixed;
+  top:0;
+  left:0; 
+  right:0;
+  width: 100%;
 }
 
 .navbar ul {
@@ -12,7 +17,7 @@
 }
 
 .navbar ul li {
-  margin-right: 20px;
+  margin-right: 30px;
 }
 
 .navbar ul li a {
@@ -22,4 +27,9 @@
 
 .navbar ul li a:hover {
   text-decoration: underline;
+}
+
+.navbar p{
+  position: fixed;
+  right: 5%; 
 }
