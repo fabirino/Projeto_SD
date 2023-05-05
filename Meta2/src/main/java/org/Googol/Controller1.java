@@ -17,5 +17,10 @@ public class Controller1 {
         return "login";
     }
 
+    @GetMapping("/search_url")
+    public String search_url(){
+        return "search_url";
+    }
+
     
 }
