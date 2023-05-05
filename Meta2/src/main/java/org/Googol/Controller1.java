@@ -42,6 +42,7 @@ public class Controller1 {
         System.out.println("System: The Googol Aplication is running");
     }
 
+    // Redirects ==============================================================
     @GetMapping("/")
     public String redirect() {
         return "redirect:/login";
