@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt" xmlns:th="http://www.thymeleaf.org">
   <head>
-    <title>Search</title>
+    <title>Index</title>
     <meta charset="UTF-8" />
     <link
       rel="stylesheet"
@@ -26,7 +26,7 @@
         </div>
         <form
           class="login-card-form"
-          th:action="@{/see-results}"
+          th:action="@{/see-index}"
           th:object="${words}"
           method="post"
         >
@@ -34,12 +34,12 @@
             <input
               type="text"
               th:field="*{search_words}"
-              placeholder="what are you looking for?"
+              placeholder="what you will indexed today?"
               required
               autofocus
             />
           </div>
-          <button type="submit">Search</button>
+          <button type="submit">Index</button>
         </form>
       </div>
     </div>
