@@ -6,6 +6,9 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 
 import org.Googol.forms.User;
+import org.Googol.forms.Words;
+import org.apache.catalina.connector.Response;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.ConcurrentModificationException;
 
 import org.springframework.ui.Model;
 
@@ -91,6 +95,83 @@ public class Controller1 {
 
         }
         return "result";
+    }
+
+    @GetMapping("/search")
+    public String search_words(Model model) {
+        model.addAttribute("words", new Words());
+
+        return "search_words";
+    }
+
+    @PostMapping("/see-results")
+    public String Submissionresults( @ModelAttribute Words words, Model model) {
+
+        // TODO: Falta fazer os botoes de next e previous 
+        System.out.println("words -> " + "\"" + words.getSearch_words() + "\"");
+        
+        try {
+            String[] word = words.getSearch_words().split(" ");
+            int pages = 0;
+
+            // while (true) {
+                String response = SMi.pagesWithWord(word, pages);
+
+                if (!(response.equals("\nThere are no Urls with that word!")
+                        || response.equals("\nThere are no active barrels!")
+                        || response.equals("\nThere are no more Urls with that word!"))) {
+                    System.out.print(response);
+                    if (pages != 0)
+                        System.out.println("p - Previous Page");
+                    System.out.println("n - Next Page");
+                    System.out.println("q - Quit Search");
+                    // input = scan.nextLine();
+                    // if (input.equals("q")) {
+                    //     break;
+                    // } else if (input.equals("n")) {
+                    //     pages++;
+                    // } else if (input.equals("p") && pages != 0) {
+                    //     pages--;
+                    // }
+                } else {
+                    System.out.println(response);
+                    // break;
+                }
+                model.addAttribute("response", response);
+            // }
+        } catch (RemoteException e) {
+            System.out.println("System: Something went wrong :(");
+            System.out.println("The Search Module is not active");
+        } catch (ConcurrentModificationException e) {
+            System.out.println("System: Something went wrong :(");
+            System.out.println("Error Reading data from server. Restarting...");
+        }
+        return "results_words";
+    }
+
+    @GetMapping("/index")
+    public String index(Model model) {
+        model.addAttribute("words", new Words());
+
+        return "index";
+    }
+
+    @PostMapping("/see-index")
+    public String Submissionindex( @ModelAttribute Words words, Model model) {
+
+        System.out.println("link -> " + "\"" + words.getSearch_words() + "\"");
+        
+        try {
+                SMi.newURL(words.getSearch_words());
+                model.addAttribute("response", "Indexing completed");
+        } catch (RemoteException e) {
+            System.out.println("System: Something went wrong :(");
+            System.out.println("The Search Module is not active");
+        } catch (ConcurrentModificationException e) {
+            System.out.println("System: Something went wrong :(");
+            System.out.println("Error Reading data from server. Restarting...");
+        }
+        return "testing_index";
     }
 
 }
