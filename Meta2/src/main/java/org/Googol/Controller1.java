@@ -43,7 +43,8 @@ public class Controller1 {
         System.out.println("System: The Googol Aplication is running");
     }
 
-    // Redirects ==============================================================
+    // LOGIN =====================================================================
+
     @GetMapping("/")
     public String redirect() {
         return "redirect:/login";
@@ -57,9 +58,8 @@ public class Controller1 {
     }
 
     @PostMapping("/save-user")
-    public String saveUserSubmission(@ModelAttribute User user) {
-
-        // TODO: save project in DB here
+    public String saveUserSubmission(@ModelAttribute User user, Model model) {
+        
         System.out.println(user.getName() + " " + user.getPassword());
         try {
             // Encrypt password
@@ -77,12 +77,18 @@ public class Controller1 {
             System.out.println();
 
             if (result == 1) {
-                System.out.println("Hi, " + user.getName());
+                String response = "Hi " + user.getName() + ", welcome back to Googol!";
+                model.addAttribute("response", response);
+                return "success";
                 // login = true;
             } else if (result == 0) {
-                System.out.println("The password is wrong");
+                String response = "The password is incorrect";
+                model.addAttribute("response", response);
+                return "error";
             } else if (result == 2) {
-                System.out.println("The username does not exists");
+                String response = "The username does not exists";
+                model.addAttribute("response", response);
+                return "error";
             }
         } catch (RemoteException e) {
             System.out.println("System: Something went wrong :(");
@@ -98,6 +104,43 @@ public class Controller1 {
         }
         return "result";
     }
+
+    // REGISTER ==================================================================
+
+    @GetMapping("/register")
+    public String register(Model model) {
+        model.addAttribute("user", new User());
+        return "register";
+    }
+
+    @PostMapping("/save-user-register")
+    public String saveRegister(@ModelAttribute User user, Model model) {
+        try {
+            int result = SMi.register(user.getName(), user.getPassword());
+            if (result == 1) {
+                String response = "User " + user.getName() + " registered successfully";
+                model.addAttribute("response", response);
+                return "success";
+
+            } else if (result == 0) {
+                String response = "The username chosen already exists";
+                model.addAttribute("response", response);
+                return "error";
+            }
+
+        } catch (RemoteException e) {
+            System.out.println("System: Something went wrong :(");
+            System.out.println("The Search Module is not active");
+
+        } catch (SQLException e) {
+            System.out.println("System: Something went wrong :(");
+            System.out.println("The DataBase is down");
+
+        }
+        return "result";
+    }
+
+    // SEARCH WORDS ==============================================================
 
     @GetMapping("/search")
     public String search_words(Model model) {
@@ -123,7 +166,7 @@ public class Controller1 {
                     || response.equals("\nThere are no more Urls with that word!"))) {
                 System.out.print(response);
                 // if (pages != 0)
-                //     System.out.println("p - Previous Page");
+                // System.out.println("p - Previous Page");
                 // System.out.println("n - Next Page");
                 // System.out.println("q - Quit Search");
                 // input = scan.nextLine();
@@ -150,6 +193,8 @@ public class Controller1 {
         return "results_words";
     }
 
+    // SEARCH URL ================================================================
+
     @GetMapping("/search_url")
     public String search_url(Model model) {
         model.addAttribute("url", new URL_forms());
@@ -158,7 +203,7 @@ public class Controller1 {
 
     @PostMapping("/see-results-url")
     public String Submissionresults_url(@ModelAttribute URL_forms url, Model model) {
-
+        model.addAttribute("url", url);
         System.out.println("link -> " + "\"" + url.getSearch_url() + "\"");
 
         try {
@@ -171,23 +216,23 @@ public class Controller1 {
                     response.equals("\nThere are no more Urls with that URL!"))) {
                 System.out.println(response);
                 // if (pages != 0)
-                //     System.out.println("p - Previous Page");
+                // System.out.println("p - Previous Page");
                 // System.out.println("n - Next Page");
                 // System.out.println("q - Quit Search");
                 // input = scan.nextLine();
                 // if (input.equals("q")) {
-                //     break;
+                // break;
                 // } else if (input.equals("n")) {
-                //     pages++;
+                // pages++;
                 // } else if (input.equals("p") && pages != 0) {
-                //     pages--;
+                // pages--;
                 // }
             } else {
                 System.out.print(response);
                 // break;
             }
             model.addAttribute("response", response);
-        // }
+            // }
         } catch (RemoteException e) {
             System.out.println("System: Something went wrong :(");
             System.out.println("The Search Module is not active");
@@ -198,21 +243,24 @@ public class Controller1 {
         return "results_url";
     }
 
+    // INDEX =====================================================================
+
     @GetMapping("/index")
     public String index(Model model) {
-        model.addAttribute("words", new Words());
+        model.addAttribute("url", new URL_forms());
 
         return "index";
     }
 
     @PostMapping("/see-index")
-    public String Submissionindex(@ModelAttribute Words words, Model model) {
+    public String Submissionindex(@ModelAttribute URL_forms url, Model model) {
 
-        System.out.println("link -> " + "\"" + words.getSearch_words() + "\"");
+        System.out.println("link -> " + "\"" + url.getSearch_url() + "\"");
 
         try {
-            SMi.newURL(words.getSearch_words());
+            SMi.newURL(url.getSearch_url());
             model.addAttribute("response", "Indexing completed");
+
         } catch (RemoteException e) {
             System.out.println("System: Something went wrong :(");
             System.out.println("The Search Module is not active");
@@ -220,7 +268,23 @@ public class Controller1 {
             System.out.println("System: Something went wrong :(");
             System.out.println("Error Reading data from server. Restarting...");
         }
-        return "testing_index";
+        return "success";
+    }
+
+    // TOP SEARCHES ==============================================================
+
+    @GetMapping("/top_searches")
+    public String top_searches(Model model) {
+        // model.addAttribute("words", new Words());
+        return "top_searches";
+    }
+
+    // STATS =====================================================================
+
+    @GetMapping("/stats")
+    public String stats(Model model) {
+        // model.addAttribute("words", new Words());
+        return "stats";
     }
 
 }
