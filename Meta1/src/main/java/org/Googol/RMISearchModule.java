@@ -67,9 +67,9 @@ public class RMISearchModule extends UnicastRemoteObject
         barrelCount = 0;
         sync = false;
 
-        // Setup DataBase FIXME: guardar estes dados num ficheiro a parte por seguranca
+        // Setup DataBase
         String url = "jdbc:postgresql://localhost/ProjetoSD";
-        String username = dotenv.get("DB_USER"); // "postgres
+        String username = dotenv.get("DB_USER");
         String password =  dotenv.get("DB_PASSWORD");
         try {
             DriverManager.registerDriver(new org.postgresql.Driver());

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <title>Results URLs</title>
     <meta charset="UTF-8">
@@ -12,6 +13,12 @@
 
 <body>
     <div th:insert="~{navbar :: navbar}"></div>
+    <div>
+        <!-- <p><strong>input:</strong> <span th:text="${url.search_url}"></span></p> -->
+        <p><strong>Results:</strong> <span th:text="${response}"></span></p>
 
+    </div>
+    <a th:href="@{/search}">back</a>
 </body>
+
 </html>
