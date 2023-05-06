@@ -25,9 +25,6 @@ body {
     color: #ff0000;
 }
 
-.invisible{
-    color: rgba(0,0,0,0);
-}
 
 .login-card-logo h1{
     font-family: 'Pacifico';
@@ -64,6 +61,15 @@ body {
 .login-card-header,
 .login-card-footer {
     text-align: center;
+}
+
+.back_arrow a{
+    position: absolute;
+    bottom: 55%;
+    left: 55%;
+    font-size: 30px;
+    cursor: pointer;
+    color: #ffffff;
 }
 
 .login-card a {

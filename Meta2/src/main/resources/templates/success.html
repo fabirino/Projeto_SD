@@ -23,8 +23,13 @@
             <div class="login-card-header">
                 <h1 class="green">Success!</h1>
                 <p style="margin-bottom: 10px;"><strong>Results:</strong> <span th:text="${response}"></span></p>
-                <p class="invisible">.</p>
             </div>
+            <a href="#" onclick="goBack()" class="material-symbols-rounded back-arrow">arrow_back_ios_new</a>
+            <script>
+                function goBack() {
+                    window.location.href = document.referrer;
+                }
+            </script>
         </div>
     </div>
 
