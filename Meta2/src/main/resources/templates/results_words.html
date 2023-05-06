@@ -14,7 +14,8 @@
 <body>
     <div th:insert="~{navbar :: navbar}"></div>
     <div>
-        <p><strong>input:</strong> <span th:text="${words.search_words}"></span></p>
+        <p><strong>input_words:</strong> <span th:text="${words.search_words}"></span></p>
+        <p><strong>input_page:</strong> <span th:text="${words.page}"></span></p>
         <p><strong>Results:</strong> <span th:text="${response}"></span></p>
     </div>
     <a th:href="@{/search}">back</a>

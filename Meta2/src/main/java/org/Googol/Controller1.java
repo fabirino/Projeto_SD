@@ -1,6 +1,10 @@
 package org.Googol;
 
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -13,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
 import java.security.MessageDigest;
@@ -59,7 +64,7 @@ public class Controller1 {
 
     @PostMapping("/save-user")
     public String saveUserSubmission(@ModelAttribute User user, Model model) {
-        
+
         System.out.println(user.getName() + " " + user.getPassword());
         try {
             // Encrypt password
@@ -149,13 +154,20 @@ public class Controller1 {
     }
 
     @PostMapping("/see-results")
-    public String Submissionresults(@ModelAttribute Words words, Model model) {
+    public String Submissionresults(@ModelAttribute("words") Words words) {
+        String encodedWords = words.getSearch_words().replaceAll("/", "");
+        return "redirect:/search/" + encodedWords + "/" + words.getPage();
+    }
 
+    @GetMapping("/search/{searchWords}/{page}")
+    public String showResultsPage(@PathVariable("searchWords") String searchWords, @PathVariable("page") int page,
+            Model model) {
         // TODO: Falta fazer os botoes de next e previous
-        System.out.println("words -> " + "\"" + words.getSearch_words() + "\"");
+        System.out.println("searchWords -> " + "\"" + searchWords + "\"");
+        model.addAttribute("words", new Words(searchWords, page));
 
         try {
-            String[] word = words.getSearch_words().split(" ");
+            String[] word = searchWords.split(" ");
             int pages = 0;
 
             // while (true) {
@@ -202,12 +214,31 @@ public class Controller1 {
     }
 
     @PostMapping("/see-results-url")
-    public String Submissionresults_url(@ModelAttribute URL_forms url, Model model) {
-        model.addAttribute("url", url);
-        System.out.println("link -> " + "\"" + url.getSearch_url() + "\"");
+    public String Submissionresults_url(@ModelAttribute("url") URL_forms url) {
+        // System.out.println("link -> " + "\"" + url.getSearch_url() + "\"");
+        // System.out.println("page -> " + "\"" + url.getPage() + "\"");
+        try {
+            String encodedUrl = URLEncoder.encode(url.getSearch_url().replace("/", "++"), "UTF-8");
+            return "redirect:/search_url/" + encodedUrl + "/" + url.getPage();
+        } catch (UnsupportedEncodingException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return "redirect:/search_url/";
+    }
+
+    @GetMapping("/search_url/{search_url}/{page}")
+    public String showResultsPage_url(@PathVariable("search_url") String search_url, @PathVariable("page") int page,
+            Model model) {
 
         try {
-            String URL = url.getSearch_url();
+            // System.out.println("search_url -> " + "\"" + search_url + "\"");
+            String decodedUrl = URLDecoder.decode(search_url.replace("++", "/"), "UTF-8");
+
+
+            model.addAttribute("url", new URL_forms(decodedUrl, page));
+            System.out.println("link -> " + "\"" + decodedUrl + "\"");
+            String URL = decodedUrl;
             int pages = 0;
             // while (true) {
             String response = SMi.pagesWithURL(URL, pages);
@@ -239,6 +270,9 @@ public class Controller1 {
         } catch (ConcurrentModificationException e) {
             System.out.println("System: Something went wrong :(");
             System.out.println("Error Reading data from server. Restarting...");
+        } catch (UnsupportedEncodingException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
         return "results_url";
     }
