@@ -125,9 +125,10 @@ public class RMISearchModule extends UnicastRemoteObject
     }
 
 
-    public String pagesWithWord(String[] words, int pages) throws RemoteException {
+    public Response pagesWithWord(String[] words, int pages) throws RemoteException {
         if (listOfBarrels.size() == 0) {
-            return "\nThere are no active barrels!";
+            Response response = new Response("\nThere are no active barrels!", 0);
+            return response;
         }
 
         // Add the search to the topSearches
@@ -139,37 +140,45 @@ public class RMISearchModule extends UnicastRemoteObject
 
         // Choose a barrel to work (circular)
         StorageBarrelInterfaceB Barrel = listOfBarrels.get((nextBarrel++) % listOfBarrels.size());
-        String result = Barrel.getUrlsToClient(words, pages);
+        Response result = Barrel.getUrlsToClient(words, pages);
+
 
         if (result != null) {
             return result;
         } else if (result == null && pages > 0) {
-            return "\nThere are no more Urls with that word!";
+            Response response = new Response("\nThere are no more Urls with that word!", 0);
+            System.out.println("Search Module: There are no more Urls with that word!");
+            return response;
         } else {
-            return "\nThere are no Urls with that word!";
+            String text = "\nThere are no Urls with that word!";
+            Response response = new Response(text, 0);
+            System.out.println(response.getText());
+            System.out.println("Search Module: There are no Urls with that word!");
+            return response;
         }
 
     }
 
 
-    public String pagesWithURL(String URL, int pages) throws RemoteException {
+    public Response pagesWithURL(String URL, int pages) throws RemoteException {
         if (listOfBarrels.size() == 0) {
-            return "\nThere are no active barrels!";
+            Response response = new Response("\nThere are no active barrels!", 0);
+            return response;
         }
 
         // Choose a barrel to work (circular)
         StorageBarrelInterfaceB Barrel = listOfBarrels.get((nextBarrel++) % listOfBarrels.size());
-        HashSet<URL> hash = Barrel.getpagesWithURL(URL, pages);
-        String response = "";
-        if (hash != null) {
-            for (URL url : hash) {
-                response += url.printURL() + "\n\n";
-            }
+        
+
+        Response result = Barrel.getpagesWithURL(URL, pages);
+        if (result != null) {
+            return result;
+        } else if (result == null && pages > 0) {
+            Response response = new Response("\nThere are no more Urls with that URL!", 0);
             return response;
-        } else if (hash == null && pages > 0) {
-            return "\nThere are no more Urls with that URL!";
         } else {
-            return "\nThere are no Urls with that URL!";
+            Response response = new Response("\nThere are no Urls with that URL!", 0);
+            return response;
         }
     }
 

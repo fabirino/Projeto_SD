@@ -25,7 +25,7 @@ public interface GoogolInterface extends Remote{
      * @throws RemoteException
      * @return the list of URLs that contain the word specified by the user
      */
-    public String pagesWithWord(String[] word, int pages) throws RemoteException;
+    public Response pagesWithWord(String[] word, int pages) throws RemoteException;
 
     /**
      * <h4> Feature 5
@@ -35,7 +35,7 @@ public interface GoogolInterface extends Remote{
      * @throws RemoteException
      * @return the list of URLs that contain the URL specified by the user
      */
-    public String pagesWithURL(String URL, int pages) throws RemoteException;
+    public Response pagesWithURL(String URL, int pages) throws RemoteException;
 
     /**
      * <h4> Feature 6
@@ -89,4 +89,3 @@ public interface GoogolInterface extends Remote{
      */
     public void queueCrash() throws RemoteException;
 }
-

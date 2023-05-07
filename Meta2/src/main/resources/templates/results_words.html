@@ -19,6 +19,18 @@
         <p><strong>Results:</strong> <span th:text="${response}"></span></p>
     </div>
     <a th:href="@{/search}">back</a>
+
+    <form method="post" action="/see-results" th:object="${words}">
+        <input type="hidden" name="search_words" th:value="*{search_words}" />
+        <input type="hidden" name="page" th:value="*{page - 1}" />
+        <button type="submit">Previous Page</button>
+    </form>
+
+    <form method="post" action="/see-results" th:object="${words}">
+        <input type="hidden" name="search_words" th:value="*{search_words}" />
+        <input type="hidden" name="page" th:value="*{page + 1}" />
+        <button type="submit">Next Page</button>
+    </form>
 </body>
 
 </html>

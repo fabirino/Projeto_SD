@@ -9,12 +9,12 @@ public class Words implements Serializable{
 
     public Words() {
         this.search_words = "";
-        this.page = 1;
+        this.page = 0;
     }
 
     public Words(String search_words) {
         this.search_words = search_words;
-        this.page = 1;
+        this.page = 0;
     }
 
     public Words(String search_words,int page) {

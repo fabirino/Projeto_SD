@@ -14,11 +14,14 @@ import org.Googol.forms.User;
 import org.Googol.forms.Words;
 import org.apache.catalina.connector.Response;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -168,16 +171,17 @@ public class Controller1 {
 
         try {
             String[] word = searchWords.split(" ");
-            int pages = 0;
 
-            // while (true) {
-            String response = SMi.pagesWithWord(word, pages);
+            org.Googol.Response response = SMi.pagesWithWord(word, page);
 
-            if (!(response.equals("\nThere are no Urls with that word!")
-                    || response.equals("\nThere are no active barrels!")
-                    || response.equals("\nThere are no more Urls with that word!"))) {
-                System.out.print(response);
-                // if (pages != 0)
+            if (!(response.getText().equals("\nThere are no Urls with that word!")
+                    || response.getText().equals("\nThere are no active barrels!")
+                    || response.getText().equals("\nThere are no more Urls with that word!"))) {
+                System.out.print(response.getText());
+                int num = page * 10;
+                System.out.println("results " + num + " / " + (num + response.getLength()));
+                System.out.println("");
+                // if (page != 0)
                 // System.out.println("p - Previous Page");
                 // System.out.println("n - Next Page");
                 // System.out.println("q - Quit Search");
@@ -190,11 +194,11 @@ public class Controller1 {
                 // pages--;
                 // }
             } else {
-                System.out.println(response);
-                // break;
+                System.out.println(response.getText());
             }
-            model.addAttribute("response", response);
-            // }
+            model.addAttribute("response", response.getText());
+            // model.addAttribute("response", response);
+
         } catch (RemoteException e) {
             System.out.println("System: Something went wrong :(");
             System.out.println("The Search Module is not active");
@@ -235,17 +239,18 @@ public class Controller1 {
             // System.out.println("search_url -> " + "\"" + search_url + "\"");
             String decodedUrl = URLDecoder.decode(search_url.replace("++", "/"), "UTF-8");
 
-
             model.addAttribute("url", new URL_forms(decodedUrl, page));
             System.out.println("link -> " + "\"" + decodedUrl + "\"");
             String URL = decodedUrl;
-            int pages = 0;
-            // while (true) {
-            String response = SMi.pagesWithURL(URL, pages);
+
+            org.Googol.Response response = SMi.pagesWithURL(URL, page);
             if (!(response.equals("\nThere are no active barrels!") ||
                     response.equals("\nThere are no Urls with that URL!") ||
                     response.equals("\nThere are no more Urls with that URL!"))) {
-                System.out.println(response);
+                System.out.print(response.getText());
+                int num = page * 10;
+                System.out.println("results " + num + " / " + (num + response.getLength()));
+                System.out.println("");
                 // if (pages != 0)
                 // System.out.println("p - Previous Page");
                 // System.out.println("n - Next Page");
@@ -259,11 +264,12 @@ public class Controller1 {
                 // pages--;
                 // }
             } else {
-                System.out.print(response);
-                // break;
+                System.out.print(response.getText());
+
             }
-            model.addAttribute("response", response);
-            // }
+            // model.addAttribute("response", response);
+            model.addAttribute("response", response.getText());
+
         } catch (RemoteException e) {
             System.out.println("System: Something went wrong :(");
             System.out.println("The Search Module is not active");

@@ -9,12 +9,12 @@ public class URL_forms implements Serializable{
 
     public URL_forms() {
         this.search_url = "";
-        this.page = 1;
+        this.page = 0;
     }
 
     public URL_forms(String search_url) {
         this.search_url = search_url;
-        this.page = 1;
+        this.page = 0;
     }
 
     public URL_forms(String search_url,int page) {

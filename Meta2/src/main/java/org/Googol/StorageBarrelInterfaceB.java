@@ -15,7 +15,7 @@ public interface StorageBarrelInterfaceB extends Remote{
      * @return Formated String containing the information of all URLs of that page
      * @throws RemoteException
      */
-    public String getUrlsToClient(String[] Keywords, int pages) throws RemoteException;
+    public Response getUrlsToClient(String[] Keywords, int pages) throws RemoteException;
 
     /**
      * <p> Used to return all the URLs taht lead to a certain URL
@@ -25,7 +25,7 @@ public interface StorageBarrelInterfaceB extends Remote{
      * @return
      * @throws RemoteException
      */
-    public HashSet<URL> getpagesWithURL(String URL, int pages) throws RemoteException;
+    public Response getpagesWithURL(String URL, int pages) throws RemoteException;
 
     /**
      * Get Method

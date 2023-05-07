@@ -373,10 +373,10 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
      * 
      * @param Keywords Words specified by the client for the search
      * @param pages    set of pages that will be sent to the client
-     * @return String containing the URLs that contain the {@code Keyword(s)}
-     *         specified by the client
+     * @return Response containing the URLs that contain the {@code Keyword(s)}
+     *         specified by the client and the total number of URLs
      */
-    public String getUrlsToClient(String[] Keywords, int pages) throws RemoteException {
+    public Response getUrlsToClient(String[] Keywords, int pages) throws RemoteException {
         // Uses pagesWithWord
         System.out.println("Barrel: Sending URLs that contain the words " + Keywords[0] + "...");
         HashSet<URL> commonValues = new HashSet<>();
@@ -414,6 +414,8 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
         int min = pages * 10;
         int max = min + 10;
 
+        int length = ordered.size();
+
         for (Relevance rel : ordered) {
             // System.out.println(rel.getRelevance());
             // System.out.println(rel.getURL());
@@ -425,8 +427,10 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
             }
         }
 
-        if (result != "")
-            return result;
+        if (!result.equals("")){
+            Response response = new Response(result, length);
+            return response;
+        }
         else
             return null;
     }
@@ -439,9 +443,9 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
      * 
      * @param URL   URL specified by the user
      * @param pages set of pages that will be sent to the client
-     * @return Hashset containing the 10 URLs of the page
+     * @return Response containing the 10 URLs of the page and the total number of URLs
      */
-    public HashSet<URL> getpagesWithURL(String URL, int pages) throws RemoteException {
+    public Response getpagesWithURL(String URL, int pages) throws RemoteException {
         // Uses pagesWithULR
         System.out.println("Barrel: Sending URLs that lead to " + URL);
         HashSet<URL> set = new HashSet<>();
@@ -457,20 +461,23 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
         int min = pages * 10;
         int max = min + 10;
         int count = 0;
-        HashSet<URL> set2 = new HashSet<>();
+
+        String result = "";
         // System.out.println(set);
 
+        int length = set.size();
         for (URL url : set) {
             count++;
             if (count >= min && count < max) {
                 System.out.println("URL n" + count);
-                set2.add(url);
+                result += url.printURL() + "\n\n";
             } else if (count >= max) {
                 break;
             }
         }
-        if (set2.size() != 0)
-            return set2;
+        Response response = new Response(result, length);
+        if (!result.equals(""))
+            return response;
         else
             return null;
     }

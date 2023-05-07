@@ -20,6 +20,18 @@
 
     </div>
     <a th:href="@{/search_url}">back</a>
+
+    <form method="post" action="/see-results-url" th:object="${url}">
+        <input type="hidden" name="search_url" th:value="*{search_url}" />
+        <input type="hidden" name="page" th:value="*{page - 1}" />
+        <button type="submit">Previous Page</button>
+    </form>
+
+    <form method="post" action="/see-results-url" th:object="${url}">
+        <input type="hidden" name="search_url" th:value="*{search_url}" />
+        <input type="hidden" name="page" th:value="*{page + 1}" />
+        <button type="submit">Next Page</button>
+    </form>
 </body>
 
 </html>

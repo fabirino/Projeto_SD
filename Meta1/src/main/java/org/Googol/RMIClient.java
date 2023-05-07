@@ -179,11 +179,14 @@ public class RMIClient {
                         words = line.split(" ");
 
                         while (true) {
-                            String response = SMi.pagesWithWord(words, pages);
-                            if (!(response.equals("\nThere are no Urls with that word!")
-                                    || response.equals("\nThere are no active barrels!")
-                                    || response.equals("\nThere are no more Urls with that word!"))) {
-                                System.out.print(response);
+                            Response response = SMi.pagesWithWord(words, pages);
+                            if (!(response.getText().equals("\nThere are no Urls with that word!")
+                                    || response.getText().equals("\nThere are no active barrels!")
+                                    || response.getText().equals("\nThere are no more Urls with that word!"))) {
+                                System.out.print(response.getText());
+                                int num = pages * 10;
+                                System.out.println("results " + num + " / " + (num + response.getLength()));
+                                System.out.println("");
                                 if (pages != 0)
                                     System.out.println("p - Previous Page");
                                 System.out.println("n - Next Page");
@@ -197,7 +200,7 @@ public class RMIClient {
                                     pages--;
                                 }
                             } else {
-                                System.out.print(response);
+                                System.out.print(response.getText());
                                 break;
                             }
                         }
@@ -210,11 +213,14 @@ public class RMIClient {
                         System.out.println("Type the URL you want to search:");
                         URL = scan.nextLine();
                         while (true) {
-                            String response = SMi.pagesWithURL(URL, pages);
-                            if (!(response.equals("\nThere are no active barrels!") ||
-                                    response.equals("\nThere are no Urls with that URL!") ||
-                                    response.equals("\nThere are no more Urls with that URL!"))) {
-                                System.out.println(response);
+                            Response response = SMi.pagesWithURL(URL, pages);
+                            if (!(response.getText().equals("\nThere are no active barrels!") ||
+                                    response.getText().equals("\nThere are no Urls with that URL!") ||
+                                    response.getText().equals("\nThere are no more Urls with that URL!"))) {
+                                System.out.print(response.getText());
+                                int num = pages * 10;
+                                System.out.println("results " + num + " / " + (num + response.getLength()));
+                                System.out.println("");
                                 if (pages != 0)
                                     System.out.println("p - Previous Page");
                                 System.out.println("n - Next Page");
@@ -228,7 +234,7 @@ public class RMIClient {
                                     pages--;
                                 }
                             } else {
-                                System.out.print(response);
+                                System.out.print(response.getText());
                                 break;
                             }
                         }
