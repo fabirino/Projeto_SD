@@ -6,32 +6,59 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <link rel="stylesheet" th:href="@{/style.css}">
 
 </head>
 
 
 <body>
+    <!-- navbar -->
     <div th:insert="~{navbar :: navbar}"></div>
-    <div>
-        <p><strong>input_url:</strong> <span th:text="${url.search_url}"></span></p>
-        <p><strong>input_page:</strong> <span th:text="${url.page}"></span></p>
-        <p><strong>Results:</strong> <span th:text="${response}"></span></p>
 
+    <div class="login-card-container">
+        <div class="search-card">
+            <div class="login-card-header">
+                <h1>Search U R L</h1>
+            </div>
+
+            <!-- table -->
+
+            <table class="table">
+                <thead>
+                    <th th:text="${url.search_url}"></th>
+                </thead>
+
+                <tbody>
+                    <tr th:each="item, i : ${listUrls}">
+                        <td th:text="${i.index}"></td>
+                        <td>URL: <a th:href="${item.url}" th:text="${item.url}" target="_blank"></a></td>
+                        <td th:text="${item.title}"></td>
+                        <td th:text="${item.quote}"></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- back -->
+            <a th:href="@{/search_url}" class="material-symbols-rounded back_arrow">search</a>
+
+            <!-- buttons -->
+            <form method="post" action="/see-results-url" th:object="${url}">
+                <input type="hidden" name="search_url" th:value="*{search_url}" />
+                <input type="hidden" name="page" th:value="*{page - 1}" />
+                <button type="submit">Previous Page</button>
+            </form>
+
+            <form method="post" action="/see-results-url" th:object="${url}">
+                <input type="hidden" name="search_url" th:value="*{search_url}" />
+                <input type="hidden" name="page" th:value="*{page + 1}" />
+                <button type="submit">Next Page</button>
+            </form>
+        </div>
     </div>
-    <a th:href="@{/search_url}">back</a>
 
-    <form method="post" action="/see-results-url" th:object="${url}">
-        <input type="hidden" name="search_url" th:value="*{search_url}" />
-        <input type="hidden" name="page" th:value="*{page - 1}" />
-        <button type="submit">Previous Page</button>
-    </form>
 
-    <form method="post" action="/see-results-url" th:object="${url}">
-        <input type="hidden" name="search_url" th:value="*{search_url}" />
-        <input type="hidden" name="page" th:value="*{page + 1}" />
-        <button type="submit">Next Page</button>
-    </form>
 </body>
 
 </html>

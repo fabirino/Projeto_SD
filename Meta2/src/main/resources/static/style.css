@@ -18,7 +18,7 @@ body {
 }
 
 .green{
-    color: #00ff00;
+    color: #026302;
 }
 
 .red{
@@ -47,6 +47,10 @@ body {
     z-index: -1;
     border-radius: 10px;
 
+}
+
+.table {
+    margin: 2%;
 }
 
 .search-card {
