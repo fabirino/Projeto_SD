@@ -177,27 +177,24 @@ public class Controller1 {
             if (!(response.getText().equals("\nThere are no Urls with that word!")
                     || response.getText().equals("\nThere are no active barrels!")
                     || response.getText().equals("\nThere are no more Urls with that word!"))) {
-                System.out.print(response.getText());
-                int num = page * 10;
-                System.out.println("results " + num + " / " + (num + response.getLength()));
-                System.out.println("");
-                // if (page != 0)
-                // System.out.println("p - Previous Page");
-                // System.out.println("n - Next Page");
-                // System.out.println("q - Quit Search");
-                // input = scan.nextLine();
-                // if (input.equals("q")) {
-                // break;
-                // } else if (input.equals("n")) {
-                // pages++;
-                // } else if (input.equals("p") && pages != 0) {
-                // pages--;
-                // }
+                // System.out.print(response.getText());
+                String[] entries = response.getText().split("\n\n");
+                // int num = page * 10;
+                // System.out.println("results " + num + " / " + (num + response.getLength()));
+                // System.out.println("");
+                URL listUrls[] = new URL[entries.length];
+                int i = 0;
+                for(String s: entries){
+                    String parts[] = s.split("\n");
+                    URL url = new URL(parts[0].substring(5, parts[0].length()), parts[1], parts[2], null, null);
+                    listUrls[i++] = url;
+                    System.out.println(url.printURL());
+                model.addAttribute("listUrls", listUrls);
+                }
             } else {
                 System.out.println(response.getText());
             }
             model.addAttribute("response", response.getText());
-            // model.addAttribute("response", response);
 
         } catch (RemoteException e) {
             System.out.println("System: Something went wrong :(");

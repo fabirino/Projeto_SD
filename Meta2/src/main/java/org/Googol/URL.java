@@ -87,6 +87,22 @@ public class URL implements Serializable{
 
     /**
      * Get Method
+     * @return Title
+     */
+    public String getTitle(){
+        return title;
+    }
+
+    /**
+     * Get Method
+     * @return Quote
+     */
+    public String getQuote(){
+        return quote;
+    }
+
+    /**
+     * Get Method
      * @return list of URLs
      */
     public List<String> getUrls(){
@@ -106,7 +122,7 @@ public class URL implements Serializable{
      * @return url
      */
     public String toString(){
-        return  url;
+        return url;
     }
 
     /**

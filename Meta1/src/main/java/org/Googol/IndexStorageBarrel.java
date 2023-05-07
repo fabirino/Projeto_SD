@@ -423,7 +423,7 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
             if (count >= min && count < max) {
                 result += rel.getURL() + '\n';
             } else if (count >= max) {
-                break;
+                break; 
             }
         }
 

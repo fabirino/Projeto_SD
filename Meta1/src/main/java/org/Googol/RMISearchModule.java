@@ -156,7 +156,6 @@ public class RMISearchModule extends UnicastRemoteObject
             System.out.println("Search Module: There are no Urls with that word!");
             return response;
         }
-
     }
 
 
