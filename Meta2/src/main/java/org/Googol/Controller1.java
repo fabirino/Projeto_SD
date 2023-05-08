@@ -137,13 +137,15 @@ public class Controller1 {
     }
 
     @PostMapping("/save-user-register")
-    public String saveRegister(@ModelAttribute User user, Model model) {
+    public String saveRegister(HttpSession session, @ModelAttribute User user, Model model) {
         try {
             int result = SMi.register(user.getName(), user.getPassword());
             if (result == 1) {
                 String response = "User " + user.getName() + " registered successfully";
+                model.addAttribute("user", new User());
+                session.setAttribute("username", user.getName());
                 model.addAttribute("response", response);
-                return "success";
+                return "redirect:/search";
 
             } else if (result == 0) {
                 String response = "The username chosen already exists";
