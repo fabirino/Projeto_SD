@@ -33,7 +33,7 @@
                 <tbody>
                     <tr th:each="item, i : ${listUrls}">
                         <td th:text="${i.index}"></td>
-                        <td>URL: <a th:href="${item.url}" th:text="${item.url}" target="_blank"></a></td>
+                        <td>URL: <a class="url" th:href="${item.url}" th:text="${item.url}" target="_blank"></a></td>
                         <td th:text="${item.title}"></td>
                         <td th:text="${item.quote}"></td>
                     </tr>
@@ -44,17 +44,20 @@
             <a th:href="@{/search_url}" class="material-symbols-rounded back_arrow">search</a>
 
             <!-- buttons -->
-            <form method="post" action="/see-results-url" th:object="${url}">
-                <input type="hidden" name="search_url" th:value="*{search_url}" />
-                <input type="hidden" name="page" th:value="*{page - 1}" />
-                <button type="submit">Previous Page</button>
-            </form>
+            <div class="button-wrapper">
 
-            <form method="post" action="/see-results-url" th:object="${url}">
-                <input type="hidden" name="search_url" th:value="*{search_url}" />
-                <input type="hidden" name="page" th:value="*{page + 1}" />
-                <button type="submit">Next Page</button>
-            </form>
+                <form style="margin-right: 5px;" method="post" action="/see-results-url" th:object="${url}">
+                    <input type="hidden" name="search_url" th:value="*{search_url}" />
+                    <input type="hidden" name="page" th:value="*{page - 1}" />
+                    <button type="submit">Previous Page</button>
+                </form>
+
+                <form method="post" action="/see-results-url" th:object="${url}">
+                    <input type="hidden" name="search_url" th:value="*{search_url}" />
+                    <input type="hidden" name="page" th:value="*{page + 1}" />
+                    <button type="submit">Next Page</button>
+                </form>
+            </div>
         </div>
     </div>
 

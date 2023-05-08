@@ -12,28 +12,28 @@ body {
     font-family: 'Open Sans';
     min-height: 100vh;
     background: linear-gradient(30deg, #ffd500, #ff5e00, #ff0000);
-    display:flex;
+    display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.green{
+.green {
     color: #026302;
 }
 
-.red{
+.red {
     color: #ff0000;
 }
 
 
-.login-card-logo h1{
+.login-card-logo h1 {
     font-family: 'Pacifico';
     font-size: 4rem;
 }
 
 .login-card {
     width: 450px;
-    background: rgba(255,255,255, 0.5);
+    background: rgba(255, 255, 255, 0.5);
     border-radius: 10px;
     position: relative;
 }
@@ -41,8 +41,8 @@ body {
 .login-card::before {
     content: '';
     position: absolute;
-    background: rgba(255,255,255, 0.15);
-    inset:0;
+    background: rgba(255, 255, 255, 0.15);
+    inset: 0;
     transform: rotate(-5deg);
     z-index: -1;
     border-radius: 10px;
@@ -50,36 +50,65 @@ body {
 }
 
 .table {
-    margin: 2%;
+    /* margin: 2%; */
+    margin-right: 2%;
+    margin-left: 2%;
+}
+
+.table-div {
+    margin-bottom:20px;
 }
 
 .search-card {
     width: 1500px;
-    background: rgba(255,255,255, 0.5);
+    background: rgba(255, 255, 255, 0.5);
     border-radius: 10px;
     position: relative;
+    padding-bottom: 50px;
 }
 
 .search-card::before {
     content: '';
     position: absolute;
-    background: rgba(255,255,255, 0.15);
-    inset:0;
+    background: rgba(255, 255, 255, 0.15);
+    inset: 0;
     transform: rotate(-2deg);
     z-index: -1;
     border-radius: 10px;
 
 }
 
-.search-card a{
+.url {
     color: black;
+}
+
+.back_arrow {
+    position: absolute;
+    margin: 10px;
+    bottom: 5px;
+    left: 5px;
+    font-size: 30px;
+    cursor: pointer;
+    color: black;
+    text-decoration: none;
+}
+
+
+.button-wrapper {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    display:flex;
+    flex-direction: line;
+    margin: 5px;
+    justify-content: space-between;
 }
 
 .login-card-logo {
     margin-bottom: 2rem;
 }
 
-.login-card-logo img{
+.login-card-logo img {
     width: 60px;
 }
 
@@ -87,20 +116,6 @@ body {
 .login-card-header,
 .login-card-footer {
     text-align: center;
-}
-
-.back_arrow a{
-    position: absolute;
-    bottom: 55%;
-    left: 55%;
-    font-size: 30px;
-    cursor: pointer;
-    color: #ffffff;
-}
-
-/* FIXME: nao esta a fazer nada */
-.back_arrow a{
-    text-decoration: none;
 }
 
 .login-card a {
@@ -123,11 +138,11 @@ body {
 .login-card-header h1 {
     font-family: 'Pacifico';
     font-size: 2rem;
-    font-weight:  600;
+    font-weight: 600;
     margin-bottom: .5rem;
 }
 
-.login-card-header h1 + div {
+.login-card-header h1+div {
     font-size: calc(1rem*.8);
     opacity: .8;
 }
@@ -143,11 +158,11 @@ body {
     position: relative;
 }
 
-.login-card-form .form-item .form-item-icon{
+.login-card-form .form-item .form-item-icon {
     position: absolute;
     top: .8rem;
     left: 1.4rem;
-    font-size:  1.3rem;
+    font-size: 1.3rem;
     opacity: .4;
 }
 
@@ -160,12 +175,12 @@ body {
 .login-card input[type="text"],
 .login-card input[type="password"],
 .login-card input[type="username"] {
-    border:none;
+    border: none;
     outline: none;
-    background: rgba(255,255,255, 0.3);
+    background: rgba(255, 255, 255, 0.3);
     padding: 1rem 3.5rem;
     padding-left: calc(1rem*3.5);
-    width:100%;
+    width: 100%;
     transition: background .5s;
     border-radius: 100px;
 }
@@ -179,31 +194,32 @@ body {
     background: black;
     color: white;
     padding: 1rem;
-    border-radius:  100px;
+    border-radius: 100px;
     letter-spacing: 2px;
     transition: background .5s;
 }
 
 .login-card-form button:hover {
-    background-color: rgba(0,0,0, 0.85);
-    cursor:pointer;
+    background-color: rgba(0, 0, 0, 0.85);
+    cursor: pointer;
 }
 
-div i{
+div i {
     font-size: 20px;
     cursor: pointer;
     position: absolute;
     right: 5%;
     top: 20%;
-    color: rgba(0,0,0, 0.4);
+    color: rgba(0, 0, 0, 0.4);
 }
 
 @media (max-width: 800px) {
     body {
         padding: 2rem 0;
     }
+
     .login-card {
         width: 300px;
-        padding:2rem;
+        padding: 2rem;
     }
-}   
+}
