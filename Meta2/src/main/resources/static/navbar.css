@@ -4,11 +4,13 @@
   display: flex;
   justify-content: center;
   padding: 5px;
-  position: fixed;
+  position: absolute;
   top:0;
   left:0; 
   right:0;
   width: 100%;
+  align-items: center;
+
 }
 
 .navbar ul {
@@ -29,7 +31,9 @@
   text-decoration: underline;
 }
 
-.navbar p{
-  position: fixed;
-  right: 5%; 
+.left{
+  position: absolute;
+  right: 5%;
+  display: flex;
+  align-items: center;
 }

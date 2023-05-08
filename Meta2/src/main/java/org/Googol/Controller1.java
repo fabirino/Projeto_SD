@@ -23,6 +23,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import jakarta.servlet.http.HttpSession;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
@@ -59,14 +61,19 @@ public class Controller1 {
     }
 
     @GetMapping("/login")
-    public String login(Model model) {
+    public String login(HttpSession session,Model model) {
+
+        if(session.getAttribute("username") != null){
+            return "redirect:/index";
+        }
+
         model.addAttribute("user", new User());
 
         return "login";
     }
 
     @PostMapping("/save-user")
-    public String saveUserSubmission(@ModelAttribute User user, Model model) {
+    public String saveUserSubmission(HttpSession session, @ModelAttribute User user, Model model) {
 
         System.out.println(user.getName() + " " + user.getPassword());
         try {
@@ -87,7 +94,8 @@ public class Controller1 {
             if (result == 1) {
                 String response = "Hi " + user.getName() + ", welcome back to Googol!";
                 model.addAttribute("response", response);
-                return "success";
+                session.setAttribute("username", user.getName());
+                return "search";
                 // login = true;
             } else if (result == 0) {
                 String response = "The password is incorrect";
@@ -111,6 +119,13 @@ public class Controller1 {
 
         }
         return "result";
+    }
+
+    // LOGOUT ====================================================================
+    @GetMapping("/logout")
+    public String logout(HttpSession session, Model model) {
+        session.invalidate();
+        return "redirect:/login";
     }
 
     // REGISTER ==================================================================
@@ -145,26 +160,42 @@ public class Controller1 {
             System.out.println("The DataBase is down");
 
         }
-        return "result";
+        return "login";
     }
 
     // SEARCH WORDS ==============================================================
 
     @GetMapping("/search")
-    public String search_words(Model model) {
+    public String search_words(HttpSession session, Model model) {
+
+        if (session.getAttribute("username") == null) {
+            return "redirect:/login";
+        }
+
         model.addAttribute("words", new Words());
         return "search_words";
     }
 
     @PostMapping("/see-results")
-    public String Submissionresults(@ModelAttribute("words") Words words) {
+    public String Submissionresults(HttpSession session, @ModelAttribute("words") Words words) {
+
+        if (session.getAttribute("username") == null) {
+            return "redirect:/login";
+        }
+
         String encodedWords = words.getSearch_words().replaceAll("/", "");
         return "redirect:/search/" + encodedWords + "/" + words.getPage();
     }
 
     @GetMapping("/search/{searchWords}/{page}")
-    public String showResultsPage(@PathVariable("searchWords") String searchWords, @PathVariable("page") int page,
+    public String showResultsPage(HttpSession session, @PathVariable("searchWords") String searchWords,
+            @PathVariable("page") int page,
             Model model) {
+
+        if (session.getAttribute("username") == null) {
+            return "redirect:/login";
+        }
+
         // TODO: Falta fazer os botoes de next e previous
         System.out.println("searchWords -> " + "\"" + searchWords + "\"");
         model.addAttribute("words", new Words(searchWords, page));
@@ -209,28 +240,40 @@ public class Controller1 {
     // SEARCH URL ================================================================
 
     @GetMapping("/search_url")
-    public String search_url(Model model) {
+    public String search_url(HttpSession session, Model model) {
+
+        if (session.getAttribute("username") == null) {
+            return "redirect:/login";
+        }
+
         model.addAttribute("url", new URL_forms());
         return "search_url";
     }
 
     @PostMapping("/see-results-url")
-    public String Submissionresults_url(@ModelAttribute("url") URL_forms url) {
-        // System.out.println("link -> " + "\"" + url.getSearch_url() + "\"");
-        // System.out.println("page -> " + "\"" + url.getPage() + "\"");
+    public String Submissionresults_url(HttpSession session, @ModelAttribute("url") URL_forms url) {
+
+        if (session.getAttribute("username") == null) {
+            return "redirect:/login";
+        }
+
         try {
             String encodedUrl = URLEncoder.encode(url.getSearch_url().replace("/", "++"), "UTF-8");
             return "redirect:/search_url/" + encodedUrl + "/" + url.getPage();
         } catch (UnsupportedEncodingException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         return "redirect:/search_url/";
     }
 
     @GetMapping("/search_url/{search_url}/{page}")
-    public String showResultsPage_url(@PathVariable("search_url") String search_url, @PathVariable("page") int page,
+    public String showResultsPage_url(HttpSession session, @PathVariable("search_url") String search_url,
+            @PathVariable("page") int page,
             Model model) {
+
+        if (session.getAttribute("username") == null) {
+            return "redirect:/login";
+        }
 
         try {
             // System.out.println("search_url -> " + "\"" + search_url + "\"");
@@ -244,13 +287,13 @@ public class Controller1 {
             if (!(response.equals("\nThere are no active barrels!") ||
                     response.equals("\nThere are no Urls with that URL!") ||
                     response.equals("\nThere are no more Urls with that URL!"))) {
-                
+
                 System.out.print(response.getText());
-                    
+
                 String[] entries = response.getText().split("\n\n\n");
                 URL listUrls[] = new URL[entries.length];
                 int i = 0;
-                for(String s: entries){
+                for (String s : entries) {
                     String parts[] = s.split("\n");
                     URL url = new URL(parts[0].substring(5, parts[0].length()), parts[1], parts[2], null, null);
                     listUrls[i++] = url;
@@ -281,14 +324,23 @@ public class Controller1 {
     // INDEX =====================================================================
 
     @GetMapping("/index")
-    public String index(Model model) {
+    public String index(HttpSession session, Model model) {
+
+        if (session.getAttribute("username") == null) {
+            return "redirect:/login";
+        }
+
         model.addAttribute("url", new URL_forms());
 
         return "index";
     }
 
     @PostMapping("/see-index")
-    public String Submissionindex(@ModelAttribute URL_forms url, Model model) {
+    public String Submissionindex(HttpSession session, @ModelAttribute URL_forms url, Model model) {
+
+        if (session.getAttribute("username") == null) {
+            return "redirect:/login";
+        }
 
         System.out.println("link -> " + "\"" + url.getSearch_url() + "\"");
 
@@ -309,7 +361,12 @@ public class Controller1 {
     // TOP SEARCHES ==============================================================
 
     @GetMapping("/top_searches")
-    public String top_searches(Model model) {
+    public String top_searches(HttpSession session, Model model) {
+        
+        if (session.getAttribute("username") == null) {
+            return "redirect:/login";
+        }
+
         // model.addAttribute("words", new Words());
         return "top_searches";
     }
@@ -317,7 +374,12 @@ public class Controller1 {
     // STATS =====================================================================
 
     @GetMapping("/stats")
-    public String stats(Model model) {
+    public String stats(HttpSession session, Model model) {
+        
+        if (session.getAttribute("username") == null) {
+            return "redirect:/login";
+        }
+
         // model.addAttribute("words", new Words());
         return "stats";
     }

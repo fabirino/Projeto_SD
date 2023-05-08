@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt"  xmlns:th="http://www.thymeleaf.org">
+<html lang="pt" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
@@ -20,7 +20,13 @@
             <li><a href="/stats">Stats</a></li>
         </ul>
 
-        <p>Username</p>
+        <ul class="left">
+            <span class="material-symbols-rounded">
+                person
+            </span>
+            <li><p th:text="${session.username}"></p> </li>
+            <li><a th:href="@{/logout}">Logout</a></li>
+        </ul>
 
     </nav>
 </body>

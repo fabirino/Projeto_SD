@@ -32,10 +32,10 @@
 
                 <tbody>
                     <tr th:each="item, i : ${listUrls}">
-                        <td th:text="${i.index}"></td>
-                        <td>URL: <a class="url" th:href="${item.url}" th:text="${item.url}" target="_blank"></a></td>
-                        <td th:text="${item.title}"></td>
-                        <td th:text="${item.quote}"></td>
+                        <td style="padding: 5px;" th:text="${i.index}"></td>
+                        <td style="padding: 5px;" >URL: <a class="url" th:href="${item.url}" th:text="${item.url}" target="_blank"></a></td>
+                        <td style="padding: 5px;" th:text="${item.title}"></td>
+                        <td style="padding: 5px;" th:text="${item.quote}"></td>
                     </tr>
                 </tbody>
             </table>
