@@ -61,9 +61,9 @@ public class Controller1 {
     }
 
     @GetMapping("/login")
-    public String login(HttpSession session,Model model) {
+    public String login(HttpSession session, Model model) {
 
-        if(session.getAttribute("username") != null){
+        if (session.getAttribute("username") != null) {
             return "redirect:/index";
         }
 
@@ -95,7 +95,7 @@ public class Controller1 {
                 String response = "Hi " + user.getName() + ", welcome back to Googol!";
                 model.addAttribute("response", response);
                 session.setAttribute("username", user.getName());
-                return "search";
+                return "redirect:/search";
                 // login = true;
             } else if (result == 0) {
                 String response = "The password is incorrect";
@@ -137,13 +137,15 @@ public class Controller1 {
     }
 
     @PostMapping("/save-user-register")
-    public String saveRegister(@ModelAttribute User user, Model model) {
+    public String saveRegister(HttpSession session, @ModelAttribute User user, Model model) {
         try {
             int result = SMi.register(user.getName(), user.getPassword());
             if (result == 1) {
                 String response = "User " + user.getName() + " registered successfully";
+                model.addAttribute("user", new User());
+                session.setAttribute("username", user.getName());
                 model.addAttribute("response", response);
-                return "success";
+                return "redirect:/search";
 
             } else if (result == 0) {
                 String response = "The username chosen already exists";
@@ -362,7 +364,7 @@ public class Controller1 {
 
     @GetMapping("/top_searches")
     public String top_searches(HttpSession session, Model model) {
-        
+
         if (session.getAttribute("username") == null) {
             return "redirect:/login";
         }
@@ -375,7 +377,7 @@ public class Controller1 {
 
     @GetMapping("/stats")
     public String stats(HttpSession session, Model model) {
-        
+
         if (session.getAttribute("username") == null) {
             return "redirect:/login";
         }
