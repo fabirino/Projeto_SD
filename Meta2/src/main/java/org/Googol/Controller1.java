@@ -61,9 +61,9 @@ public class Controller1 {
     }
 
     @GetMapping("/login")
-    public String login(HttpSession session,Model model) {
+    public String login(HttpSession session, Model model) {
 
-        if(session.getAttribute("username") != null){
+        if (session.getAttribute("username") != null) {
             return "redirect:/index";
         }
 
@@ -95,7 +95,7 @@ public class Controller1 {
                 String response = "Hi " + user.getName() + ", welcome back to Googol!";
                 model.addAttribute("response", response);
                 session.setAttribute("username", user.getName());
-                return "search";
+                return "redirect:/search";
                 // login = true;
             } else if (result == 0) {
                 String response = "The password is incorrect";
@@ -198,16 +198,24 @@ public class Controller1 {
 
         // TODO: Falta fazer os botoes de next e previous
         System.out.println("searchWords -> " + "\"" + searchWords + "\"");
-        model.addAttribute("words", new Words(searchWords, page));
 
         try {
             String[] word = searchWords.split(" ");
 
             org.Googol.Response response = SMi.pagesWithWord(word, page);
 
-            if (!(response.getText().equals("\nThere are no Urls with that word!")
-                    || response.getText().equals("\nThere are no active barrels!")
-                    || response.getText().equals("\nThere are no more Urls with that word!"))) {
+            model.addAttribute("words", new Words(searchWords, page, response.getLength()));
+
+            if (response.getLength() == 0 && response.getText().equals("\nThere are no active barrels!")) {
+                model.addAttribute("response", "There are no active barrels!");
+                return "error";
+            } else if (response.getLength() == 0 && response.getText().equals("\nThere are no Urls with that word!")) {
+                model.addAttribute("response", "There are no Urls with that word!");
+                return "error";
+            } else if (response.getText().equals("\nThere are no more Urls with that word!")) {
+                model.addAttribute("response", "There are no more Urls with that word!");
+                return "error";
+            } else {
                 // System.out.print(response.getText());
                 String[] entries = response.getText().split("\n\n");
                 // int num = page * 10;
@@ -220,12 +228,11 @@ public class Controller1 {
                     URL url = new URL(parts[0].substring(5, parts[0].length()), parts[1], parts[2], null, null);
                     listUrls[i++] = url;
                     System.out.println(url.printURL());
-                    model.addAttribute("listUrls", listUrls);
                 }
-            } else {
-                System.out.println(response.getText());
+                model.addAttribute("listUrls", listUrls);
+
+                return "results_words";
             }
-            model.addAttribute("response", response.getText());
 
         } catch (RemoteException e) {
             System.out.println("System: Something went wrong :(");
@@ -279,14 +286,22 @@ public class Controller1 {
             // System.out.println("search_url -> " + "\"" + search_url + "\"");
             String decodedUrl = URLDecoder.decode(search_url.replace("++", "/"), "UTF-8");
 
-            model.addAttribute("url", new URL_forms(decodedUrl, page));
             System.out.println("link -> " + "\"" + decodedUrl + "\"");
             String URL = decodedUrl;
-            org.Googol.Response response = SMi.pagesWithURL(URL, page);
 
-            if (!(response.equals("\nThere are no active barrels!") ||
-                    response.equals("\nThere are no Urls with that URL!") ||
-                    response.equals("\nThere are no more Urls with that URL!"))) {
+            org.Googol.Response response = SMi.pagesWithURL(URL, page);
+            model.addAttribute("url", new URL_forms(decodedUrl, page, response.getLength()));
+
+            if (response.getLength() == 0 && response.getText().equals("\nThere are no active barrels!")) {
+                model.addAttribute("response", "There are no active barrels!");
+                return "error";
+            } else if (response.getLength() == 0 && response.getText().equals("\nThere are no Urls with that URL!")) {
+                model.addAttribute("response", "There are no Urls with that URL!");
+                return "error";
+            } else if (response.getText().equals("\nThere are no more Urls with that URL!")) {
+                model.addAttribute("response", "There are no more Urls with that URL!");
+                return "error";
+            } else {
 
                 System.out.print(response.getText());
 
@@ -301,12 +316,8 @@ public class Controller1 {
                 }
                 model.addAttribute("listUrls", listUrls);
 
-            } else {
-                System.out.print(response.getText());
-
+                return "results_url";
             }
-            // model.addAttribute("response", response);
-            model.addAttribute("response", response.getText());
 
         } catch (RemoteException e) {
             System.out.println("System: Something went wrong :(");
@@ -362,7 +373,7 @@ public class Controller1 {
 
     @GetMapping("/top_searches")
     public String top_searches(HttpSession session, Model model) {
-        
+
         if (session.getAttribute("username") == null) {
             return "redirect:/login";
         }
@@ -375,7 +386,7 @@ public class Controller1 {
 
     @GetMapping("/stats")
     public String stats(HttpSession session, Model model) {
-        
+
         if (session.getAttribute("username") == null) {
             return "redirect:/login";
         }

@@ -427,12 +427,15 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
             }
         }
 
-        if (!result.equals("")){
+        if(length != 0 && !result.equals("")){
             Response response = new Response(result, length);
             return response;
-        }
+        } 
+        else if (length != 0)
+            return new Response("\nThere are no more Urls with that word!", length);
         else
-            return null;
+            return new Response("\nThere are no Urls with that word!", length);
+
     }
 
     /**
@@ -475,11 +478,15 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
                 break;
             }
         }
-        Response response = new Response(result, length);
-        if (!result.equals(""))
+
+        if(length != 0 && !result.equals("")){
+            Response response = new Response(result, length);
             return response;
+        } 
+        else if (length != 0)
+            return new Response("\nThere are no more Urls with that URL!", length);
         else
-            return null;
+            return new Response("\nThere are no Urls with that URL!", length);
     }
 
     /**

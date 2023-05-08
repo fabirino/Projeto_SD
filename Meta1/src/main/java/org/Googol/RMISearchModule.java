@@ -142,20 +142,7 @@ public class RMISearchModule extends UnicastRemoteObject
         StorageBarrelInterfaceB Barrel = listOfBarrels.get((nextBarrel++) % listOfBarrels.size());
         Response result = Barrel.getUrlsToClient(words, pages);
 
-
-        if (result != null) {
-            return result;
-        } else if (result == null && pages > 0) {
-            Response response = new Response("\nThere are no more Urls with that word!", 0);
-            System.out.println("Search Module: There are no more Urls with that word!");
-            return response;
-        } else {
-            String text = "\nThere are no Urls with that word!";
-            Response response = new Response(text, 0);
-            System.out.println(response.getText());
-            System.out.println("Search Module: There are no Urls with that word!");
-            return response;
-        }
+        return result;
     }
 
 
@@ -168,17 +155,9 @@ public class RMISearchModule extends UnicastRemoteObject
         // Choose a barrel to work (circular)
         StorageBarrelInterfaceB Barrel = listOfBarrels.get((nextBarrel++) % listOfBarrels.size());
         
-
         Response result = Barrel.getpagesWithURL(URL, pages);
-        if (result != null) {
-            return result;
-        } else if (result == null && pages > 0) {
-            Response response = new Response("\nThere are no more Urls with that URL!", 0);
-            return response;
-        } else {
-            Response response = new Response("\nThere are no Urls with that URL!", 0);
-            return response;
-        }
+
+        return result;
     }
 
     public String adminPage() throws RemoteException, SQLException {
