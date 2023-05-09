@@ -116,7 +116,6 @@ public class Controller1 {
 
         } catch (NoSuchAlgorithmException e) {
             System.out.println("System: Error encrypting password on login, no such encrypting algorithm");
-
         }
         return "result";
     }
@@ -371,17 +370,38 @@ public class Controller1 {
         return "success";
     }
 
-    // TOP SEARCHES ==============================================================
+    // TOP STORIES ===============================================================
 
-    @GetMapping("/top_searches")
+    @GetMapping("/top-stories-user")
     public String top_searches(HttpSession session, Model model) {
 
         if (session.getAttribute("username") == null) {
             return "redirect:/login";
         }
 
-        // model.addAttribute("words", new Words());
-        return "top_searches";
+        model.addAttribute("user", new User());
+        return "top_stories";
+    }
+
+    @PostMapping("/see-results-hackernews")
+    public String results_hackernews(HttpSession session, Model model, @ModelAttribute("user") User user){
+        
+        if (session.getAttribute("username") == null) {
+            return "redirect:/login";
+        }
+
+        return "redirect:/top-stories-user/" + user.getName();
+    }
+
+    @GetMapping("/top-stories-user/{name}")
+    public String show_results_hackernews(HttpSession session, Model model, @PathVariable("name") String name){
+
+        if (session.getAttribute("username") == null) {
+            return "redirect:/login";
+        }
+
+
+        return "results_hackernews";
     }
 
     // STATS =====================================================================
