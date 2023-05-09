@@ -234,6 +234,7 @@ public class Controller1 {
                     System.out.println(url.printURL());
                 }
                 model.addAttribute("listUrls", listUrls);
+                model.addAttribute("url", new URL_forms());
 
                 return "results_words";
             }

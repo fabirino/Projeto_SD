@@ -30,7 +30,7 @@
         console.log("page pimba -> " + pageInput.value);
         console.log("results -> " + resultsInput.value);
 
-        console.log(pageInput.value  * 10);
+        console.log(pageInput.value * 10);
         if (pageInput.value * 10 > resultsInput.value) {
           nextPageButton.style.display = "none";
         }
@@ -67,6 +67,12 @@
                   th:text="${item.url}"
                   target="_blank"
                 ></a>
+              </td>
+              <td>
+                <form method="post" action="/see-results-url" th:object="${url}">
+                  <input type="hidden" name="search_url" th:value="${item.url}" />
+                  <button type="submit" class="search-url">Results Url</button>
+                </form>
               </td>
               <td style="padding: 5px" th:text="${item.title}"></td>
               <td style="padding: 5px" th:text="${item.quote}"></td>
