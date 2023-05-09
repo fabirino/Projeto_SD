@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>Top Searches HackerNews</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="stylesheet" th:href="@{/style.css}">
+</head>
+
+
+<body>
+    <!-- navbar -->
+    <div th:insert="~{navbar :: navbar}"></div>
+
+    <!-- body -->
+  <div class="login-card-container">
+    <div class="login-card">
+      <div class="login-card-logo">
+        <h1>Googol</h1>
+      </div>
+
+      <div class="login-card-header">
+        <h1>HackerNews User</h1>
+        <div>Type the username to index his stories</div>
+      </div>
+
+      <form class="login-card-form" th:action="@{/see-results-hackernews}" th:object="${user}" method="post">
+        <div class="form-item">
+          <span class="form-item-icon material-symbols-rounded">person</span>
+          <input type="text" th:field="*{name}" placeholder="What user stories do you want to index?" required autofocus />
+        </div>
+        <button type="submit">Index</button>
+      </form>
+    </div>
+  </div>
+    
+</body>
+</html>
