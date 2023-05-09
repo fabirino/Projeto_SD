@@ -19,11 +19,13 @@
         <div class="search-card">
             <div class="login-card-header">
                 <h1>HackerNews user</h1>
-                <p th:text="${name}"></p>
+                <p th:text="'Hacker-news User: ' + ${name}"></p>
+                <p th:text = "${response}"></p>
             </div>
 
+
             <!-- back -->
-            <a th:href="@{/top-stories}" class="material-symbols-rounded back_arrow">description</a>
+            <a th:href="@{/top-stories-user}" class="material-symbols-rounded back_arrow">description</a>
 
         </div>
     </div>
