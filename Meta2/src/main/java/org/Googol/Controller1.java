@@ -400,6 +400,12 @@ public class Controller1 {
             return "redirect:/login";
         }
 
+        String link = "https://hacker-news.firebaseio.com/v0/user/" + name + ".json?print=pretty";
+        // Get request to this api link
+        // se devolver null o user nao existe -> mostrar pagina de erro
+
+
+
 
         return "results_hackernews";
     }
