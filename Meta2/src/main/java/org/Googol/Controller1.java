@@ -14,6 +14,7 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 
+import org.Googol.forms.Stories_forms;
 import org.Googol.forms.URL_forms;
 import org.Googol.forms.User;
 import org.Googol.forms.Words;
@@ -27,8 +28,11 @@ import jakarta.servlet.http.HttpSession;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Date;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ConcurrentModificationException;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.json.JSONObject;
 import org.json.JSONArray;
@@ -384,11 +388,11 @@ public class Controller1 {
         }
 
         model.addAttribute("user", new User());
-        return "top_stories";
+        return "top_stories_user";
     }
 
-    @PostMapping("/see-results-hackernews")
-    public String results_hackernews(HttpSession session, Model model, @ModelAttribute("user") User user) {
+    @PostMapping("/see-results-hackernews-user")
+    public String results_hackernews_user(HttpSession session, Model model, @ModelAttribute("user") User user) {
 
         if (session.getAttribute("username") == null) {
             return "redirect:/login";
@@ -398,7 +402,7 @@ public class Controller1 {
     }
 
     @GetMapping("/top-stories-user/{name}")
-    public String show_results_hackernews(HttpSession session, Model model, @PathVariable("name") String name) {
+    public String show_results_hackernews_user(HttpSession session, Model model, @PathVariable("name") String name) {
 
         if (session.getAttribute("username") == null) {
             return "redirect:/login";
@@ -422,39 +426,40 @@ public class Controller1 {
                 model.addAttribute("response", response);
                 return "error";
             }
-            
+
             // Read the response
             BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
             String inputLine;
             StringBuilder response = new StringBuilder();
-            
+
             while ((inputLine = in.readLine()) != null) {
                 response.append(inputLine);
             }
             in.close();
-            
+
             // Verify if the user exists
             if (response.toString().equals("null")) {
                 String response2 = "The user does not exist";
                 model.addAttribute("response", response2);
                 return "error";
             }
-            
+
             // Transform the response into a JSON object
             JSONObject jsonObject = new JSONObject(response.toString());
             JSONArray jsonArray = jsonObject.getJSONArray("submitted");
             con.disconnect();
             // Get the stories of the user and index them
             int[] stories = new int[jsonArray.length()];
+            ConcurrentLinkedQueue<Stories_forms> stories_forms = new ConcurrentLinkedQueue<Stories_forms>();
             for (int i = 0; i < jsonArray.length(); i++) {
                 stories[i] = jsonArray.getInt(i);
-                
+
                 String story_link = "https://hacker-news.firebaseio.com/v0/item/" + stories[i] + ".json?print=pretty";
                 URI uri2 = new URI(story_link);
                 HttpURLConnection con2 = (HttpURLConnection) uri2.toURL().openConnection();
                 con2.setRequestMethod("GET");
                 int responseCode2 = con2.getResponseCode();
-                
+
                 if (responseCode2 != HttpURLConnection.HTTP_OK) {
                     String response2 = "Something went wrong with the API request (after the user request))";
                     // FIXME: mostrar o erro
@@ -462,35 +467,40 @@ public class Controller1 {
                     model.addAttribute("response", response2);
                     return "error";
                 }
-                
+
                 BufferedReader in2 = new BufferedReader(new InputStreamReader(con2.getInputStream()));
                 String inputLine2;
                 StringBuilder response2 = new StringBuilder();
-                
+
                 while ((inputLine2 = in2.readLine()) != null) {
                     response2.append(inputLine2);
                 }
                 in2.close();
-                
+
                 JSONObject jsonObject2 = new JSONObject(response2.toString());
 
                 String type = jsonObject2.getString("type");
                 System.out.println(stories[i] + " " + type);
                 if (type.equals("story")) {
                     String url = jsonObject2.getString("url");
+                    String title = jsonObject2.getString("title");
+                    int score = jsonObject2.getInt("score");
+                    long timestamp = jsonObject2.getLong("time");
+                    Date date = new Date(timestamp * 1000L); // Convert seconds to milliseconds
+                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                    String formattedDate = sdf.format(date);
+
+                    Stories_forms story = new Stories_forms(url, title, score, formattedDate, stories[i]);
+                    stories_forms.add(story);
+                    // System.out.println(story);
+
                     SMi.newURL(url);
                 }
 
                 con2.disconnect();
             }
 
-            String response2 = "The stories ";
-            for (int s : stories) {
-                response2 += s + ", ";
-            }
-            response2 += "were indexed successfully";
-
-            model.addAttribute("response", response2);
+            model.addAttribute("stories", stories_forms);
 
             return "results_hackernews";
 
@@ -499,7 +509,7 @@ public class Controller1 {
         } catch (RemoteException e) {
             System.out.println("System: Something went wrong :(");
             System.out.println("The Search Module is not active");
-         } catch (IOException e) {
+        } catch (IOException e) {
 
         }
 
@@ -507,6 +517,105 @@ public class Controller1 {
         // se devolver null o user nao existe -> mostrar pagina de erro
 
         return "results_hackernews";
+    }
+
+    @GetMapping("/top-stories")
+    public String top_stories(HttpSession session, Model model) {
+
+        if (session.getAttribute("username") == null) {
+            return "redirect:/login";
+        }
+
+        model.addAttribute("user", new User());
+        return "top_stories";
+    }
+
+    @PostMapping("/see-results-hackernews")
+    public String results_hackernews(HttpSession session, Model model, @ModelAttribute("user") User user) {
+
+        if (session.getAttribute("username") == null) {
+            return "redirect:/login";
+        }
+
+        return "redirect:/top-stories/" + user.getName();
+    }
+
+    @GetMapping("/top-stories/{search}")
+    public String show_results_hackernews(HttpSession session, Model model, @PathVariable("search") String search) {
+
+        if (session.getAttribute("username") == null) {
+            return "redirect:/login";
+        }
+
+        try {
+
+            // Connect to the top stories API
+            String link = "https://hn.algolia.com/api/v1/search?query=" + search;
+            URI uri = new URI(link);
+            HttpURLConnection con = (HttpURLConnection) uri.toURL().openConnection();
+
+            con.setRequestMethod("GET");
+            int responseCode = con.getResponseCode();
+
+            // Verify if connection was successful
+            if (responseCode != HttpURLConnection.HTTP_OK) {
+                String response = "Something went wrong with the API request";
+                // FIXME: mostrar o erro
+                // model.addAttribute("error_code", responseCode);
+                model.addAttribute("response", response);
+                return "error";
+            }
+
+            // Read the response
+            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+            String inputLine;
+            StringBuilder response = new StringBuilder();
+
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+
+            // Parse the response JSON
+            JSONObject jsonObject = new JSONObject(response.toString());
+            JSONArray hits = jsonObject.getJSONArray("hits");
+
+            // Iterate over each hit (story) and check if it matches the search terms
+            ConcurrentLinkedQueue<Stories_forms> stories_forms = new ConcurrentLinkedQueue<Stories_forms>();
+
+            for (int i = 0; i < hits.length(); i++) {
+                JSONObject hit = hits.getJSONObject(i);
+                String title = hit.getString("title");
+                if (title.contains(search)) {
+                    String url = hit.getString("url");
+                    int score = hit.getInt("points");
+                    long timestamp = hit.getLong("created_at_i");
+                    Date date = new Date(timestamp * 1000L); // Convert seconds to milliseconds
+                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                    String formattedDate = sdf.format(date);
+
+                    Stories_forms story = new Stories_forms(url, title, score, formattedDate, i);
+                    stories_forms.add(story);
+                    SMi.newURL(url);
+                }
+            }
+
+            model.addAttribute("stories", stories_forms);
+            return "results_search_hackernews";
+
+        } catch (URISyntaxException e) {
+
+        } catch (RemoteException e) {
+            System.out.println("System: Something went wrong :(");
+            System.out.println("The Search Module is not active");
+        } catch (IOException e) {
+
+        }
+
+        // Get request to this api link
+        // se devolver null o user nao existe -> mostrar pagina de erro
+
+        return "results_search_hackernews";
     }
 
     // STATS =====================================================================
