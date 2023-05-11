@@ -23,13 +23,13 @@
             </div>
             <div class="login-card-header">
                 <h1 class="red">Error!</h1>
-                <!-- <p><strong>Results:</strong> <span th:text="${error_code}"></span></p> -->
-                <p><strong>Results:</strong> <span th:text="${response}"></span></p>
+                <p><strong>Error code:</strong> <span th:text="${error_code}"></span></p>
+                <p><strong>Status:</strong> <span th:text="${response}"></span></p>
             </div>
 
             <!-- back arrow -->
             <div class="back-arrow">
-                <a href="#" onclick="goBack()" class="material-symbols-rounded">arrow_back_ios</a>
+                <a href="#" onclick="goBack()" class="material-symbols-rounded back">arrow_back_ios</a>
             </div>
             <script>
                 function goBack() {

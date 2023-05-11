@@ -146,12 +146,10 @@ button.button-style:hover {
 }
 
 .login-card a {
+    padding-left: 20px; 
+    padding-bottom: 20px; 
     text-decoration: none;
-    color: #ff0000;
-}
-
-.login-card a:hover {
-    text-decoration: underline;
+    color: black;
 }
 
 .login-card-header {

@@ -106,24 +106,38 @@ public class Controller1 {
                 return "redirect:/search";
                 // login = true;
             } else if (result == 0) {
+                int responseCode = 401;
+                model.addAttribute("error_code", responseCode);
                 String response = "The password is incorrect";
                 model.addAttribute("response", response);
                 return "error";
             } else if (result == 2) {
+                int responseCode = 401;
+                model.addAttribute("error_code", responseCode);
                 String response = "The username does not exists";
                 model.addAttribute("response", response);
                 return "error";
             }
         } catch (RemoteException e) {
-            System.out.println("System: Something went wrong :(");
-            System.out.println("The Search Module is not active");
+            int responseCode = 503;
+            model.addAttribute("error_code", responseCode);
+            String response = "System error: The Search Module is not running";
+            model.addAttribute("response", response);
+            return "error";
 
         } catch (SQLException e) {
-            System.out.println("System: Something went wrong :(");
-            System.out.println("The DataBase is down");
+            int responseCode = 503;
+            model.addAttribute("error_code", responseCode);
+            String response = "System error: Data base is not responding";
+            model.addAttribute("response", response);
+            return "error";
 
         } catch (NoSuchAlgorithmException e) {
-            System.out.println("System: Error encrypting password on login, no such encrypting algorithm");
+            int responseCode = 503;
+            model.addAttribute("error_code", responseCode);
+            String response = "Internal error: Encryption algorithm not found";
+            model.addAttribute("response", response);
+            return "error";
         }
         return "result";
     }
@@ -155,18 +169,25 @@ public class Controller1 {
                 return "redirect:/search";
 
             } else if (result == 0) {
+                int responseCode = 401;
+                model.addAttribute("error_code", responseCode);
                 String response = "The username chosen already exists";
                 model.addAttribute("response", response);
                 return "error";
             }
 
         } catch (RemoteException e) {
-            System.out.println("System: Something went wrong :(");
-            System.out.println("The Search Module is not active");
-
+            int responseCode = 503;
+            model.addAttribute("error_code", responseCode);
+            String response = "System error: The Search Module is not running";
+            model.addAttribute("response", response);
+            return "error";
         } catch (SQLException e) {
-            System.out.println("System: Something went wrong :(");
-            System.out.println("The DataBase is down");
+            int responseCode = 503;
+            model.addAttribute("error_code", responseCode);
+            String response = "System error: Data base is not responding";
+            model.addAttribute("response", response);
+            return "error";
 
         }
         return "login";
@@ -204,8 +225,6 @@ public class Controller1 {
         if (session.getAttribute("username") == null) {
             return "redirect:/login";
         }
-
-        // TODO: Falta fazer os botoes de next e previous
         System.out.println("searchWords -> " + "\"" + searchWords + "\"");
 
         try {
@@ -216,12 +235,18 @@ public class Controller1 {
             model.addAttribute("words", new Words(searchWords, page, response.getLength()));
 
             if (response.getLength() == 0 && response.getText().equals("\nThere are no active barrels!")) {
+                int responseCode = 503;
+                model.addAttribute("error_code", responseCode);
                 model.addAttribute("response", "There are no active barrels!");
                 return "error";
             } else if (response.getLength() == 0 && response.getText().equals("\nThere are no Urls with that word!")) {
+                int responseCode = 400;
+                model.addAttribute("error_code", responseCode);
                 model.addAttribute("response", "There are no Urls with that word!");
                 return "error";
             } else if (response.getText().equals("\nThere are no more Urls with that word!")) {
+                int responseCode = 400;
+                model.addAttribute("error_code", responseCode);
                 model.addAttribute("response", "There are no more Urls with that word!");
                 return "error";
             } else {
@@ -245,13 +270,19 @@ public class Controller1 {
             }
 
         } catch (RemoteException e) {
-            System.out.println("System: Something went wrong :(");
-            System.out.println("The Search Module is not active");
+            int responseCode = 503;
+            model.addAttribute("error_code", responseCode);
+            String response = "System error: The Search Module is not running";
+            model.addAttribute("response", response);
+            return "error";
         } catch (ConcurrentModificationException e) {
-            System.out.println("System: Something went wrong :(");
-            System.out.println("Error Reading data from server. Restarting...");
+            int responseCode = 503;
+            model.addAttribute("error_code", responseCode);
+            String response = "System error: Error Reading data from server.";
+            model.addAttribute("response", response);
+            return "error";
         }
-        return "results_words";
+
     }
 
     // SEARCH URL ================================================================
@@ -268,7 +299,7 @@ public class Controller1 {
     }
 
     @PostMapping("/see-results-url")
-    public String Submissionresults_url(HttpSession session, @ModelAttribute("url") URL_forms url) {
+    public String Submissionresults_url(HttpSession session, @ModelAttribute("url") URL_forms url, Model model) {
 
         if (session.getAttribute("username") == null) {
             return "redirect:/login";
@@ -278,9 +309,12 @@ public class Controller1 {
             String encodedUrl = URLEncoder.encode(url.getSearch_url().replace("/", "++"), "UTF-8");
             return "redirect:/search_url/" + encodedUrl + "/" + url.getPage();
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            int responseCode = 503;
+            model.addAttribute("error_code", responseCode);
+            String response = "Unsuported Encoding Exception";
+            model.addAttribute("response", response);
+            return "error";
         }
-        return "redirect:/search_url/";
     }
 
     @GetMapping("/search_url/{search_url}/{page}")
@@ -303,12 +337,18 @@ public class Controller1 {
             model.addAttribute("url", new URL_forms(decodedUrl, page, response.getLength()));
 
             if (response.getLength() == 0 && response.getText().equals("\nThere are no active barrels!")) {
+                int responseCode = 503;
+                model.addAttribute("error_code", responseCode);
                 model.addAttribute("response", "There are no active barrels!");
                 return "error";
             } else if (response.getLength() == 0 && response.getText().equals("\nThere are no Urls with that URL!")) {
+                int responseCode = 400;
+                model.addAttribute("error_code", responseCode);
                 model.addAttribute("response", "There are no Urls with that URL!");
                 return "error";
             } else if (response.getText().equals("\nThere are no more Urls with that URL!")) {
+                int responseCode = 400;
+                model.addAttribute("error_code", responseCode);
                 model.addAttribute("response", "There are no more Urls with that URL!");
                 return "error";
             } else {
@@ -330,16 +370,24 @@ public class Controller1 {
             }
 
         } catch (RemoteException e) {
-            System.out.println("System: Something went wrong :(");
-            System.out.println("The Search Module is not active");
+            int responseCode = 503;
+            model.addAttribute("error_code", responseCode);
+            String response = "System error: The Search Module is not running";
+            model.addAttribute("response", response);
+            return "error";
         } catch (ConcurrentModificationException e) {
-            System.out.println("System: Something went wrong :(");
-            System.out.println("Error Reading data from server. Restarting...");
+            int responseCode = 503;
+            model.addAttribute("error_code", responseCode);
+            String response = "System error: Error Reading data from server.";
+            model.addAttribute("response", response);
+            return "error";
         } catch (UnsupportedEncodingException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            int responseCode = 503;
+            model.addAttribute("error_code", responseCode);
+            String response = "Unsuported Encoding Exception";
+            model.addAttribute("response", response);
+            return "error";
         }
-        return "results_url";
     }
 
     // INDEX =====================================================================
@@ -370,11 +418,17 @@ public class Controller1 {
             model.addAttribute("response", "Indexing completed");
 
         } catch (RemoteException e) {
-            System.out.println("System: Something went wrong :(");
-            System.out.println("The Search Module is not active");
+            int responseCode = 503;
+            model.addAttribute("error_code", responseCode);
+            String response = "System error: The Search Module is not running";
+            model.addAttribute("response", response);
+            return "error";
         } catch (ConcurrentModificationException e) {
-            System.out.println("System: Something went wrong :(");
-            System.out.println("Error Reading data from server. Restarting...");
+            int responseCode = 503;
+            model.addAttribute("error_code", responseCode);
+            String response = "System error: Error Reading data from server.";
+            model.addAttribute("response", response);
+            return "error";
         }
         return "success";
     }
@@ -410,7 +464,6 @@ public class Controller1 {
         }
 
         try {
-
             // connect to the stories of an Hackernews user
             String link = "https://hacker-news.firebaseio.com/v0/user/" + name + ".json?print=pretty";
             URI uri = new URI(link);
@@ -422,8 +475,7 @@ public class Controller1 {
             // Verify if connection was successful
             if (responseCode != HttpURLConnection.HTTP_OK) {
                 String response = "Something went wrong with the API request";
-                // FIXME: mostrar o erro
-                // model.addAttribute("error_code", responseCode);
+                model.addAttribute("error_code", responseCode);
                 model.addAttribute("response", response);
                 return "error";
             }
@@ -440,6 +492,8 @@ public class Controller1 {
 
             // Verify if the user exists
             if (response.toString().equals("null")) {
+                responseCode = 400;
+                model.addAttribute("error_code", responseCode);
                 String response2 = "The user does not exist";
                 model.addAttribute("response", response2);
                 return "error";
@@ -463,8 +517,7 @@ public class Controller1 {
 
                 if (responseCode2 != HttpURLConnection.HTTP_OK) {
                     String response2 = "Something went wrong with the API request (after the user request))";
-                    // FIXME: mostrar o erro
-                    // model.addAttribute("error_code", responseCode);
+                    model.addAttribute("error_code", responseCode);
                     model.addAttribute("response", response2);
                     return "error";
                 }
@@ -481,21 +534,24 @@ public class Controller1 {
                 JSONObject jsonObject2 = new JSONObject(response2.toString());
 
                 String type = jsonObject2.getString("type");
-                System.out.println(stories[i] + " " + type);
                 if (type.equals("story")) {
-                    String url = jsonObject2.getString("url");
-                    String title = jsonObject2.getString("title");
-                    int score = jsonObject2.getInt("score");
-                    long timestamp = jsonObject2.getLong("time");
-                    Date date = new Date(timestamp * 1000L); // Convert seconds to milliseconds
-                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-                    String formattedDate = sdf.format(date);
+                    try {
+                        String url = jsonObject2.getString("url");
+                        String title = jsonObject2.getString("title");
+                        int score = jsonObject2.getInt("score");
+                        long timestamp = jsonObject2.getLong("time");
+                        Date date = new Date(timestamp * 1000L); // Convert seconds to milliseconds
+                        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                        String formattedDate = sdf.format(date);
 
-                    Stories_forms story = new Stories_forms(url, title, score, formattedDate, stories[i]);
-                    stories_forms.add(story);
-                    // System.out.println(story);
+                        Stories_forms story = new Stories_forms(url, title, score, formattedDate, stories[i]);
+                        stories_forms.add(story);
 
-                    SMi.newURL(url);
+                        SMi.newURL(url);
+                    } catch (Exception e) {
+                        System.out.println("Error parsing the story");
+                    }
+
                 }
 
                 con2.disconnect();
@@ -506,18 +562,25 @@ public class Controller1 {
             return "results_hackernews";
 
         } catch (URISyntaxException e) {
-
+            int responseCode = 503;
+            model.addAttribute("error_code", responseCode);
+            String response = "Error parsing the URL of the user";
+            model.addAttribute("response", response);
+            return "error";
         } catch (RemoteException e) {
-            System.out.println("System: Something went wrong :(");
-            System.out.println("The Search Module is not active");
+            int responseCode = 503;
+            model.addAttribute("error_code", responseCode);
+            String response = "System error: The Search Module is not running";
+            model.addAttribute("response", response);
+            return "error";
         } catch (IOException e) {
-
+            int responseCode = 503;
+            model.addAttribute("error_code", responseCode);
+            String response = "System error";
+            model.addAttribute("response", response);
+            return "error";
         }
 
-        // Get request to this api link
-        // se devolver null o user nao existe -> mostrar pagina de erro
-
-        return "results_hackernews";
     }
 
     @GetMapping("/top-stories")
@@ -561,8 +624,7 @@ public class Controller1 {
             // Verify if connection was successful
             if (responseCode != HttpURLConnection.HTTP_OK) {
                 String response = "Something went wrong with the API request";
-                // FIXME: mostrar o erro
-                // model.addAttribute("error_code", responseCode);
+                model.addAttribute("error_code", responseCode);
                 model.addAttribute("response", response);
                 return "error";
             }
@@ -698,9 +760,6 @@ public class Controller1 {
         } catch (IOException e) {
 
         }
-
-        // Get request to this api link
-        // se devolver null o user nao existe -> mostrar pagina de erro
 
         return "results_search_hackernews";
     }
