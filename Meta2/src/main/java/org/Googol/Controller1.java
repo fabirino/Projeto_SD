@@ -463,7 +463,6 @@ public class Controller1 {
         }
 
         try {
-
             // connect to the stories of an Hackernews user
             String link = "https://hacker-news.firebaseio.com/v0/user/" + name + ".json?print=pretty";
             URI uri = new URI(link);
@@ -492,6 +491,8 @@ public class Controller1 {
 
             // Verify if the user exists
             if (response.toString().equals("null")) {
+                responseCode = 400;
+                model.addAttribute("error_code", responseCode);
                 String response2 = "The user does not exist";
                 model.addAttribute("response", response2);
                 return "error";
@@ -532,21 +533,24 @@ public class Controller1 {
                 JSONObject jsonObject2 = new JSONObject(response2.toString());
 
                 String type = jsonObject2.getString("type");
-                System.out.println(stories[i] + " " + type);
                 if (type.equals("story")) {
-                    String url = jsonObject2.getString("url");
-                    String title = jsonObject2.getString("title");
-                    int score = jsonObject2.getInt("score");
-                    long timestamp = jsonObject2.getLong("time");
-                    Date date = new Date(timestamp * 1000L); // Convert seconds to milliseconds
-                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-                    String formattedDate = sdf.format(date);
+                    try {
+                        String url = jsonObject2.getString("url");
+                        String title = jsonObject2.getString("title");
+                        int score = jsonObject2.getInt("score");
+                        long timestamp = jsonObject2.getLong("time");
+                        Date date = new Date(timestamp * 1000L); // Convert seconds to milliseconds
+                        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                        String formattedDate = sdf.format(date);
 
-                    Stories_forms story = new Stories_forms(url, title, score, formattedDate, stories[i]);
-                    stories_forms.add(story);
-                    // System.out.println(story);
+                        Stories_forms story = new Stories_forms(url, title, score, formattedDate, stories[i]);
+                        stories_forms.add(story);
 
-                    SMi.newURL(url);
+                        SMi.newURL(url);
+                    } catch (Exception e) {
+                        System.out.println("Error parsing the story");
+                    }
+
                 }
 
                 con2.disconnect();
