@@ -14,7 +14,7 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 
-// import org.Googol.forms.Stories_forms;
+import org.Googol.forms.Stories_forms;
 import org.Googol.forms.URL_forms;
 import org.Googol.forms.User;
 import org.Googol.forms.Words;
@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.client.RestTemplate;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -549,8 +550,8 @@ public class Controller1 {
 
         try {
 
-            // Connect to the top stories API
-            String link = "https://hn.algolia.com/api/v1/search?query=" + search;
+            // connect to the stories of an Hackernews user
+            String link = "https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty";
             URI uri = new URI(link);
             HttpURLConnection con = (HttpURLConnection) uri.toURL().openConnection();
 
@@ -576,31 +577,117 @@ public class Controller1 {
             }
             in.close();
 
-            // Parse the response JSON
-            JSONObject jsonObject = new JSONObject(response.toString());
-            JSONArray hits = jsonObject.getJSONArray("hits");
+            // Verify if the user exists
+            if (response.toString().equals("null")) {
+                String response2 = "Top Stories does not exist";
+                model.addAttribute("response", response2);
+                return "error";
+            }
 
-            // Iterate over each hit (story) and check if it matches the search terms
+            String[] stories= response.toString().replace("[", "").replace("]", "").replace(" ", "").split(",");
+            
+            con.disconnect();
+            // Get the stories of the user and index them
+            
             ConcurrentLinkedQueue<Stories_forms> stories_forms = new ConcurrentLinkedQueue<Stories_forms>();
-
-            for (int i = 0; i < hits.length(); i++) {
-                JSONObject hit = hits.getJSONObject(i);
-                String title = hit.getString("title");
-                if (title.contains(search)) {
-                    String url = hit.getString("url");
-                    int score = hit.getInt("points");
-                    long timestamp = hit.getLong("created_at_i");
-                    Date date = new Date(timestamp * 1000L); // Convert seconds to milliseconds
-                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-                    String formattedDate = sdf.format(date);
-
-                    Stories_forms story = new Stories_forms(url, title, score, formattedDate, i);
-                    stories_forms.add(story);
-                    SMi.newURL(url);
+            int max = stories.length;
+            if (stories.length > 100)
+                max = 100;
+            for (int i = 0; i < max; i++) {
+                
+                String story_link = "https://hacker-news.firebaseio.com/v0/item/" + stories[i] + ".json?print=pretty";
+                URI uri2 = new URI(story_link);
+                HttpURLConnection con2 = (HttpURLConnection) uri2.toURL().openConnection();
+                con2.setRequestMethod("GET");
+                int responseCode2 = con2.getResponseCode();
+                
+                if (responseCode2 != HttpURLConnection.HTTP_OK) {
+                    String response2 = "Something went wrong with the API request (after the user request))";
+                    // FIXME: mostrar o erro
+                    // model.addAttribute("error_code", responseCode);
+                    model.addAttribute("response", response2);
+                    return "error";
                 }
+                BufferedReader in2 = new BufferedReader(new InputStreamReader(con2.getInputStream()));
+                String inputLine2;
+                StringBuilder response2 = new StringBuilder();
+                
+                while ((inputLine2 = in2.readLine()) != null) {
+                    response2.append(inputLine2);
+                }
+                
+                in2.close();
+                
+                JSONObject jsonObject2 = new JSONObject(response2.toString());
+
+                String type = jsonObject2.getString("type");
+                System.out.println(stories[i] + " " + type);
+
+                // check if the story contains the search words
+                if (type.equals("story")) {
+                    if (!jsonObject2.has("title")) {
+                        if (!jsonObject2.has("text")) {
+                            continue;
+                        } else {
+                            if (jsonObject2.getString("text").toLowerCase().contains(search.toLowerCase())) {
+                                String url = jsonObject2.getString("url");
+                                String title = jsonObject2.getString("text");
+                                int score = jsonObject2.getInt("score");
+                                long timestamp = jsonObject2.getLong("time");
+                                Date date = new Date(timestamp * 1000L); // Convert seconds to milliseconds
+                                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                                String formattedDate = sdf.format(date);
+
+                                Stories_forms story = new Stories_forms(url, title, score, formattedDate, Integer.parseInt(stories[i]));
+                                stories_forms.add(story);
+                                // System.out.println(story);
+
+                                SMi.newURL(url);
+                            }
+                        }
+                    } else if (!jsonObject2.has("text")) {
+                        if (!jsonObject2.has("title")) {
+                            continue;
+                        } else {
+                            if (jsonObject2.getString("title").toLowerCase().contains(search.toLowerCase())) {
+                                String url = jsonObject2.getString("url");
+                                String title = jsonObject2.getString("title");
+                                int score = jsonObject2.getInt("score");
+                                long timestamp = jsonObject2.getLong("time");
+                                Date date = new Date(timestamp * 1000L); // Convert seconds to milliseconds
+                                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                                String formattedDate = sdf.format(date);
+
+                                Stories_forms story = new Stories_forms(url, title, score, formattedDate, Integer.parseInt(stories[i]));
+                                stories_forms.add(story);
+                                // System.out.println(story);
+
+                                SMi.newURL(url);
+                            }
+                        }
+                    } else if (jsonObject2.getString("title").toLowerCase().contains(search.toLowerCase())
+                            || jsonObject2.getString("text").toLowerCase().contains(search.toLowerCase())) {
+                        String url = jsonObject2.getString("url");
+                        String title = jsonObject2.getString("title");
+                        int score = jsonObject2.getInt("score");
+                        long timestamp = jsonObject2.getLong("time");
+                        Date date = new Date(timestamp * 1000L); // Convert seconds to milliseconds
+                        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                        String formattedDate = sdf.format(date);
+
+                        Stories_forms story = new Stories_forms(url, title, score, formattedDate, Integer.parseInt(stories[i]));
+                        stories_forms.add(story);
+                        // System.out.println(story);
+
+                        SMi.newURL(url);
+                    }
+                }
+                con2.disconnect();
             }
 
             model.addAttribute("stories", stories_forms);
+            
+
             return "results_search_hackernews";
 
         } catch (URISyntaxException e) {
