@@ -166,13 +166,13 @@ public class RMISearchModule extends UnicastRemoteObject
         for (StorageBarrelInterfaceB barrel : listOfBarrels) {
             result += "Barrel" + barrel.getId() + "\n";
         }
-        result += "Active Downloaders: " + listOfDownloaders.size() + "\n";
+        result += "\nActive Downloaders: " + listOfDownloaders.size() + "\n";
         count = 0;
         for (DownloaderInterfaceC downloader : listOfDownloaders) {
             result += "Downloader" + downloader.getId() + "\n";
         }
 
-        result += "Most commun Searches (Word-> Number of Searches):\n";
+        result += "\nMost commun Searches (Word-> Number of Searches):\n";
         count = 0;
 
         String check = "SELECT word, num FROM topSearches ORDER BY num DESC";

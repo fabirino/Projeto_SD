@@ -14,16 +14,18 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 
+import org.Googol.forms.Stats;
 import org.Googol.forms.Stories_forms;
 import org.Googol.forms.URL_forms;
 import org.Googol.forms.User;
 import org.Googol.forms.Words;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.client.RestTemplate;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -772,9 +774,35 @@ public class Controller1 {
         if (session.getAttribute("username") == null) {
             return "redirect:/login";
         }
+        
+        try {
+            String response = SMi.adminPage();
+
+            String[] entries = response.split("\n\n");
+            for (String string : entries) {
+                System.out.println();
+                System.out.println(string);
+            }
+
+            model.addAttribute("response", entries);
+
+
+        } catch (SQLException e) {
+            // TODO:
+        } catch (RemoteException e) {
+            // TODO:
+        }
+        
 
         // model.addAttribute("words", new Words());
         return "stats";
+    }
+
+    @MessageMapping("/update-stats")
+    @SendTo("/topic/stats")
+    public Stats updateStats(String[] searches) {
+        
+        return new Stats(searches);
     }
 
 }
