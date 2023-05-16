@@ -1,115 +1,175 @@
 <!DOCTYPE html>
 <html lang="pt" xmlns:th="http://www.thymeleaf.org">
-  <head>
-    <title>Results URLs</title>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
-    />
-    <link rel="stylesheet" th:href="@{/style.css}" />
-    <script src="webjars/jquery/3.6.4/jquery.min.js"></script>
-    <script src="webjars/sockjs-client/1.5.1/sockjs.min.js"></script>
-    <script src="webjars/stomp-websocket/2.3.4/stomp.min.js"></script>
-  </head>
 
-  <body >
-    <!-- navbar -->
-    <div th:insert="~{navbar :: navbar}"></div>
+<head>
+  <title>Results URLs</title>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <link rel="stylesheet" th:href="@{/style.css}" />
+  <script src="webjars/jquery/3.6.4/jquery.min.js"></script>
+  <script src="webjars/sockjs-client/1.5.1/sockjs.min.js"></script>
+  <script src="webjars/stomp-websocket/2.3.4/stomp.min.js"></script>
+</head>
 
-    <div class="login-card-container">
-      <div class="search-card">
-        <div class="login-card-header" >
-          <h1>Stats</h1>
-          <div id="statsTable">
-            <tr th:each="item : ${response}">
-              <p><td style="padding: 5px" th:text="${item}"></td></p>
-            </tr>
-          </div>
-        </div>
+<body id="statsTable">
+  <!-- navbar -->
+  <div th:insert="~{navbar :: navbar}"></div>
+
+  <div class="login-card-container">
+
+    <!-- title -->
+    <div class="search-card">
+      <div class="login-card-header">
+        <h1>Stats</h1>
+        <div>Here are the statistics of the Website/Server</div>
       </div>
     </div>
-  </body>
-  <script>
-    var socket = new SockJS("/stats-register");
-    var stompClient = Stomp.over(socket);
 
-    function setConnected(connected) {
- 
-      if (connected) {
-        console.log("Conectado");
-      } else {
-        console.log("Desconectado");
-      }
-    }
+    <div class="horizontal-cards">
 
-    function connect() {
+      <!-- Barrels -->
+      <div class="login-card">
+        <div class="login-card-header">
+          <h1>Barrels</h1>
+          <div th:text="'Active Barrels: ' + ${countbarrels}"></div>
+        </div>
+        <table class="table">
+          <thead>
 
-      stompClient.connect({}, function (frame) {
-        setConnected(true);
-        console.log("Conectado: " + frame);
+          </thead>
 
+          <tbody>
+            <tr th:each="item: ${barrels}">
+              <td style="padding: 5px" th:text="${item}"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-        stompClient.subscribe("/stats/update", function (message) {
-          showMessage(JSON.parse(message.body));
+      <!-- Dowloaders -->
+      <div class="login-card">
+        <div class="login-card-header">
+          <h1>Downloaders</h1>
+          <div th:text="'Active Downloaders: ' + ${countdownloaders}"></div>
 
-        });
-      });
-    }
+        </div>
+        <table class="table">
+          <thead>
 
-    function updateTable(data) {
-      var tableBody = document.getElementById("statsTable");
-      tableBody.innerHTML = ""; 
+          </thead>
 
-      data.forEach(function (item) {
-        var row = document.createElement("tr");
-        var cell = document.createElement("td");
-        cell.style.padding = "5px";
-        cell.textContent = item;
-        row.appendChild(cell);
-        tableBody.appendChild(row);
-      });
+          <tbody>
+            <tr th:each="item: ${downloaders}">
+              <td style="padding: 5px" th:text="${item}"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-    }
+      <!-- Top Searches -->
+      <div class="login-card">
+        <div class="login-card-header">
+          <h1>TopSearches</h1>
+        </div>
+        <table class="table">
+          <thead>
 
-    function disconnect() {
-      if (stompClient !== null) {
-        stompClient.disconnect();
-      }
-      setConnected(false);
+          </thead>
+
+          <tbody>
+            <tr th:each="item: ${topsearches}">
+              <td style="padding: 5px" th:text="${item.word}"></td>
+              <td style="padding: 5px" th:text="${item.count}"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</body>
+<script>
+  var socket = new SockJS("/stats-register");
+  var stompClient = Stomp.over(socket);
+
+  function setConnected(connected) {
+
+    if (connected) {
+      console.log("Conectado");
+    } else {
       console.log("Desconectado");
     }
+  }
 
-    function showMessage(message) {
+  function connect() {
 
-      console.log("Mensagem recebida: " + message);
+    stompClient.connect({}, function (frame) {
+      setConnected(true);
+      console.log("Conectado: " + frame);
 
-      updateTable(message);
 
-    }
+      stompClient.subscribe("/stats/update", function (message) {
+        showMessage(JSON.parse(message.body));
 
-    $(function () {
-      $("form").on("submit", function (e) {
-        e.preventDefault();
       });
-
-      $("#connect").click(function () {
-        connect();
-      });
-
-      $("#disconnect").click(function () {
-        disconnect();
-      });
-
-      connect();
-
-      // // Desconecta do WebSocket quando a página é fechada ou trocada
-      // $(window).unload(function () {
-      //   disconnect();
-      // });
-
     });
-  </script>
+  }
+
+  function updateTable(data) {
+    var tableBody = document.getElementById("statsTable");
+    tableBody.innerHTML = "";
+
+    data.forEach(function (item) {
+      var row = document.createElement("tr");
+      var cell = document.createElement("td");
+      cell.style.padding = "5px";
+      cell.textContent = item;
+      row.appendChild(cell);
+      tableBody.appendChild(row);
+    });
+
+  }
+
+  function disconnect() {
+    if (stompClient !== null) {
+      stompClient.disconnect();
+    }
+    setConnected(false);
+    console.log("Desconectado");
+  }
+
+  function showMessage(message) {
+
+    console.log("Mensagem recebida: " + message);
+
+    updateTable(message);
+
+  }
+
+  $(function () {
+    $("form").on("submit", function (e) {
+      e.preventDefault();
+    });
+
+    $("#connect").click(function () {
+      connect();
+    });
+
+    $("#disconnect").click(function () {
+      disconnect();
+    });
+
+    connect();
+
+    // // Desconecta do WebSocket quando a página é fechada ou trocada
+    // $(window).unload(function () {
+    //   disconnect();
+    // });
+
+  });
+</script>
+
 </html>
