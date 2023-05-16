@@ -139,9 +139,6 @@ public class RMISearchModule extends UnicastRemoteObject
                                 try {
                                     String str = SMi.adminPage();
                                     String[] str2 = str.split("\n\n");
-                                    for (String s : str2) {
-                                        System.out.println(s);
-                                    }
                                     controller.sendMessage(str2);
                                     System.out.println("Search Module: Sent stats to Controller");
                                 } catch (SQLException e1) {

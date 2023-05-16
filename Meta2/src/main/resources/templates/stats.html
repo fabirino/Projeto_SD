@@ -15,18 +15,19 @@
     <script src="webjars/stomp-websocket/2.3.4/stomp.min.js"></script>
   </head>
 
-  <body id="statsTable">
+  <body >
     <!-- navbar -->
     <div th:insert="~{navbar :: navbar}"></div>
 
     <div class="login-card-container">
       <div class="search-card">
-        <div class="login-card-header">
+        <div class="login-card-header" >
           <h1>Stats</h1>
-
-          <tr th:each="item : ${response}">
-            <p><td style="padding: 5px" th:text="${item}"></td></p>
-          </tr>
+          <div id="statsTable">
+            <tr th:each="item : ${response}">
+              <p><td style="padding: 5px" th:text="${item}"></td></p>
+            </tr>
+          </div>
         </div>
       </div>
     </div>
