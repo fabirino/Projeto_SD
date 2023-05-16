@@ -88,4 +88,18 @@ public interface GoogolInterface extends Remote{
      * @throws RemoteException
      */
     public void queueCrash() throws RemoteException;
+
+        /**
+     * Used when a Controller starts to unsubscribe in the Search Module  
+     * @param controller1 Interface used by the Controller
+     * @return returns true if the Controller was subscribed, false otherwise
+     * @throws RemoteException
+     */
+    public boolean subscribeC(ControllerInterface controller1) throws RemoteException;
+    
+    /**
+     * Used when a Controller stops to unsubscribe in the Search Module 
+     * @throws RemoteException
+     */
+    public void unsubscribeC() throws RemoteException;
 }

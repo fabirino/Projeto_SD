@@ -13,6 +13,7 @@ import java.net.URISyntaxException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 
 import org.Googol.forms.Stats;
 import org.Googol.forms.Stories_forms;
@@ -27,6 +28,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
 import jakarta.servlet.http.HttpSession;
 
 import java.security.MessageDigest;
@@ -37,19 +40,23 @@ import java.text.SimpleDateFormat;
 import java.util.ConcurrentModificationException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import javax.print.DocFlavor.STRING;
+
 import org.json.JSONObject;
 import org.json.JSONArray;
 
 import org.springframework.ui.Model;
 
 @Controller
-public class Controller1 {
+public class Controller1 extends UnicastRemoteObject implements ControllerInterface {
 
     GoogolInterface SMi;
 
-    public Controller1() {
+    public Controller1() throws RemoteException {
+        super();
         try {
             this.SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
+
         } catch (NotBoundException NBE) {
             System.out.println("System: The Interface is not bound");
             return;
@@ -63,10 +70,48 @@ public class Controller1 {
         System.out.println("System: The Googol Aplication is running");
     }
 
+    // WEBSOCKET =================================================================
+    public boolean sendMessage(String[] searches) throws RemoteException {
+
+        WebSocket webSocket = new WebSocket();
+        Stats search = new Stats(searches);
+        while (true) {
+            boolean success = webSocket.sendMessage(search);
+
+            if (success) {
+                System.out.println("Message sent successfully.");
+                return true;
+            } else {
+                System.out.println("Failed to send message.");
+            }
+        }
+    }
+
+    @PostConstruct
+    public void init() {
+        try {
+            SMi.subscribeC((ControllerInterface) new Controller1());
+        } catch (RemoteException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    @PreDestroy
+    public void destroy() {
+        try {
+            SMi.unsubscribeC();
+        } catch (RemoteException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
     // LOGIN =====================================================================
 
     @GetMapping("/")
     public String redirect() {
+
         return "redirect:/login";
     }
 
@@ -85,7 +130,7 @@ public class Controller1 {
     @PostMapping("/save-user")
     public String saveUserSubmission(HttpSession session, @ModelAttribute User user, Model model) {
 
-        System.out.println(user.getName() + " " + user.getPassword());
+        // System.out.println(user.getName() + " " + user.getPassword());
         try {
             // Encrypt password
             String encrypted = null;
@@ -263,7 +308,7 @@ public class Controller1 {
                     String parts[] = s.split("\n");
                     URL url = new URL(parts[0].substring(5, parts[0].length()), parts[1], parts[2], null, null);
                     listUrls[i++] = url;
-                    System.out.println(url.printURL());
+                    // System.out.println(url.printURL());
                 }
                 model.addAttribute("listUrls", listUrls);
                 model.addAttribute("url", new URL_forms());
@@ -648,23 +693,23 @@ public class Controller1 {
                 return "error";
             }
 
-            String[] stories= response.toString().replace("[", "").replace("]", "").replace(" ", "").split(",");
-            
+            String[] stories = response.toString().replace("[", "").replace("]", "").replace(" ", "").split(",");
+
             con.disconnect();
             // Get the stories of the user and index them
-            
+
             ConcurrentLinkedQueue<Stories_forms> stories_forms = new ConcurrentLinkedQueue<Stories_forms>();
             int max = stories.length;
             if (stories.length > 100)
                 max = 100;
             for (int i = 0; i < max; i++) {
-                
+
                 String story_link = "https://hacker-news.firebaseio.com/v0/item/" + stories[i] + ".json?print=pretty";
                 URI uri2 = new URI(story_link);
                 HttpURLConnection con2 = (HttpURLConnection) uri2.toURL().openConnection();
                 con2.setRequestMethod("GET");
                 int responseCode2 = con2.getResponseCode();
-                
+
                 if (responseCode2 != HttpURLConnection.HTTP_OK) {
                     String response2 = "Something went wrong with the API request (after the user request))";
                     // FIXME: mostrar o erro
@@ -675,13 +720,13 @@ public class Controller1 {
                 BufferedReader in2 = new BufferedReader(new InputStreamReader(con2.getInputStream()));
                 String inputLine2;
                 StringBuilder response2 = new StringBuilder();
-                
+
                 while ((inputLine2 = in2.readLine()) != null) {
                     response2.append(inputLine2);
                 }
-                
+
                 in2.close();
-                
+
                 JSONObject jsonObject2 = new JSONObject(response2.toString());
 
                 String type = jsonObject2.getString("type");
@@ -702,7 +747,8 @@ public class Controller1 {
                                 SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
                                 String formattedDate = sdf.format(date);
 
-                                Stories_forms story = new Stories_forms(url, title, score, formattedDate, Integer.parseInt(stories[i]));
+                                Stories_forms story = new Stories_forms(url, title, score, formattedDate,
+                                        Integer.parseInt(stories[i]));
                                 stories_forms.add(story);
                                 // System.out.println(story);
 
@@ -722,7 +768,8 @@ public class Controller1 {
                                 SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
                                 String formattedDate = sdf.format(date);
 
-                                Stories_forms story = new Stories_forms(url, title, score, formattedDate, Integer.parseInt(stories[i]));
+                                Stories_forms story = new Stories_forms(url, title, score, formattedDate,
+                                        Integer.parseInt(stories[i]));
                                 stories_forms.add(story);
                                 // System.out.println(story);
 
@@ -739,7 +786,8 @@ public class Controller1 {
                         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
                         String formattedDate = sdf.format(date);
 
-                        Stories_forms story = new Stories_forms(url, title, score, formattedDate, Integer.parseInt(stories[i]));
+                        Stories_forms story = new Stories_forms(url, title, score, formattedDate,
+                                Integer.parseInt(stories[i]));
                         stories_forms.add(story);
                         // System.out.println(story);
 
@@ -750,7 +798,6 @@ public class Controller1 {
             }
 
             model.addAttribute("stories", stories_forms);
-            
 
             return "results_search_hackernews";
 
@@ -774,35 +821,31 @@ public class Controller1 {
         if (session.getAttribute("username") == null) {
             return "redirect:/login";
         }
-        
+
         try {
             String response = SMi.adminPage();
-
+            System.out.println("/Stats");
             String[] entries = response.split("\n\n");
-            for (String string : entries) {
-                System.out.println();
-                System.out.println(string);
-            }
 
             model.addAttribute("response", entries);
-
 
         } catch (SQLException e) {
             // TODO:
         } catch (RemoteException e) {
             // TODO:
         }
-        
 
         // model.addAttribute("words", new Words());
         return "stats";
     }
 
     @MessageMapping("/update-stats")
-    @SendTo("/topic/stats")
-    public Stats updateStats(String[] searches) {
-        
-        return new Stats(searches);
+    @SendTo("/stats/update")
+    public String[] updateStats(Stats searches) {
+        System.out.println("/update-stats");
+        String[] sa = searches.getSearches();
+
+        return sa;
     }
 
 }

@@ -33,6 +33,7 @@ public class RMISearchModule extends UnicastRemoteObject
     static int downloaderCount;
     static Connection connection;
     static boolean sync;
+    static ControllerInterface controller;
 
     String menu;
     Queue urlQueue;
@@ -41,6 +42,7 @@ public class RMISearchModule extends UnicastRemoteObject
 
     /**
      * Constructor
+     * 
      * @param i Distinguishes the Interface used
      * @throws RemoteException
      */
@@ -58,6 +60,7 @@ public class RMISearchModule extends UnicastRemoteObject
             urlindexQueue = new Queue("_index");
             listOfBarrels = new ArrayList<StorageBarrelInterfaceB>();
             listOfDownloaders = new ArrayList<DownloaderInterfaceC>();
+            controller = null;
         }
     }
 
@@ -70,7 +73,7 @@ public class RMISearchModule extends UnicastRemoteObject
         // Setup DataBase
         String url = "jdbc:postgresql://localhost/ProjetoSD";
         String username = dotenv.get("DB_USER");
-        String password =  dotenv.get("DB_PASSWORD");
+        String password = dotenv.get("DB_PASSWORD");
         try {
             DriverManager.registerDriver(new org.postgresql.Driver());
             connection = DriverManager.getConnection(url, username, password);
@@ -99,7 +102,8 @@ public class RMISearchModule extends UnicastRemoteObject
 
         try {
             LocateRegistry.createRegistry(1099).rebind("SM", SMi);
-            // LocateRegistry.createRegistry(1099).rebind("rmi://<public-ip>:1099/SM", SMi);// DEBUG: out off machine
+            // LocateRegistry.createRegistry(1099).rebind("rmi://<public-ip>:1099/SM",
+            // SMi);// DEBUG: out off machine
         } catch (RemoteException RE) {
             System.out.println("Search Module: System crashed, Remote Exception ocurred");
             SMi.queueCrash();
@@ -109,9 +113,54 @@ public class RMISearchModule extends UnicastRemoteObject
 
         try {
             LocateRegistry.createRegistry(1098).rebind("SB", SMi2);
-            // LocateRegistry.createRegistry(1098).rebind("rmi://<public-ip>:1098/SB", SMi2);// DEBUG: out off machine
+            // LocateRegistry.createRegistry(1098).rebind("rmi://<public-ip>:1098/SB",
+            // SMi2);// DEBUG: out off machine
         } catch (Exception re) {
             System.out.println("Exception in Search Module: " + re);
+        }
+        while (true) {
+            try {
+                Thread.sleep(4000);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            if (listOfBarrels.size() > 0)
+                try {
+                    // System.out.println("Search Module: A packet was lost, pinging all Barrels");
+                    for (StorageBarrelInterfaceB barrel : listOfBarrels) {
+                        try {
+                            barrel.tryPing();
+                        } catch (RemoteException e) {
+                            System.out.println("Search Module: Removing from list of active Barrels");
+                            listOfBarrels.remove(barrel);
+                            System.out.println("Search Module: Unsubscribing this Barrel");
+                            if (controller != null) {
+                                try {
+                                    String str = SMi.adminPage();
+                                    String[] str2 = str.split("\n\n");
+                                    for (String s : str2) {
+                                        System.out.println(s);
+                                    }
+                                    controller.sendMessage(str2);
+                                    System.out.println("Search Module: Sent stats to Controller");
+                                } catch (SQLException e1) {
+                                    // TODO Auto-generated catch block
+                                    e1.printStackTrace();
+                                }
+                            }
+
+                            for (DownloaderInterfaceC cl : listOfDownloaders) {
+                                cl.setvariavel(listOfBarrels.size());
+                            }
+                            break;
+                        }
+                    }
+                    // System.out.println("Saiu do loop");
+                } catch (RemoteException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
         }
     }
 
@@ -123,7 +172,6 @@ public class RMISearchModule extends UnicastRemoteObject
         System.out.println("Search Module: Adding \"" + URLString + "\" to the QUEUE");
         urlQueue.addURLHead(new URL(URLString));
     }
-
 
     public Response pagesWithWord(String[] words, int pages) throws RemoteException {
         if (listOfBarrels.size() == 0) {
@@ -142,9 +190,22 @@ public class RMISearchModule extends UnicastRemoteObject
         StorageBarrelInterfaceB Barrel = listOfBarrels.get((nextBarrel++) % listOfBarrels.size());
         Response result = Barrel.getUrlsToClient(words, pages);
 
+        if (controller != null) {
+            try {
+                String str = adminPage();
+                String[] str2 = str.split("\n\n");
+                controller.sendMessage(str2);
+                System.out.println("Search Module: Sent stats to Controller");
+            } catch (SQLException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
+        } else {
+            System.out.println("Search Module: Controller is null");
+        }
+
         return result;
     }
-
 
     public Response pagesWithURL(String URL, int pages) throws RemoteException {
         if (listOfBarrels.size() == 0) {
@@ -154,7 +215,7 @@ public class RMISearchModule extends UnicastRemoteObject
 
         // Choose a barrel to work (circular)
         StorageBarrelInterfaceB Barrel = listOfBarrels.get((nextBarrel++) % listOfBarrels.size());
-        
+
         Response result = Barrel.getpagesWithURL(URL, pages);
 
         return result;
@@ -264,7 +325,6 @@ public class RMISearchModule extends UnicastRemoteObject
 
     }
 
-
     // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
     // Storage Barrel Interface functions
     // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
@@ -272,6 +332,19 @@ public class RMISearchModule extends UnicastRemoteObject
     public int subscribeB(String name, StorageBarrelInterfaceB c) throws RemoteException {
         System.out.println("Search Module: Subscribing Barrel" + ++barrelCount);
         listOfBarrels.add(c);
+        if (controller != null) {
+            try {
+                String str = adminPage();
+                String[] str2 = str.split("\n\n");
+                controller.sendMessage(str2);
+                System.out.println("Search Module: Sent stats to Controller");
+            } catch (SQLException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
+        } else {
+            System.out.println("Search Module: Controller is null");
+        }
         for (DownloaderInterfaceC cl : listOfDownloaders) {
             cl.setvariavel(listOfBarrels.size());
             cl.setsyncD(true);
@@ -285,24 +358,37 @@ public class RMISearchModule extends UnicastRemoteObject
         } catch (Exception e) {
             System.out.println("ARDEU A TENDA!");
         }
+        if (controller != null) {
+            try {
+                String str = adminPage();
+                String[] str2 = str.split("\n\n");
+                controller.sendMessage(str2);
+                System.out.println("Search Module: Sent stats to Controller");
+            } catch (SQLException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
+        } else {
+            System.out.println("Search Module: Controller is null");
+        }
         for (DownloaderInterfaceC cl : listOfDownloaders) {
             cl.setvariavel(listOfBarrels.size());
         }
         System.out.println("Search Module: Unsubscribing Barrel" + client.getId());
     }
 
-    public HashMap<String, HashSet<URL>> syncIndex(StorageBarrelInterfaceB c ,HashMap<String, HashSet<URL>> index) throws RemoteException{
+    public HashMap<String, HashSet<URL>> syncIndex(StorageBarrelInterfaceB c, HashMap<String, HashSet<URL>> index)
+            throws RemoteException {
         HashMap<String, HashSet<URL>> hash;
 
-        if(listOfBarrels.size() == 1){
+        if (listOfBarrels.size() == 1) {
             return null;
-        }else{
-            if(index.size() == 0){
+        } else {
+            if (index.size() == 0) {
                 StorageBarrelInterfaceB Barrel = listOfBarrels.get((nextBarrel++) % listOfBarrels.size());
                 hash = Barrel.getIndex();
                 return hash;
-            }
-            else{
+            } else {
                 StorageBarrelInterfaceB Barrel = listOfBarrels.get((nextBarrel++) % listOfBarrels.size());
                 hash = Barrel.getIndex();
                 for (String key : index.keySet()) {
@@ -322,7 +408,7 @@ public class RMISearchModule extends UnicastRemoteObject
                                 set1.add(s);
                             }
                         }
-        
+
                         System.out.println(set1);
                     } else {
                         hash.put(key, index.get(key));
@@ -337,18 +423,18 @@ public class RMISearchModule extends UnicastRemoteObject
 
     }
 
-    public HashMap<String, HashSet<URL>> syncPath(StorageBarrelInterfaceB c ,HashMap<String, HashSet<URL>> path) throws RemoteException{
+    public HashMap<String, HashSet<URL>> syncPath(StorageBarrelInterfaceB c, HashMap<String, HashSet<URL>> path)
+            throws RemoteException {
         HashMap<String, HashSet<URL>> hash;
 
-        if(listOfBarrels.size() == 1){
+        if (listOfBarrels.size() == 1) {
             return null;
-        }else{
+        } else {
             StorageBarrelInterfaceB Barrel = listOfBarrels.get((nextBarrel++) % listOfBarrels.size());
-            if(path.size() == 0){
+            if (path.size() == 0) {
                 hash = Barrel.getPath();
                 return hash;
-            }
-            else{
+            } else {
                 hash = Barrel.getPath();
                 for (String key : path.keySet()) {
                     if (hash.containsKey(key)) {
@@ -367,7 +453,7 @@ public class RMISearchModule extends UnicastRemoteObject
                                 set1.add(s);
                             }
                         }
-        
+
                     } else {
                         hash.put(key, path.get(key));
                     }
@@ -385,7 +471,7 @@ public class RMISearchModule extends UnicastRemoteObject
         for (DownloaderInterfaceC cl : listOfDownloaders) {
             cl.setsyncD(false);
         }
-        
+
     }
 
     // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
@@ -394,6 +480,19 @@ public class RMISearchModule extends UnicastRemoteObject
 
     public int subscribeD(DownloaderInterfaceC c) throws RemoteException {
         listOfDownloaders.add(c);
+        if (controller != null) {
+            try {
+                String str = adminPage();
+                String[] str2 = str.split("\n\n");
+                controller.sendMessage(str2);
+                System.out.println("Search Module: Sent stats to Controller");
+            } catch (SQLException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
+        } else {
+            System.out.println("Search Module: Controller is null");
+        }
         if (listOfBarrels.size() > 0) {
             System.out.println("Search Module: Subscribing Downloader" + ++downloaderCount);
             return downloaderCount;
@@ -406,35 +505,66 @@ public class RMISearchModule extends UnicastRemoteObject
     public void unsubscribeD(DownloaderInterfaceC client) throws RemoteException {
         try {
             listOfDownloaders.remove(client);
+            if (controller != null) {
+                try {
+                    String str = adminPage();
+                    String[] str2 = str.split("\n\n");
+                    for (String s : str2) {
+                        System.out.println(s);
+                    }
+                    controller.sendMessage(str2);
+                    System.out.println("Search Module: Sent stats to Controller");
+                } catch (SQLException e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                }
+            } else {
+                System.out.println("Search Module: Controller is null");
+            }
         } catch (Exception e) {
             System.out.println("ARDEU A TENDA!");
         }
         System.out.println("Search Module: Unsubscribing Downloader" + client.getId());
     }
 
-    public int getNBarrels() throws RemoteException{
+    public int getNBarrels() throws RemoteException {
         return listOfBarrels.size();
     }
 
-    public void pingBarrels() throws RemoteException{
-        int count=0;
-        System.out.println("Search Module: A packet was lost, pinging all Barrels");
-        for(StorageBarrelInterfaceB barrel: listOfBarrels){
-            try{
-                if(barrel.tryPing()){
+    public void pingBarrels() throws RemoteException {
+        int count = 0;
+        // System.out.println("Search Module: A packet was lost, pinging all Barrels");
+        for (StorageBarrelInterfaceB barrel : listOfBarrels) {
+            try {
+                if (barrel.tryPing()) {
                     count++;
                     // System.out.println(count);
                     // System.out.println("Barrel " + barrel.getId() + " is alive");
                 }
-            } catch (RemoteException e){
-                System.out.println("Search Module: A barrel stopped responding. Removing from list of active Barrels");
+            } catch (RemoteException e) {
+                System.out.println("Search Module: Removing from list of active Barrels");
                 listOfBarrels.remove(barrel);
                 System.out.println("Search Module: Unsubscribing this Barrel");
+                if (controller != null) {
+                    try {
+                        String str = adminPage();
+                        String[] str2 = str.split("\n\n");
+                        for (String s : str2) {
+                            System.out.println(s);
+                        }
+                        controller.sendMessage(str2);
+                        System.out.println("Search Module: Sent stats to Controller");
+                    } catch (SQLException e1) {
+                        // TODO Auto-generated catch block
+                        e1.printStackTrace();
+                    }
+                }
+
                 for (DownloaderInterfaceC cl : listOfDownloaders) {
                     cl.setvariavel(listOfBarrels.size());
                 }
                 break;
-            } 
+            }
         }
         // System.out.println("Saiu do loop");
     }
@@ -443,28 +573,29 @@ public class RMISearchModule extends UnicastRemoteObject
     // QUEUE functions
     // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
 
-    //URLQUEUE
+    // URLQUEUE
     public boolean addURLQueue(URL URL) throws RemoteException {
         return urlQueue.addURL(URL);
     }
-    
+
     public URL getURLQueue() throws RemoteException, InterruptedException {
         return urlQueue.getUrl();
     }
-    
+
     public void queueRecovery() throws RemoteException {
         urlQueue.onRecovery();
         urlindexQueue.onRecovery();
     }
-    
+
     public void queueCrash() throws RemoteException {
         urlQueue.onCrash();
         urlindexQueue.onCrash();
     }
 
-    //URLINDEXQUEUE
+    // URLINDEXQUEUE
     public boolean addURLQueue2(URL URL) throws RemoteException {
-        // System.out.println("Search Module: Adding \"" + URL.getUrl() + "\" to the QUEUE2");
+        // System.out.println("Search Module: Adding \"" + URL.getUrl() + "\" to the
+        // QUEUE2");
         return urlindexQueue.addURL(URL);
     }
 
@@ -473,7 +604,7 @@ public class RMISearchModule extends UnicastRemoteObject
     }
 
     // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
-    // DataBase TODO: ver problemas de concorrencia
+    // DataBase 
     // #=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=
 
     /**
@@ -507,6 +638,36 @@ public class RMISearchModule extends UnicastRemoteObject
             System.out.println("Search Module: Error trying so read/write to DataBase");
             e.printStackTrace();
         }
+
+    }
+
+    // Controller
+    /**
+     * Used when a Controller starts to unsubscribe in the Search Module
+     * 
+     * @param controller Interface used by the Controller
+     * @return returns true if the Controller was subscribed, false otherwise
+     * @throws RemoteException
+     */
+    public boolean subscribeC(ControllerInterface controller1) throws RemoteException {
+        if (controller == null) {
+            controller = controller1;
+            System.out.println("Search Module: Subscribing Controller");
+            return true;
+        }
+        System.out.println("Search Module: Controller already subscribed");
+        return false;
+    }
+
+    /**
+     * Used when a Controller stops to unsubscribe in the Search Module
+     * 
+     * @param controller Interface used by the Controller
+     * @throws RemoteException
+     */
+    public void unsubscribeC() throws RemoteException {
+        controller = null;
+        System.out.println("Search Module: Unsubscribing Controller");
 
     }
 

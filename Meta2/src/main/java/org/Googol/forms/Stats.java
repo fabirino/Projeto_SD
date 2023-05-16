@@ -1,8 +1,14 @@
 package org.Googol.forms;
 
 
-public class Stats {
+import java.io.Serializable;
+
+public class Stats implements Serializable {
     private String[] searches;
+
+    public Stats() {
+        // Construtor padrão sem argumentos
+    }
 
     public Stats(String[] searches) {
         this.searches = searches;

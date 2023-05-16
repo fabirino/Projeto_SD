@@ -10,12 +10,12 @@
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
     />
     <link rel="stylesheet" th:href="@{/style.css}" />
-    <script src="/webjars/jquery/jquery.min.js"></script>
-    <script src="/webjars/sockjs-client/sockjs.min.js"></script>
-    <script src="/webjars/stomp-websocket/stomp.min.js"></script>
+    <script src="webjars/jquery/3.6.4/jquery.min.js"></script>
+    <script src="webjars/sockjs-client/1.5.1/sockjs.min.js"></script>
+    <script src="webjars/stomp-websocket/2.3.4/stomp.min.js"></script>
   </head>
 
-  <body>
+  <body id="statsTable">
     <!-- navbar -->
     <div th:insert="~{navbar :: navbar}"></div>
 
@@ -57,11 +57,27 @@
         setConnected(true);
         console.log("Conectado: " + frame);
 
-        // Inscreve-se no destino '/stats/messages' para receber mensagens
-        stompClient.subscribe("/stats/messages", function (message) {
+        // Inscreve-se no destino '/stats/update' para receber mensagens
+        stompClient.subscribe("/stats/update", function (message) {
           showMessage(JSON.parse(message.body));
+
         });
       });
+    }
+
+    function updateTable(data) {
+      var tableBody = document.getElementById("statsTable");
+      tableBody.innerHTML = ""; // Limpa o conteúdo atual da tabela
+
+      data.forEach(function (item) {
+        var row = document.createElement("tr");
+        var cell = document.createElement("td");
+        cell.style.padding = "5px";
+        cell.textContent = item;
+        row.appendChild(cell);
+        tableBody.appendChild(row);
+      });
+
     }
 
     function disconnect() {
@@ -75,6 +91,9 @@
     function showMessage(message) {
       // Lida com a mensagem recebida
       console.log("Mensagem recebida: " + message);
+
+      updateTable(message);
+
     }
 
     $(function () {
@@ -90,17 +109,13 @@
         disconnect();
       });
 
-      $("#send").click(function () {
-        sendMessage();
-      });
-
-      // Conecta ao WebSocket assim que a página é carregada
       connect();
 
-      // Desconecta do WebSocket quando a página é fechada ou trocada
-      $(window).unload(function () {
-        disconnect();
-      });
+      // // Desconecta do WebSocket quando a página é fechada ou trocada
+      // $(window).unload(function () {
+      //   disconnect();
+      // });
+
     });
   </script>
 </html>
