@@ -138,11 +138,8 @@
       statsTable.appendChild(topSearchesCard);
 
       console.log("Tabela atualizada");
-      console.log(statsTable.innerHTML);
-      console.log("====================================");
     }
 
-    // Função auxiliar para criar um cartão de login
     function createLoginCard(title, countText, items) {
       var loginCard = document.createElement("div");
       loginCard.className = "login-card";
@@ -184,7 +181,6 @@
       return loginCard;
     }
 
-    // Função auxiliar para criar o cartão Top Searches
     function createTopSearchesCard(topsearches) {
       var loginCard = document.createElement("div");
       loginCard.className = "login-card";
@@ -246,12 +242,11 @@
         countdownloaders,
       } = message;
 
-      // Exemplo de uso das variáveis
-      console.log(barrels); // ["Barrel1"]
-      console.log(downloaders); // []
-      console.log(topsearches); // Array de objetos
-      console.log(countbarrels); // 1
-      console.log(countdownloaders); // 0
+      console.log(barrels); 
+      console.log(downloaders); 
+      console.log(topsearches); 
+      console.log(countbarrels); 
+      console.log(countdownloaders); 
 
       updateTable(
         barrels,
