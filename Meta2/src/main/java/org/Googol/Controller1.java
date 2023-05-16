@@ -15,6 +15,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
+import org.Googol.forms.Search;
 import org.Googol.forms.Stats;
 import org.Googol.forms.Stories_forms;
 import org.Googol.forms.URL_forms;
@@ -826,8 +827,48 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
             String response = SMi.adminPage();
             System.out.println("/Stats");
             String[] entries = response.split("\n\n");
+            String barrels = entries[0];
+            String downloaders = entries[1];
+            String words = entries[2];
+            int i = 0;
+            int countbarrels = 0;
+            int countdownloaders = 0;
 
-            model.addAttribute("response", entries);
+            // Barrels
+            String[] barrels2 = barrels.split("\n");
+            String[] barrels3 = new String[barrels2.length - 1];
+            for(i = 0; i < barrels2.length - 1; i++){
+                barrels3[i] = barrels2[i + 1];
+                countbarrels++;
+            }
+
+
+            // Downloaders
+            String[] downloaders2 = downloaders.split("\n");
+            String[] downloaders3 = new String[downloaders2.length - 1];
+            for(i = 0; i < downloaders2.length - 1; i++){
+                downloaders3[i] = downloaders2[i + 1];
+                countdownloaders++;
+            }
+
+            // Top Searches
+            i = 0;
+            String[] searches = words.split("\n");
+            Search topsearches[] = new Search[searches.length - 1];
+            for (String s : searches) {
+                System.out.println(s);
+                if (i != 0) {
+                    String[] parts = s.split("-> ");
+                    topsearches[i - 1] = new Search(parts[0], Integer.parseInt(parts[1]));
+                }
+                i++;
+            }
+
+            model.addAttribute("barrels", barrels3);
+            model.addAttribute("downloaders", downloaders3);
+            model.addAttribute("topsearches", topsearches);
+            model.addAttribute("countbarrels", countbarrels);
+            model.addAttribute("countdownloaders", countdownloaders);
 
         } catch (SQLException e) {
             // TODO:
@@ -835,7 +876,6 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
             // TODO:
         }
 
-        // model.addAttribute("words", new Words());
         return "stats";
     }
 
