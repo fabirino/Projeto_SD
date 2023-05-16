@@ -17,6 +17,7 @@ import java.rmi.server.UnicastRemoteObject;
 
 import org.Googol.forms.Search;
 import org.Googol.forms.Stats;
+import org.Googol.forms.Stats_forms;
 import org.Googol.forms.Stories_forms;
 import org.Googol.forms.URL_forms;
 import org.Googol.forms.User;
@@ -837,16 +838,15 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
             // Barrels
             String[] barrels2 = barrels.split("\n");
             String[] barrels3 = new String[barrels2.length - 1];
-            for(i = 0; i < barrels2.length - 1; i++){
+            for (i = 0; i < barrels2.length - 1; i++) {
                 barrels3[i] = barrels2[i + 1];
                 countbarrels++;
             }
 
-
             // Downloaders
             String[] downloaders2 = downloaders.split("\n");
             String[] downloaders3 = new String[downloaders2.length - 1];
-            for(i = 0; i < downloaders2.length - 1; i++){
+            for (i = 0; i < downloaders2.length - 1; i++) {
                 downloaders3[i] = downloaders2[i + 1];
                 countdownloaders++;
             }
@@ -856,7 +856,7 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
             String[] searches = words.split("\n");
             Search topsearches[] = new Search[searches.length - 1];
             for (String s : searches) {
-                System.out.println(s);
+                // System.out.println(s);
                 if (i != 0) {
                     String[] parts = s.split("-> ");
                     topsearches[i - 1] = new Search(parts[0], Integer.parseInt(parts[1]));
@@ -864,11 +864,8 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
                 i++;
             }
 
-            model.addAttribute("barrels", barrels3);
-            model.addAttribute("downloaders", downloaders3);
-            model.addAttribute("topsearches", topsearches);
-            model.addAttribute("countbarrels", countbarrels);
-            model.addAttribute("countdownloaders", countdownloaders);
+            Stats_forms sf = new Stats_forms(barrels3, downloaders3, topsearches, countbarrels, countdownloaders);
+            model.addAttribute("forms", sf);
 
         } catch (SQLException e) {
             // TODO:
@@ -881,11 +878,48 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
 
     @MessageMapping("/stats-update")
     @SendTo("/stats/update")
-    public String[] updateStats(Stats searches) {
+    public Stats_forms updateStats(Stats searches) {
         System.out.println("/stats-update");
-        String[] sa = searches.getSearches();
+        String[] entries = searches.getSearches();
+        
+        String barrels = entries[0];
+        String downloaders = entries[1];
+        String words = entries[2];
+        int i = 0;
+        int countbarrels = 0;
+        int countdownloaders = 0;
 
-        return sa;
+        // Barrels
+        String[] barrels2 = barrels.split("\n");
+        String[] barrels3 = new String[barrels2.length - 1];
+        for (i = 0; i < barrels2.length - 1; i++) {
+            barrels3[i] = barrels2[i + 1];
+            countbarrels++;
+        }
+
+        // Downloaders
+        String[] downloaders2 = downloaders.split("\n");
+        String[] downloaders3 = new String[downloaders2.length - 1];
+        for (i = 0; i < downloaders2.length - 1; i++) {
+            downloaders3[i] = downloaders2[i + 1];
+            countdownloaders++;
+        }
+
+        // Top Searches
+        i = 0;
+        String[] searches1 = words.split("\n");
+        Search topsearches[] = new Search[searches1.length - 1];
+        for (String s : searches1) {
+            // System.out.println(s);
+            if (i != 0) {
+                String[] parts = s.split("-> ");
+                topsearches[i - 1] = new Search(parts[0], Integer.parseInt(parts[1]));
+            }
+            i++;
+        }
+
+        Stats_forms sf = new Stats_forms(barrels3, downloaders3, topsearches, countbarrels, countdownloaders);
+        return sf;
     }
 
 }
