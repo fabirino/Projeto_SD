@@ -839,10 +839,10 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
         return "stats";
     }
 
-    @MessageMapping("/update-stats")
+    @MessageMapping("/stats-update")
     @SendTo("/stats/update")
     public String[] updateStats(Stats searches) {
-        System.out.println("/update-stats");
+        System.out.println("/stats-update");
         String[] sa = searches.getSearches();
 
         return sa;

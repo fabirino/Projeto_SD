@@ -32,11 +32,11 @@
     </div>
   </body>
   <script>
-    var socket = new SockJS("/stats-websocket");
+    var socket = new SockJS("/stats-register");
     var stompClient = Stomp.over(socket);
 
     function setConnected(connected) {
-      // Atualiza a UI para refletir o estado de conexão
+ 
       if (connected) {
         console.log("Conectado");
       } else {
@@ -45,19 +45,12 @@
     }
 
     function connect() {
-      // Cria um cliente WebSocketStompClient e se conecta ao endpoint WebSocket
-      var socket = new SockJS("/stats-websocket");
-      stompClient = Stomp.over(socket);
-
-      // Configura o conversor de mensagens para usar JSON
-      stompClient.debug = null;
-      stompClient.reconnect_delay = 2000; // Tempo de espera antes de tentar reconectar
 
       stompClient.connect({}, function (frame) {
         setConnected(true);
         console.log("Conectado: " + frame);
 
-        // Inscreve-se no destino '/stats/update' para receber mensagens
+
         stompClient.subscribe("/stats/update", function (message) {
           showMessage(JSON.parse(message.body));
 
@@ -67,7 +60,7 @@
 
     function updateTable(data) {
       var tableBody = document.getElementById("statsTable");
-      tableBody.innerHTML = ""; // Limpa o conteúdo atual da tabela
+      tableBody.innerHTML = ""; 
 
       data.forEach(function (item) {
         var row = document.createElement("tr");
@@ -89,7 +82,7 @@
     }
 
     function showMessage(message) {
-      // Lida com a mensagem recebida
+
       console.log("Mensagem recebida: " + message);
 
       updateTable(message);
