@@ -222,12 +222,12 @@ public class RMISearchModule extends UnicastRemoteObject
         String result = "Active Barrels: " + listOfBarrels.size() + "\n";
         int count = 0;
         for (StorageBarrelInterfaceB barrel : listOfBarrels) {
-            result += "Barrel" + barrel.getId() + "\n";
+            result += "Barrel" + barrel.getId() +"-" + barrel.getIP() +"\n";
         }
         result += "\nActive Downloaders: " + listOfDownloaders.size() + "\n";
         count = 0;
         for (DownloaderInterfaceC downloader : listOfDownloaders) {
-            result += "Downloader" + downloader.getId() + "\n";
+            result += "Downloader" + downloader.getId() +"-" + downloader.getIP() + "\n";
         }
 
         result += "\nMost commun Searches (Word-> Number of Searches):\n";

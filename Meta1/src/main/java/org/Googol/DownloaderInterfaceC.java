@@ -15,6 +15,13 @@ public interface DownloaderInterfaceC extends Remote {
     public int getId() throws RemoteException;
 
     /**
+     * 
+     * @return
+     * @throws RemoteException
+     */
+    public String getIP() throws RemoteException;
+
+    /**
      * Used when the Search Module Crashes
      * @throws RemoteException
      */

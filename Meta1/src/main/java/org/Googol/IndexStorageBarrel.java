@@ -4,9 +4,11 @@ import java.io.*;
 import java.io.FileInputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.MulticastSocket;
+import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.rmi.Naming;
@@ -18,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.ConcurrentModificationException;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Scanner;
@@ -48,6 +51,7 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
     private final static int bufferSize = 65536; // MAX: 65507
     private static StorageBarrelInterface SBi;
     private int id;
+    private static String IP;
     private static String name;
     private static String ipServer;
 
@@ -68,6 +72,32 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
             ipServer = "";
         }
         String test = "rmi://" + ipServer + ":1099/SM";
+
+        InetAddress ip;
+        String hostname;
+        try {
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            while (interfaces.hasMoreElements()) {
+                NetworkInterface networkInterface = interfaces.nextElement();
+                if (networkInterface.isUp() && !networkInterface.isLoopback()) {
+                    Enumeration<InetAddress> addresses = networkInterface.getInetAddresses();
+                    while (addresses.hasMoreElements()) {
+                        InetAddress address = addresses.nextElement();
+                        if (address instanceof Inet4Address) { // Filtra apenas os endereços IPv4
+                            if(networkInterface.getDisplayName().contains("Wi-Fi") || networkInterface.getDisplayName().contains("Ethernet adapter Ethernet")){
+                                System.out.println("Interface: " + networkInterface.getDisplayName());
+                                System.out.println("IP Address: " + address.getHostAddress());
+                                IP = address.getHostAddress();
+                                System.out.println("Hostname: " + address.getHostName());
+                                System.out.println();
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
 
         IndexStorageBarrel storageBarrel;
 
@@ -171,9 +201,12 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
                                         URL url = m.getURL();
                                         String texto = "recebi" + name + "\n";
                                         byte[] me = texto.getBytes();
-
-                                        InetAddress aHost = InetAddress.getByName("localhost");
-                                        // InetAddress aHost = InetAddress.getByName(m.getIP());// DEBUG: out off
+                                        InetAddress aHost;
+                                        if (ipServer.equals("")) {
+                                            aHost = InetAddress.getByName("localhost");
+                                        }else{
+                                            aHost = InetAddress.getByName(m.getIP());// DEBUG: out off
+                                        }
                                         // machine
                                         DatagramPacket request = new DatagramPacket(me, me.length, aHost, m.getPORT());
                                         aSocket.send(request);
@@ -496,6 +529,11 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
      */
     public int getId() throws RemoteException {
         return id;
+    }
+
+
+    public String getIP() throws RemoteException{
+        return IP;
     }
 
     /**

@@ -3,8 +3,8 @@ package org.Googol.forms;
 import java.io.Serializable;
 
 public class Stats_forms implements Serializable{
-    private String[] barrels;
-    private String[] downloaders;
+    private StatsIP[] barrels;
+    private StatsIP[] downloaders;
     private Search[] topsearches;
     private int countbarrels;
     private int countdownloaders;
@@ -13,7 +13,7 @@ public class Stats_forms implements Serializable{
         // Construtor padrão sem argumentos
     }
 
-    public Stats_forms(String[] barrels, String[] downloaders, Search[] topsearches, int countbarrels, int countdownloaders) {
+    public Stats_forms(StatsIP[] barrels, StatsIP[] downloaders, Search[] topsearches, int countbarrels, int countdownloaders) {
         this.barrels = barrels;
         this.downloaders = downloaders;
         this.topsearches = topsearches;
@@ -21,19 +21,19 @@ public class Stats_forms implements Serializable{
         this.countdownloaders = countdownloaders;
     }
 
-    public String[] getBarrels() {
+    public StatsIP[] getBarrels() {
         return barrels;
     }
 
-    public void setBarrels(String[] barrels) {
+    public void setBarrels(StatsIP[] barrels) {
         this.barrels = barrels;
     }
 
-    public String[] getDownloaders() {
+    public StatsIP[] getDownloaders() {
         return downloaders;
     }
 
-    public void setDownloaders(String[] downloaders) {
+    public void setDownloaders(StatsIP[] downloaders) {
         this.downloaders = downloaders;
     }
 

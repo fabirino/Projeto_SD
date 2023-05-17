@@ -1,6 +1,8 @@
 package org.Googol.forms;
 
-public class Search {
+import java.io.Serializable;
+
+public class Search implements Serializable{
     private String word;
     private int count;
 

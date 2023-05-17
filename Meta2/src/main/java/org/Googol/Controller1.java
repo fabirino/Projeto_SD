@@ -17,6 +17,7 @@ import java.rmi.server.UnicastRemoteObject;
 
 import org.Googol.forms.Search;
 import org.Googol.forms.Stats;
+import org.Googol.forms.StatsIP;
 import org.Googol.forms.Stats_forms;
 import org.Googol.forms.Stories_forms;
 import org.Googol.forms.URL_forms;
@@ -837,18 +838,29 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
 
             // Barrels
             String[] barrels2 = barrels.split("\n");
-            String[] barrels3 = new String[barrels2.length - 1];
-            for (i = 0; i < barrels2.length - 1; i++) {
-                barrels3[i] = barrels2[i + 1];
-                countbarrels++;
+            StatsIP barrels3[] = new StatsIP[barrels2.length - 1];
+            for (String b : barrels2) {
+                // System.out.println(b);
+                if (i != 0) {
+                    String[] parts = b.split("-");
+                    barrels3[i - 1] = new StatsIP(parts[0], parts[1]);
+                    countbarrels++;
+                }
+                i++;
             }
 
             // Downloaders
+            i = 0;
             String[] downloaders2 = downloaders.split("\n");
-            String[] downloaders3 = new String[downloaders2.length - 1];
-            for (i = 0; i < downloaders2.length - 1; i++) {
-                downloaders3[i] = downloaders2[i + 1];
-                countdownloaders++;
+            StatsIP downloaders3[] = new StatsIP[downloaders2.length - 1];
+            for (String d : downloaders2) {
+                // System.out.println(d);
+                if (i != 0) {
+                    String[] parts = d.split("-");
+                    downloaders3[i - 1] = new StatsIP(parts[0], parts[1]);
+                    countdownloaders++;
+                }
+                i++;
             }
 
             // Top Searches
@@ -881,7 +893,7 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
     public Stats_forms updateStats(Stats searches) {
         System.out.println("/stats-update");
         String[] entries = searches.getSearches();
-        
+
         String barrels = entries[0];
         String downloaders = entries[1];
         String words = entries[2];
@@ -891,19 +903,32 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
 
         // Barrels
         String[] barrels2 = barrels.split("\n");
-        String[] barrels3 = new String[barrels2.length - 1];
-        for (i = 0; i < barrels2.length - 1; i++) {
-            barrels3[i] = barrels2[i + 1];
-            countbarrels++;
+        StatsIP barrels3[] = new StatsIP[barrels2.length - 1];
+        for (String b : barrels2) {
+            // System.out.println(b);
+            if (i != 0) {
+                String[] parts = b.split("-");
+                barrels3[i - 1] = new StatsIP(parts[0], parts[1]);
+                countbarrels++;
+            }
+            i++;
         }
+        // System.out.println(barrels3.length);
 
         // Downloaders
+        i = 0;
         String[] downloaders2 = downloaders.split("\n");
-        String[] downloaders3 = new String[downloaders2.length - 1];
-        for (i = 0; i < downloaders2.length - 1; i++) {
-            downloaders3[i] = downloaders2[i + 1];
-            countdownloaders++;
+        StatsIP downloaders3[] = new StatsIP[downloaders2.length - 1];
+        for (String d : downloaders2) {
+            // System.out.println(d);
+            if (i != 0) {
+                String[] parts = d.split("-");
+                downloaders3[i - 1] = new StatsIP(parts[0], parts[1]);
+                countdownloaders++;
+            }
+            i++;
         }
+        // System.out.println(downloaders3.length);
 
         // Top Searches
         i = 0;

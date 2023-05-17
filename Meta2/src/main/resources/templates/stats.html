@@ -40,7 +40,8 @@
 
             <tbody>
               <tr th:each="item: ${forms.barrels}">
-                <td style="padding: 5px" th:text="${item}"></td>
+                <td style="padding: 5px" th:text="${item.word}"></td>
+                <td style="padding: 5px" th:text="${item.count}"></td>
               </tr>
             </tbody>
           </table>
@@ -59,7 +60,8 @@
 
             <tbody>
               <tr th:each="item: ${forms.downloaders}">
-                <td style="padding: 5px" th:text="${item}"></td>
+                <td style="padding: 5px" th:text="${item.word}"></td>
+                <td style="padding: 5px" th:text="${item.count}"></td>
               </tr>
             </tbody>
           </table>
@@ -166,11 +168,16 @@
         items.forEach(function (item) {
           var row = document.createElement("tr");
 
-          var cell = document.createElement("td");
-          cell.style.padding = "5px";
-          cell.textContent = item;
+          var wordCell = document.createElement("td");
+          wordCell.style.padding = "5px";
+          wordCell.textContent = item.word;
 
-          row.appendChild(cell);
+          var countCell = document.createElement("td");
+          countCell.style.padding = "5px";
+          countCell.textContent = item.count;
+
+          row.appendChild(wordCell);
+          row.appendChild(countCell);
           tbody.appendChild(row);
         });
 
@@ -179,7 +186,7 @@
       }
 
       return loginCard;
-    }
+    }    
 
     function createTopSearchesCard(topsearches) {
       var loginCard = document.createElement("div");
@@ -242,11 +249,11 @@
         countdownloaders,
       } = message;
 
-      console.log(barrels); 
-      console.log(downloaders); 
-      console.log(topsearches); 
-      console.log(countbarrels); 
-      console.log(countdownloaders); 
+      console.log(barrels);
+      console.log(downloaders);
+      console.log(topsearches);
+      console.log(countbarrels);
+      console.log(countdownloaders);
 
       updateTable(
         barrels,

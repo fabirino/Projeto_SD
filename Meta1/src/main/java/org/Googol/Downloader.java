@@ -11,17 +11,19 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.MulticastSocket;
+import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.StringTokenizer;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -84,6 +86,7 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
     private static MulticastSocket socket;
     private static Downloader downloader;
     private static int id;
+    private static String IP;
     private static Lock lock = new ReentrantLock();
     private final static Condition condicao = lock.newCondition();
     private static int variavel = 1;
@@ -157,6 +160,31 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
         ENStopWords = new ArrayList<>();
         fillArray(PTStopWords, PT);
         fillArray(ENStopWords, EN);
+        InetAddress ip;
+        String hostname;
+        try {
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            while (interfaces.hasMoreElements()) {
+                NetworkInterface networkInterface = interfaces.nextElement();
+                if (networkInterface.isUp() && !networkInterface.isLoopback()) {
+                    Enumeration<InetAddress> addresses = networkInterface.getInetAddresses();
+                    while (addresses.hasMoreElements()) {
+                        InetAddress address = addresses.nextElement();
+                        if (address instanceof Inet4Address) { // Filtra apenas os endereços IPv4
+                            if(networkInterface.getDisplayName().contains("Wi-Fi") || networkInterface.getDisplayName().contains("Ethernet adapter Ethernet")){
+                                System.out.println("Interface: " + networkInterface.getDisplayName());
+                                System.out.println("IP Address: " + address.getHostAddress());
+                                IP = address.getHostAddress();
+                                System.out.println("Hostname: " + address.getHostName());
+                                System.out.println();
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
 
         try {
             downloader = new Downloader();
@@ -206,15 +234,6 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
                 System.out.println("Downloader: Could not join Multicast group");
                 return;
             }
-            String IP;
-            try {
-                InetAddress endereco = InetAddress.getLocalHost();
-                IP = endereco.getHostAddress();
-                System.out.println("IP: " + IP);
-            } catch (UnknownHostException ex) {
-                System.out.println("Não foi possível obter o endereço IP da máquina.");
-                return;
-            }
 
             System.out.println("Downloader: System started");
             try (DatagramSocket aSocket = new DatagramSocket(PORTUDP)) {
@@ -226,7 +245,7 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
                         // Pega o ultimo URL da Fila e faz o crawl
                         URL url = SMi.getURLQueue();
                         System.out.println("Downloader: Indexing " + url);
-                        //TODO: verificar se o url ja foi indexado
+                        
                         
 
                         if(SMi.checkUrlQueue2(url)){
@@ -237,10 +256,10 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
                             if (url == null)
                                 continue;
     
-                            Message m = new Message(url, PORTUDP);
+                            // Message m = new Message(url, PORTUDP);
                             // Message m = new Message(url, PORTUDP,"<ip-downloader!>");// DEBUG: out off machine
                             
-                            // Message m = new Message(url, PORTUDP,IP);// DEBUG: out off machine
+                            Message m = new Message(url, PORTUDP,IP);// DEBUG: out off machine
     
                             int attempts = 3; // DEBUG: 3 tentativas se o multicast enviar e algo falhar!!
                             for (int i = 0; i < attempts; i++) {
@@ -409,6 +428,10 @@ public class Downloader extends UnicastRemoteObject implements DownloaderInterfa
 
     public int getId() throws RemoteException {
         return id;
+    }
+
+    public String getIP() throws RemoteException{
+        return IP;
     }
 
     /**
