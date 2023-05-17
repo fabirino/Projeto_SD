@@ -71,7 +71,7 @@ public class IndexStorageBarrel extends UnicastRemoteObject implements StorageBa
         } else {
             ipServer = "";
         }
-        String test = "rmi://" + ipServer + ":1099/SM";
+        String test = "rmi://" + ipServer + ":1099/SB";
 
         InetAddress ip;
         String hostname;

@@ -102,8 +102,7 @@ public class RMISearchModule extends UnicastRemoteObject
 
         try {
             LocateRegistry.createRegistry(1099).rebind("SM", SMi);
-            // LocateRegistry.createRegistry(1099).rebind("rmi://<public-ip>:1099/SM",
-            // SMi);// DEBUG: out off machine
+            // LocateRegistry.createRegistry(1099).rebind("rmi://192.168.62.45:1099/SM", SMi);// DEBUG: out off machine
         } catch (RemoteException RE) {
             System.out.println("Search Module: System crashed, Remote Exception ocurred");
             SMi.queueCrash();
@@ -113,8 +112,7 @@ public class RMISearchModule extends UnicastRemoteObject
 
         try {
             LocateRegistry.createRegistry(1098).rebind("SB", SMi2);
-            // LocateRegistry.createRegistry(1098).rebind("rmi://<public-ip>:1098/SB",
-            // SMi2);// DEBUG: out off machine
+            // LocateRegistry.createRegistry(1098).rebind("rmi://192.168.62.45:1098/SB", SMi2);// DEBUG: out off machine
         } catch (Exception re) {
             System.out.println("Exception in Search Module: " + re);
         }
@@ -122,7 +120,6 @@ public class RMISearchModule extends UnicastRemoteObject
             try {
                 Thread.sleep(4000);
             } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
             if (listOfBarrels.size() > 0)
@@ -142,7 +139,6 @@ public class RMISearchModule extends UnicastRemoteObject
                                     controller.sendMessage(str2);
                                     System.out.println("Search Module: Sent stats to Controller");
                                 } catch (SQLException e1) {
-                                    // TODO Auto-generated catch block
                                     e1.printStackTrace();
                                 }
                             }
@@ -155,7 +151,6 @@ public class RMISearchModule extends UnicastRemoteObject
                     }
                     // System.out.println("Saiu do loop");
                 } catch (RemoteException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
         }
@@ -194,7 +189,6 @@ public class RMISearchModule extends UnicastRemoteObject
                 controller.sendMessage(str2);
                 System.out.println("Search Module: Sent stats to Controller");
             } catch (SQLException e1) {
-                // TODO Auto-generated catch block
                 e1.printStackTrace();
             }
         } else {
@@ -336,7 +330,6 @@ public class RMISearchModule extends UnicastRemoteObject
                 controller.sendMessage(str2);
                 System.out.println("Search Module: Sent stats to Controller");
             } catch (SQLException e1) {
-                // TODO Auto-generated catch block
                 e1.printStackTrace();
             }
         } else {
@@ -362,7 +355,6 @@ public class RMISearchModule extends UnicastRemoteObject
                 controller.sendMessage(str2);
                 System.out.println("Search Module: Sent stats to Controller");
             } catch (SQLException e1) {
-                // TODO Auto-generated catch block
                 e1.printStackTrace();
             }
         } else {
@@ -484,7 +476,6 @@ public class RMISearchModule extends UnicastRemoteObject
                 controller.sendMessage(str2);
                 System.out.println("Search Module: Sent stats to Controller");
             } catch (SQLException e1) {
-                // TODO Auto-generated catch block
                 e1.printStackTrace();
             }
         } else {
@@ -512,7 +503,6 @@ public class RMISearchModule extends UnicastRemoteObject
                     controller.sendMessage(str2);
                     System.out.println("Search Module: Sent stats to Controller");
                 } catch (SQLException e1) {
-                    // TODO Auto-generated catch block
                     e1.printStackTrace();
                 }
             } else {
@@ -529,15 +519,11 @@ public class RMISearchModule extends UnicastRemoteObject
     }
 
     public void pingBarrels() throws RemoteException {
-        int count = 0;
         // System.out.println("Search Module: A packet was lost, pinging all Barrels");
         for (StorageBarrelInterfaceB barrel : listOfBarrels) {
             try {
-                if (barrel.tryPing()) {
-                    count++;
-                    // System.out.println(count);
-                    // System.out.println("Barrel " + barrel.getId() + " is alive");
-                }
+                barrel.tryPing();
+
             } catch (RemoteException e) {
                 System.out.println("Search Module: Removing from list of active Barrels");
                 listOfBarrels.remove(barrel);
@@ -552,7 +538,6 @@ public class RMISearchModule extends UnicastRemoteObject
                         controller.sendMessage(str2);
                         System.out.println("Search Module: Sent stats to Controller");
                     } catch (SQLException e1) {
-                        // TODO Auto-generated catch block
                         e1.printStackTrace();
                     }
                 }

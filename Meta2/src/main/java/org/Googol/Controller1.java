@@ -207,7 +207,7 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
 
     // LOGOUT ====================================================================
     @GetMapping("/logout")
-    public String logout(HttpSession session, Model model) {
+    public String logout(HttpSession session) {
         session.invalidate();
         return "redirect:/login";
     }
