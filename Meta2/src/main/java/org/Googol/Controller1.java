@@ -42,8 +42,6 @@ import java.text.SimpleDateFormat;
 import java.util.ConcurrentModificationException;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import javax.print.DocFlavor.STRING;
-
 import org.json.JSONObject;
 import org.json.JSONArray;
 
@@ -94,8 +92,9 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
         try {
             SMi.subscribeC((ControllerInterface) new Controller1());
         } catch (RemoteException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            System.out.println("System: The Search Module is not running");
+        } catch (NullPointerException e) {
+            System.out.println("System: The Search Module is not running");
         }
     }
 
@@ -104,8 +103,9 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
         try {
             SMi.unsubscribeC();
         } catch (RemoteException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            System.out.println("System: The Search Module is not running");
+        } catch (NullPointerException e) {
+            System.out.println("System: The Search Module is not running");
         }
     }
 
@@ -119,6 +119,19 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
 
     @GetMapping("/login")
     public String login(HttpSession session, Model model) {
+
+        if (this.SMi == null) {
+            try {
+                this.SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
+
+            } catch (Exception e) {
+                int responseCode = 503;
+                model.addAttribute("error_code", responseCode);
+                String response = "System error: The Search Module is not running";
+                model.addAttribute("response", response);
+                return "error";
+            }
+        }
 
         if (session.getAttribute("username") != null) {
             return "redirect:/index";
@@ -202,6 +215,20 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
 
     @GetMapping("/register")
     public String register(Model model) {
+
+        if (this.SMi == null) {
+            try {
+                this.SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
+
+            } catch (Exception e) {
+                int responseCode = 503;
+                model.addAttribute("error_code", responseCode);
+                String response = "System error: The Search Module is not running";
+                model.addAttribute("response", response);
+                return "error";
+            }
+        }
+
         model.addAttribute("user", new User());
         return "register";
     }
@@ -247,6 +274,19 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
     @GetMapping("/search")
     public String search_words(HttpSession session, Model model) {
 
+        if (this.SMi == null) {
+            try {
+                this.SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
+
+            } catch (Exception e) {
+                int responseCode = 503;
+                model.addAttribute("error_code", responseCode);
+                String response = "System error: The Search Module is not running";
+                model.addAttribute("response", response);
+                return "error";
+            }
+        }
+
         if (session.getAttribute("username") == null) {
             return "redirect:/login";
         }
@@ -256,7 +296,20 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
     }
 
     @PostMapping("/see-results")
-    public String Submissionresults(HttpSession session, @ModelAttribute("words") Words words) {
+    public String Submissionresults(HttpSession session, @ModelAttribute("words") Words words, Model model) {
+
+        if (this.SMi == null) {
+            try {
+                this.SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
+
+            } catch (Exception e) {
+                int responseCode = 503;
+                model.addAttribute("error_code", responseCode);
+                String response = "System error: The Search Module is not running";
+                model.addAttribute("response", response);
+                return "error";
+            }
+        }
 
         if (session.getAttribute("username") == null) {
             return "redirect:/login";
@@ -270,6 +323,19 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
     public String showResultsPage(HttpSession session, @PathVariable("searchWords") String searchWords,
             @PathVariable("page") int page,
             Model model) {
+
+        if (this.SMi == null) {
+            try {
+                this.SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
+
+            } catch (Exception e) {
+                int responseCode = 503;
+                model.addAttribute("error_code", responseCode);
+                String response = "System error: The Search Module is not running";
+                model.addAttribute("response", response);
+                return "error";
+            }
+        }
 
         if (session.getAttribute("username") == null) {
             return "redirect:/login";
@@ -339,6 +405,19 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
     @GetMapping("/search_url")
     public String search_url(HttpSession session, Model model) {
 
+        if (this.SMi == null) {
+            try {
+                this.SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
+
+            } catch (Exception e) {
+                int responseCode = 503;
+                model.addAttribute("error_code", responseCode);
+                String response = "System error: The Search Module is not running";
+                model.addAttribute("response", response);
+                return "error";
+            }
+        }
+
         if (session.getAttribute("username") == null) {
             return "redirect:/login";
         }
@@ -349,6 +428,19 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
 
     @PostMapping("/see-results-url")
     public String Submissionresults_url(HttpSession session, @ModelAttribute("url") URL_forms url, Model model) {
+
+        if (this.SMi == null) {
+            try {
+                this.SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
+
+            } catch (Exception e) {
+                int responseCode = 503;
+                model.addAttribute("error_code", responseCode);
+                String response = "System error: The Search Module is not running";
+                model.addAttribute("response", response);
+                return "error";
+            }
+        }
 
         if (session.getAttribute("username") == null) {
             return "redirect:/login";
@@ -370,6 +462,19 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
     public String showResultsPage_url(HttpSession session, @PathVariable("search_url") String search_url,
             @PathVariable("page") int page,
             Model model) {
+
+        if (this.SMi == null) {
+            try {
+                this.SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
+
+            } catch (Exception e) {
+                int responseCode = 503;
+                model.addAttribute("error_code", responseCode);
+                String response = "System error: The Search Module is not running";
+                model.addAttribute("response", response);
+                return "error";
+            }
+        }
 
         if (session.getAttribute("username") == null) {
             return "redirect:/login";
@@ -444,6 +549,19 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
     @GetMapping("/index")
     public String index(HttpSession session, Model model) {
 
+        if (this.SMi == null) {
+            try {
+                this.SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
+
+            } catch (Exception e) {
+                int responseCode = 503;
+                model.addAttribute("error_code", responseCode);
+                String response = "System error: The Search Module is not running";
+                model.addAttribute("response", response);
+                return "error";
+            }
+        }
+
         if (session.getAttribute("username") == null) {
             return "redirect:/login";
         }
@@ -455,6 +573,19 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
 
     @PostMapping("/see-index")
     public String Submissionindex(HttpSession session, @ModelAttribute URL_forms url, Model model) {
+
+        if (this.SMi == null) {
+            try {
+                this.SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
+
+            } catch (Exception e) {
+                int responseCode = 503;
+                model.addAttribute("error_code", responseCode);
+                String response = "System error: The Search Module is not running";
+                model.addAttribute("response", response);
+                return "error";
+            }
+        }
 
         if (session.getAttribute("username") == null) {
             return "redirect:/login";
@@ -487,6 +618,19 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
     @GetMapping("/top-stories-user")
     public String top_searches(HttpSession session, Model model) {
 
+        if (this.SMi == null) {
+            try {
+                this.SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
+
+            } catch (Exception e) {
+                int responseCode = 503;
+                model.addAttribute("error_code", responseCode);
+                String response = "System error: The Search Module is not running";
+                model.addAttribute("response", response);
+                return "error";
+            }
+        }
+
         if (session.getAttribute("username") == null) {
             return "redirect:/login";
         }
@@ -498,6 +642,19 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
     @PostMapping("/see-results-hackernews-user")
     public String results_hackernews_user(HttpSession session, Model model, @ModelAttribute("user") User user) {
 
+        if (this.SMi == null) {
+            try {
+                this.SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
+
+            } catch (Exception e) {
+                int responseCode = 503;
+                model.addAttribute("error_code", responseCode);
+                String response = "System error: The Search Module is not running";
+                model.addAttribute("response", response);
+                return "error";
+            }
+        }
+
         if (session.getAttribute("username") == null) {
             return "redirect:/login";
         }
@@ -507,6 +664,19 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
 
     @GetMapping("/top-stories-user/{name}")
     public String show_results_hackernews_user(HttpSession session, Model model, @PathVariable("name") String name) {
+
+        if (this.SMi == null) {
+            try {
+                this.SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
+
+            } catch (Exception e) {
+                int responseCode = 503;
+                model.addAttribute("error_code", responseCode);
+                String response = "System error: The Search Module is not running";
+                model.addAttribute("response", response);
+                return "error";
+            }
+        }
 
         if (session.getAttribute("username") == null) {
             return "redirect:/login";
@@ -635,6 +805,19 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
     @GetMapping("/top-stories")
     public String top_stories(HttpSession session, Model model) {
 
+        if (this.SMi == null) {
+            try {
+                this.SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
+
+            } catch (Exception e) {
+                int responseCode = 503;
+                model.addAttribute("error_code", responseCode);
+                String response = "System error: The Search Module is not running";
+                model.addAttribute("response", response);
+                return "error";
+            }
+        }
+
         if (session.getAttribute("username") == null) {
             return "redirect:/login";
         }
@@ -655,6 +838,19 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
 
     @GetMapping("/top-stories/{search}")
     public String show_results_hackernews(HttpSession session, Model model, @PathVariable("search") String search) {
+
+        if (this.SMi == null) {
+            try {
+                this.SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
+
+            } catch (Exception e) {
+                int responseCode = 503;
+                model.addAttribute("error_code", responseCode);
+                String response = "System error: The Search Module is not running";
+                model.addAttribute("response", response);
+                return "error";
+            }
+        }
 
         if (session.getAttribute("username") == null) {
             return "redirect:/login";
@@ -714,8 +910,7 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
 
                 if (responseCode2 != HttpURLConnection.HTTP_OK) {
                     String response2 = "Something went wrong with the API request (after the user request))";
-                    // FIXME: mostrar o erro
-                    // model.addAttribute("error_code", responseCode);
+                    model.addAttribute("error_code", responseCode);
                     model.addAttribute("response", response2);
                     return "error";
                 }
@@ -820,6 +1015,19 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
     @GetMapping("/stats")
     public String stats(HttpSession session, Model model) {
 
+        if (this.SMi == null) {
+            try {
+                this.SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
+
+            } catch (Exception e) {
+                int responseCode = 503;
+                model.addAttribute("error_code", responseCode);
+                String response = "System error: The Search Module is not running";
+                model.addAttribute("response", response);
+                return "error";
+            }
+        }
+
         if (session.getAttribute("username") == null) {
             return "redirect:/login";
         }
@@ -868,9 +1076,17 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
             model.addAttribute("forms", sf);
 
         } catch (SQLException e) {
-            // TODO:
+            int responseCode = 503;
+            model.addAttribute("error_code", responseCode);
+            String response = "System error: Data base is not responding";
+            model.addAttribute("response", response);
+            return "error";
         } catch (RemoteException e) {
-            // TODO:
+            int responseCode = 503;
+            model.addAttribute("error_code", responseCode);
+            String response = "System error: The Search Module is not running";
+            model.addAttribute("response", response);
+            return "error";
         }
 
         return "stats";
@@ -881,7 +1097,7 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
     public Stats_forms updateStats(Stats searches) {
         System.out.println("/stats-update");
         String[] entries = searches.getSearches();
-        
+
         String barrels = entries[0];
         String downloaders = entries[1];
         String words = entries[2];
