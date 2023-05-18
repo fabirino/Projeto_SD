@@ -23,6 +23,8 @@ import org.Googol.forms.Stories_forms;
 import org.Googol.forms.URL_forms;
 import org.Googol.forms.User;
 import org.Googol.forms.Words;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.ApplicationArguments;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
@@ -52,12 +54,20 @@ import org.springframework.ui.Model;
 public class Controller1 extends UnicastRemoteObject implements ControllerInterface {
 
     GoogolInterface SMi;
+    private final ApplicationArguments args;
+    private String url;
 
-    public Controller1() throws RemoteException {
+    public Controller1(ApplicationArguments args) throws RemoteException {
         super();
+        this.args = args;
         try {
-            this.SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
-
+            String[] argv = args.getSourceArgs();
+            if (argv.length == 0)
+                this.url = "rmi://localhost:1099/SM";
+            else{
+                this.url = "rmi://" + argv[0] + ":1099/SM";
+            }
+            this.SMi = (GoogolInterface) Naming.lookup(url);
         } catch (NotBoundException NBE) {
             System.out.println("System: The Interface is not bound");
             return;
@@ -91,7 +101,7 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
     @PostConstruct
     public void init() {
         try {
-            SMi.subscribeC((ControllerInterface) new Controller1());
+            SMi.subscribeC((ControllerInterface) new Controller1(this.args));
         } catch (RemoteException e) {
             System.out.println("System: The Search Module is not running");
         } catch (NullPointerException e) {
@@ -123,7 +133,7 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
 
         if (this.SMi == null) {
             try {
-                this.SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
+                this.SMi = (GoogolInterface) Naming.lookup(this.url);
 
             } catch (Exception e) {
                 int responseCode = 503;
@@ -219,7 +229,7 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
 
         if (this.SMi == null) {
             try {
-                this.SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
+                this.SMi = (GoogolInterface) Naming.lookup(this.url);
 
             } catch (Exception e) {
                 int responseCode = 503;
@@ -277,7 +287,7 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
 
         if (this.SMi == null) {
             try {
-                this.SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
+                this.SMi = (GoogolInterface) Naming.lookup(this.url);
 
             } catch (Exception e) {
                 int responseCode = 503;
@@ -301,7 +311,7 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
 
         if (this.SMi == null) {
             try {
-                this.SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
+                this.SMi = (GoogolInterface) Naming.lookup(this.url);
 
             } catch (Exception e) {
                 int responseCode = 503;
@@ -327,7 +337,7 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
 
         if (this.SMi == null) {
             try {
-                this.SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
+                this.SMi = (GoogolInterface) Naming.lookup(this.url);
 
             } catch (Exception e) {
                 int responseCode = 503;
@@ -408,7 +418,7 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
 
         if (this.SMi == null) {
             try {
-                this.SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
+                this.SMi = (GoogolInterface) Naming.lookup(this.url);
 
             } catch (Exception e) {
                 int responseCode = 503;
@@ -432,7 +442,7 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
 
         if (this.SMi == null) {
             try {
-                this.SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
+                this.SMi = (GoogolInterface) Naming.lookup(this.url);
 
             } catch (Exception e) {
                 int responseCode = 503;
@@ -466,7 +476,7 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
 
         if (this.SMi == null) {
             try {
-                this.SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
+                this.SMi = (GoogolInterface) Naming.lookup(this.url);
 
             } catch (Exception e) {
                 int responseCode = 503;
@@ -552,7 +562,7 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
 
         if (this.SMi == null) {
             try {
-                this.SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
+                this.SMi = (GoogolInterface) Naming.lookup(this.url);
 
             } catch (Exception e) {
                 int responseCode = 503;
@@ -577,7 +587,7 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
 
         if (this.SMi == null) {
             try {
-                this.SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
+                this.SMi = (GoogolInterface) Naming.lookup(this.url);
 
             } catch (Exception e) {
                 int responseCode = 503;
@@ -621,7 +631,7 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
 
         if (this.SMi == null) {
             try {
-                this.SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
+                this.SMi = (GoogolInterface) Naming.lookup(this.url);
 
             } catch (Exception e) {
                 int responseCode = 503;
@@ -645,7 +655,7 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
 
         if (this.SMi == null) {
             try {
-                this.SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
+                this.SMi = (GoogolInterface) Naming.lookup(this.url);
 
             } catch (Exception e) {
                 int responseCode = 503;
@@ -668,7 +678,7 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
 
         if (this.SMi == null) {
             try {
-                this.SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
+                this.SMi = (GoogolInterface) Naming.lookup(this.url);
 
             } catch (Exception e) {
                 int responseCode = 503;
@@ -808,7 +818,7 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
 
         if (this.SMi == null) {
             try {
-                this.SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
+                this.SMi = (GoogolInterface) Naming.lookup(this.url);
 
             } catch (Exception e) {
                 int responseCode = 503;
@@ -842,7 +852,7 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
 
         if (this.SMi == null) {
             try {
-                this.SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
+                this.SMi = (GoogolInterface) Naming.lookup(this.url);
 
             } catch (Exception e) {
                 int responseCode = 503;
@@ -1018,7 +1028,7 @@ public class Controller1 extends UnicastRemoteObject implements ControllerInterf
 
         if (this.SMi == null) {
             try {
-                this.SMi = (GoogolInterface) Naming.lookup("rmi://localhost:1099/SM");
+                this.SMi = (GoogolInterface) Naming.lookup(this.url);
 
             } catch (Exception e) {
                 int responseCode = 503;
